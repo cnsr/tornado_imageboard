@@ -1,0 +1,17 @@
+{% extends 'index.html' %}
+{% block title %}Thread #{{ op['count'] }} {% end %}
+{% block content %}
+	{% block add %}
+		{% module NewPost() %}
+	{% end %}
+	<div class='op'>
+		{% module OpPost(op) %}
+	</div>
+	<div class='posts'>
+		{% if posts %}
+			{% for post in posts %}
+				{% module Post(post) %}
+			{% end %}
+		{% end %}
+	</div>
+{% end %}

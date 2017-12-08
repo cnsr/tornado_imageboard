@@ -1,0 +1,6 @@
+<div class='thread'>
+	{% if thread['subject'] %}<h3>{{thread['subject']}}</h3>{% end %}
+	<p>{{ thread['text'] }}</p>
+	<p>{{ thread['date']}}</p>
+	<a href='thread/{{thread["count"]}}'><p>{{thread['count']}}</p></a>
+</div>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel='stylesheet' href="{{ static_url('style.css') }}">
+		<title>{% block title %}Threads{% end %}</title>
+	</head>
+	<body>
+	{% block content %}
+		{% block add %}
+			{% module NewPost() %}
+		{% end %}
+		<div class='threads'>
+			{% for thread in threads %}
+				{% module Thread(thread) %}
+			{% end %}
+		</div>
+	{% end %}
+	</body>
+</html>
