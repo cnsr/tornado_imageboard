@@ -1,8 +1,10 @@
 {% extends 'index.html' %}
 {% block title %}Thread #{{ op['count'] }} {% end %}
 {% block content %}
-	{% block add %}
-		{% module NewPost() %}
+	{% if not op['locked'] %}
+		{% block add %}
+			{% module NewPost() %}
+		{% end %}
 	{% end %}
 	<div class='op'>
 		{% module OpPost(op) %}
