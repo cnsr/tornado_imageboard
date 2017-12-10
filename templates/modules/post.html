@@ -1,6 +1,19 @@
-<div class='post'>
-	{% if post['subject'] %}<h3>{{post['subject']}}</h3>{% end %}
-	<p>{{ post['count'] }}</p>	
-	<p>{{ post['text'] }}</p>
-	<p>{{ post['date'] }}</p>
+<div class='post-outer'>
+	<div class='post' id='{{post["count"]}}'>
+		<div class='post-header'>
+			{% if post['subject'] %}<h3>{{post['subject']}}</h3>{% end %}
+			<p class='date'>{{ post['date']}}</p>
+			<!-- TODO: add answer box appending -->
+			<a href='#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
+		</div>
+		<p>{% raw post['text'] %}</p>
+		{% if post['replies'] %}
+			<li class=replies>
+				<p class='replies-p'>Replies: </p>
+				{% for reply in post['replies'] %}
+					<ul class='reply'><a href='#{{ reply }}'>>>{{reply}}</a></ul>
+				{% end %}
+			</li>
+		{% end %}
+	</div>
 </div>

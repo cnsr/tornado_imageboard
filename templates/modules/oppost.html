@@ -1,6 +1,18 @@
-<div class='oppost'>
-	{% if op['subject'] %}<h3>{{op['subject']}}</h3>{% end %}
-	<p>{{ op['count'] }}</p>	
-	<p>{{ op['text'] }}</p>
-	<p>{{ op['date'] }}</p>
+<div class='oppost-outer'>
+	<div class='oppost' id='{{op["count"]}}'>
+		<div class='post-header'>
+			{% if op['subject'] %}<h3>{{op['subject']}}</h3>{% end %}
+			<p class='date'>{{ op['date']}}</p>
+			<a href='#{{op["count"]}}' class='post-href'>>>{{op['count']}}</a>		
+		</div>
+		<p>{% raw  op['text'] %}</p>
+		{% if op['replies'] %}
+			<li class=replies>
+				<p class='replies-p'>Replies: </p>
+				{% for reply in op['replies'] %}
+					<ul class='reply'><a href='#{{ reply }}'>>>{{reply}}</a></ul>
+				{% end %}
+			</li>
+		{% end %}
+	</div>
 </div>

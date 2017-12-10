@@ -1,0 +1,24 @@
+a {
+	color: blue;	
+}
+
+p {
+	 max-width:900px;
+   word-wrap:break-word;
+}
+
+.replies {
+	list-style-type: none;
+	display: inline;
+	font-size: 0.8rem;
+	font-style: italic;
+}
+
+.reply {
+	display: inline;
+	padding: 0px;
+}
+
+.replies-p {
+	 display: inline-block;
+}

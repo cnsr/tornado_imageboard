@@ -1,10 +1,19 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<link rel='stylesheet' href="{{ static_url('style.css') }}">
+		{% block css %}
+			<link rel='stylesheet' href="{{ static_url('css/modules/thread.css') }}">
+		{% end %}
+		<link rel='stylesheet' href="{{ static_url('index.css') }}">
 		<title>{% block title %}Threads{% end %}</title>
 	</head>
 	<body>
+	<header>
+		{% block header %}
+			<!-- TODO: add list of imageboards -->
+			<a href='/' class='homebtn'>[HOME]</a>
+		{% end %}
+	</header>
 	{% block content %}
 		{% block add %}
 			{% module NewPost() %}

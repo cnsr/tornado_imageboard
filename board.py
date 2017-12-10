@@ -7,6 +7,7 @@ import uimodules
 import datetime
 import ib_settings as _ib
 from tornado import concurrent
+import re
 
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
@@ -26,6 +27,9 @@ class IndexHandler(tornado.web.RequestHandler):
         threads = db['posts'].find({'oppost': True}).sort([('lastpost', -1)]).limit(_ib.THREAD_NUMBER)
         subject = self.get_argument('subject', '')
         text = self.get_argument('text', '')
+        text = text.replace("\n","<br />\n")
+        result = linkify(text)
+        text = result[0]
         count = latest(db) + 1
         oppost = True
         thread = None
@@ -54,6 +58,10 @@ class ThreadHandler(tornado.web.RequestHandler):
         db = self.application.database
         subject = self.get_argument('subject', '')
         text = self.get_argument('text', 'empty post')
+        result = linkify(text)
+        text = result[0]
+        text = text.replace("\n","<br />\n")
+        replies = result[1]
         count = latest(db) + 1
         oppost = False
         thread = thread_count
@@ -63,7 +71,15 @@ class ThreadHandler(tornado.web.RequestHandler):
             op['lastpost'] = datetime.datetime.utcnow()
             update_db(db, op['count'], op)
         if not op['locked']:
-            db['posts'].insert(data)
+            if data['text'] != '':
+                db['posts'].insert(data)
+                for number in replies:
+                    p = db.posts.find_one({'count': int(number)})
+                    old_replies = p['replies']
+                    if int(data['count']) not in old_replies:
+                        old_replies.append(int(data['count']))
+                        p['replies'] = old_replies
+                        update_db(db, p['count'], p)
         posts = db['posts'].find({'thread': thread_count}).sort([('count', pymongo.ASCENDING)])
         self.render('posts.html', op=op, posts=posts)
 
@@ -77,6 +93,7 @@ def makedata(subject, text, count, oppost=False, thread=None):
     data['date'] = datetime.datetime.utcnow()
     data['oppost'] = oppost
     data['thread'] = thread
+    data['replies'] = []
     if oppost:
         data['locked'] = False
         data['lastpost'] = datetime.datetime.utcnow()
@@ -110,6 +127,7 @@ class Application(tornado.web.Application):
             'ui_modules': uimodules,
             'template_path': 'templates',
             'static_path': 'static',
+            'xsrf_cookies': True,
         }
 
         self.con = pymongo.MongoClient('localhost', 27017)
@@ -145,6 +163,19 @@ def schedule_check(app):
         schedule_check(app)
     tornado.ioloop.IOLoop.current().add_timeout(next_time, wrapper)
 
+
+def linkify(text):
+    new_text = []
+    replies = []
+    text_list = re.split(r'(\s+)', text)
+    for t in text_list:
+        x = re.compile(r'(>>\d+)').match(t)
+        if x:
+            number = x.group(1)
+            replies.append(number[2:])
+            t = re.sub(r'>>\d+', '<a href=\"#' + number[2:] + '\">' + number + '</a>', t)
+        new_text.append(t)
+    return (' ').join(new_text), replies
 
 
 def main():

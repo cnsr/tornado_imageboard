@@ -1,0 +1,18 @@
+.oppost {
+  padding: 5px;
+  display: inline-block;
+}
+
+.oppost:target {
+	 border: 1px dashed red;
+}
+
+h3, .oppost-href, .date {
+  display: inline-block;
+  margin: 1px;
+}
+
+.oppost-outer {
+  display: block;
+  margin: 3px;
+}

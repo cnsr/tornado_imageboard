@@ -1,0 +1,20 @@
+.post {
+  border: 1px dashed black;
+  padding: 3px;
+  display: inline-block;
+}
+
+.post:target {
+	 border: 1px dashed red;
+}
+
+h3, .post-href, .date {
+  display: inline-block;
+  margin: 0px;
+}
+
+.post-outer {
+  display: block;
+  margin: 3px;
+}
+
