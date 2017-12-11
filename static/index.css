@@ -22,3 +22,14 @@ p {
 .replies-p {
 	 display: inline-block;
 }
+
+.boards-list-board {
+	list-style-type: none;
+	display: inline;
+	color: black;
+}
+
+.boards-list {
+	 display: inline;
+	 padding: 0px;
+}

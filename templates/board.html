@@ -1,0 +1,15 @@
+{% extends 'index.html' %}
+{% block css %}
+	<link rel='stylesheet' href="{{ static_url('css/modules/thread.css') }}">
+{% end %}
+{% block title %}Threads{% end %}
+{% block content %}
+	{% block add %}
+		{% module NewPost() %}
+	{% end %}
+	<div class='threads'>
+		{% for thread in threads %}
+			{% module Thread(thread) %}
+		{% end %}
+	</div>
+{% end %}

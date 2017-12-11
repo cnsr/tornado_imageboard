@@ -1,0 +1,9 @@
+{% extends 'index.html' %}
+{% block content %}
+<form action="" method="post">
+	{% module xsrf_form_html() %}
+	<p>Password:</p>
+	<input type="password" name="password">
+	<input type="submit" value="Sign in">
+</form>
+{% end %}

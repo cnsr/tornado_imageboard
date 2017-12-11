@@ -2,25 +2,29 @@
 <html>
 	<head>
 		{% block css %}
-			<link rel='stylesheet' href="{{ static_url('css/modules/thread.css') }}">
+			<link rel='stylesheet' href="{{ static_url('css/modules/board.css') }}">
 		{% end %}
 		<link rel='stylesheet' href="{{ static_url('index.css') }}">
-		<title>{% block title %}Threads{% end %}</title>
+		<link rel='stylesheet' href="{{ static_url('css/modules/board.css') }}">		
+		<title>{% block title %}Index{% end %}</title>
 	</head>
 	<body>
 	<header>
 		{% block header %}
-			<!-- TODO: add list of imageboards -->
 			<a href='/' class='homebtn'>[HOME]</a>
+			<ul class='boards-list'>
+				{% for b in boards_list %}
+					<li class='boards-list-board'>
+						<a href='/{{b["short"]}}'>[{{b['short']}}]</a>
+					</li>
+				{% end %}
+			</ul>
 		{% end %}
 	</header>
 	{% block content %}
-		{% block add %}
-			{% module NewPost() %}
-		{% end %}
-		<div class='threads'>
-			{% for thread in threads %}
-				{% module Thread(thread) %}
+		<div class='boards'>
+			{% for board in boards %}
+				{% module Board(board) %}
 			{% end %}
 		</div>
 	{% end %}

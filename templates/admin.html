@@ -1,0 +1,19 @@
+{% extends 'index.html' %}
+{% block title %}Add Board{% end %}
+{% block content %}
+<div class='add_board'>
+	<form method='POST' action=''>
+		{% module xsrf_form_html() %}
+		<div class='name'>
+			<p>Name</p><input type='text' name='name' maxlength=50 required/>
+		</div>
+		<div class='short'>
+			<p>Short</p><input type='text' name='short' maxlength=3 required/>
+		</div>
+		<div class='description'>
+			<p>Description</p><textarea rows=4 cols=55 name='description' maxlength=500></textarea>
+		</div>
+		<input type='submit'>
+	</form>
+</div>
+{% end %}
