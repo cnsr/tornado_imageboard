@@ -3,7 +3,7 @@
 		<div class='thread-header'>
 			{% if thread['subject'] %}<h3>{{thread['subject']}}</h3>{% end %}
 			<p class='date'>{{ thread['date']}}</p>
-			<a href='thread/{{thread["count"]}}' class='thread-href'>>>{{thread['count']}}</a>	
+			<a href='{{thread["board"]}}/thread/{{thread["count"]}}' class='thread-href'>>>{{thread['count']}}</a>	
 		</div>
 		<p>{% raw thread['text'] %}</p>
 	</div>

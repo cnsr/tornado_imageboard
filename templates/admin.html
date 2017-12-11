@@ -1,5 +1,8 @@
 {% extends 'index.html' %}
 {% block title %}Add Board{% end %}
+{% block css %}
+	<script src='{{static_url("js/validate_numbersonly.js")}}'></script>
+{% end %}
 {% block content %}
 <div class='add_board'>
 	<form method='POST' action=''>
@@ -13,6 +16,16 @@
 		<div class='description'>
 			<p>Description</p><textarea rows=4 cols=55 name='description' maxlength=500></textarea>
 		</div>
+		<div class='thread_posts'>
+			<p>Max amount of posts in thread</p><input type='text' name='thread_posts' maxlength=4 onkeypress='validate(event)' required/>
+		</div>
+		<div class='thread_bump'>
+			<p>Bumplimit</p><input type='text' name='thread_bump' onkeypress='validate(event)' maxlength=4 required/>
+		</div>
+		<div class='thread_catalog'>
+			<p>Max amount of threads in catalog</p><input type='text' name='thread_catalog' onkeypress='validate(event)' maxlength=2 required/>
+		</div>
+
 		<input type='submit'>
 	</form>
 </div>

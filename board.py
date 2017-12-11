@@ -26,14 +26,15 @@ class BoardHandler(tornado.web.RequestHandler):
 
     def get(self, board):
         db = self.application.database
-        threads = db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(_ib.THREAD_NUMBER)
-        db_board = db.boards.find({'short': board})
+        db_board = db.boards.find_one({'short': board})
+        threads = db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog'])
         boards_list = self.application.database.boards.find({})
         self.render('board.html', threads=threads, board=db_board, boards_list=boards_list)
 
     def post(self, board):
         db = self.application.database
-        threads = db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(_ib.THREAD_NUMBER)
+        db_board = db.boards.find_one({'short': board})
+        threads = db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog'])
         subject = self.get_argument('subject', '')
         text = self.get_argument('text', '')
         text = text.replace("\n","<br />\n")
@@ -44,8 +45,6 @@ class BoardHandler(tornado.web.RequestHandler):
         thread = None
         data = makedata(subject, text, count, board, oppost, thread)
         db['posts'].insert(data)
-        db_board = db.boards.find({'short': board})
-        # self.render('board.html', threads=threads, board=db_board)
         self.redirect('/' + board + '/thread/' + str(data['count']))
 
 
@@ -55,12 +54,12 @@ class ThreadHandler(tornado.web.RequestHandler):
     def get(self, board, count):
         thread_count = int(count)
         db = self.application.database
+        db_board = db.boards.find_one({'short': board})
         posts = db['posts'].find({'thread': thread_count}).sort([('count', pymongo.ASCENDING)])
         op = db['posts'].find_one({"count": thread_count})
-        if check_thread(db, thread_count, _ib.THREAD_POSTS):
+        if check_thread(db, thread_count, db_board['thread_posts']):
             op['locked'] = True
             update_db(db, op['count'], op)
-        db_board = db.boards.find({'short': board})
         boards_list = self.application.database.boards.find({})
         self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list)
 
@@ -78,21 +77,21 @@ class ThreadHandler(tornado.web.RequestHandler):
         thread = thread_count
         data = makedata(subject, text, count, board, oppost, thread)
         op = db['posts'].find_one({'count': thread_count})
-        if not check_thread(db, thread_count, _ib.THREAD_BUMP):
-            op['lastpost'] = datetime.datetime.utcnow()
-            update_db(db, op['count'], op)
-        if not op['locked']:
-            if data['text'] != '':
-                db['posts'].insert(data)
-                for number in replies:
-                    p = db.posts.find_one({'count': int(number)})
-                    old_replies = p['replies']
-                    if int(data['count']) not in old_replies:
-                        old_replies.append(int(data['count']))
-                        p['replies'] = old_replies
-                        update_db(db, p['count'], p)
-        posts = db['posts'].find({'thread': thread_count}).sort([('count', pymongo.ASCENDING)])
         db_board = db.boards.find({'short': board})
+        if not op['locked']:
+            if not check_thread(db, thread_count, db_board['thread_bump']):
+                if not data['subject'] == 'sage':
+                    op['lastpost'] = datetime.datetime.utcnow()
+                    update_db(db, op['count'], op)
+            db['posts'].insert(data)
+            for number in replies:
+                p = db.posts.find_one({'count': int(number)})
+                old_replies = p['replies']
+                if int(data['count']) not in old_replies:
+                    old_replies.append(int(data['count']))
+                    p['replies'] = old_replies
+                    update_db(db, p['count'], p)
+        posts = db['posts'].find({'thread': thread_count}).sort([('count', pymongo.ASCENDING)])
         boards_list = self.application.database.boards.find({})
         self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list)
 
@@ -118,6 +117,9 @@ class AdminHandler(LoggedInHandler):
             data['name'] = self.get_argument('name', '')
             data['short']= self.get_argument('short', '')
             data['description'] = self.get_argument('description', '')
+            data['thread_posts'] = int(self.get_argument('thread_posts', ''))
+            data['thread_bump'] = int(self.get_argument('thread_bump', ''))
+            data['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
             db = self.application.database.boards
             db.insert(data)
             self.redirect('/' + data['short'])
@@ -216,11 +218,11 @@ def schedule_check(app):
         boards = db.boards.find({})
         for board in boards:
             threads = db.posts.find({'oppost': True, 'board': board['short']}).sort('lastpost', 1)
-            if not threads.count() <= _ib.THREAD_NUMBER:
-                threads = threads.limit(threads.count() - _ib.THREAD_NUMBER)
+            if not threads.count() <= board['thread_catalog']:
+                threads = threads.limit(threads.count() - board['thread_catalog'])
                 for thread in threads:
-                    col.delete_many({'thread': thread['count']})
-                    col.remove({'count': thread['count']})
+                    db.posts.delete_many({'thread': thread['count']})
+                    db.posts.remove({'count': thread['count']})
     def wrapper():
         executor.submit(task)
         schedule_check(app)
