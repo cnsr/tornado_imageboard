@@ -3,8 +3,8 @@
 		<div class='post-header'>
 			{% if post['subject'] %}<h3>{{post['subject']}}</h3>{% end %}
 			<p class='date'>{{ post['date']}}</p>
-			<!-- TODO: add answer box appending -->
 			<a href='#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
+			<p class='post-number'></p>			
 		</div>
 		<p>{% raw post['text'] %}</p>
 		{% if post['replies'] %}

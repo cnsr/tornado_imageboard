@@ -77,7 +77,7 @@ class ThreadHandler(tornado.web.RequestHandler):
         thread = thread_count
         data = makedata(subject, text, count, board, oppost, thread)
         op = db['posts'].find_one({'count': thread_count})
-        db_board = db.boards.find({'short': board})
+        db_board = db.boards.find_one({'short': board})
         if not op['locked']:
             if not check_thread(db, thread_count, db_board['thread_bump']):
                 if not data['subject'] == 'sage':

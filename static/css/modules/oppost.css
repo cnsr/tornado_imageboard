@@ -16,3 +16,9 @@ h3, .oppost-href, .date {
   display: block;
   margin: 3px;
 }
+
+.oppost-number {
+	display: inline-block;
+	margin: 1px;
+	color: green;
+}
