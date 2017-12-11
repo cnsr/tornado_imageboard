@@ -1,11 +1,16 @@
 <div class='add'>
-	<form method='POST' action=''>
+	<form method='POST' action='' enctype="multipart/form-data" id='newpost'>
 		{% module xsrf_form_html() %}
 		<div class='subject'>
 			<p>Subject</p><input type='text' name='subject'/>
 		</div>
 		<div class='text'>
 			<p>Text</p><textarea rows=4 cols=55 name='text' maxlength=2000 placeholder='Your post' required></textarea>
+		</div>
+		<div class='file'>
+			<p class='file-about'>Supported filetypes: .jpg .png .gif .webm .mp4</p>
+			<p class='file-about'>Maximal size: 5mb</p>
+			<p class='file-file'>File</p><input type='file' name='file'/>
 		</div>
 		<input type='submit'>
 	</form>

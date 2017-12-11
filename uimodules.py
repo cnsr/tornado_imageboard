@@ -8,6 +8,8 @@ class Thread(tornado.web.UIModule):
 
 
 class NewPost(tornado.web.UIModule):
+    def javascript_files(self):
+        return('js/validate_file.js')
     def render(self):
         return self.render_string('modules/newpost.html')
 
@@ -25,4 +27,14 @@ class OpPost(tornado.web.UIModule):
 class Board(tornado.web.UIModule):
     def render(self, board):
         return self.render_string('modules/board.html', board=board)
+
+
+class Image(tornado.web.UIModule):
+    def render(self, image):
+        return self.render_string('modules/image.html', image=image)
+
+
+class Video(tornado.web.UIModule):
+    def render(self, video):
+        return self.render_string('modules/video.html', video=video)
 

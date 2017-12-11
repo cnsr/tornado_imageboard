@@ -7,6 +7,14 @@
 			<p class='post-number'></p>			
 		</div>
 		<p>{% raw post['text'] %}</p>
+		<div class='post-media'>
+			{% if post['video'] != None %}
+				{% module Video(post['video']) %}
+			{% end %}
+			{% if post['image'] != None %}
+				{% module Image(post['image']) %}
+			{% end %}
+		</div>
 		{% if post['replies'] %}
 			<li class=replies>
 				<p class='replies-p'>Replies: </p>

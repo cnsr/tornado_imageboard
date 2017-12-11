@@ -33,3 +33,19 @@ p {
 	 display: inline;
 	 padding: 0px;
 }
+
+
+.file-about {
+	font-size: 0.8rem;
+	font-style: italic;
+}
+
+.file-file {
+	display: inline-block;
+}
+
+.post-image {
+	border: 1px solid black;
+	max-height: 240px;
+	max-width: 320px;
+}

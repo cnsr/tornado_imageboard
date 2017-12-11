@@ -5,6 +5,14 @@
 			<p class='date'>{{ thread['date']}}</p>
 			<a href='{{thread["board"]}}/thread/{{thread["count"]}}' class='thread-href'>>>{{thread['count']}}</a>	
 		</div>
+		<div class='thread-media'>
+			{% if thread['video'] != None %}
+				{% module Video(thread['video']) %}
+			{% end %}
+			{% if thread['image'] != None %}
+				{% module Image(thread['image']) %}
+			{% end %}
+		</div>
 		<p>{% raw thread['text'] %}</p>
 	</div>
 </div>

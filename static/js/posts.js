@@ -12,6 +12,5 @@ $(document).ready(function(){
 	$(".post-header").each(function(i) {
 		++i;
     	$(this).find(".post-number").text(i++);
-		console.log(i);
 	});
 });

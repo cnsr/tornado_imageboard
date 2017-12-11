@@ -6,6 +6,14 @@
 			<a href='#{{op["count"]}}' class='post-href'>>>{{op['count']}}</a>
 			<p class='oppost-number'>1</p>
 		</div>
+		<div class='oppost-media'>
+			{% if op['video'] != None %}
+				{% module Video(op['video']) %}
+			{% end %}
+			{% if op['image'] != None %}
+				{% module Image(op['image']) %}
+			{% end %}
+		</div>
 		<p>{% raw  op['text'] %}</p>
 		{% if op['replies'] %}
 			<li class=replies>

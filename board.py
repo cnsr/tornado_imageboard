@@ -8,12 +8,16 @@ import datetime
 import ib_settings as _ib
 from tornado import concurrent
 import re
+from uuid import uuid4
+import os
+from mimetypes import guess_type
 
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
 
 executor = concurrent.futures.ThreadPoolExecutor(8)
 
+uploads = 'uploads/'
 
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
@@ -38,12 +42,16 @@ class BoardHandler(tornado.web.RequestHandler):
         subject = self.get_argument('subject', '')
         text = self.get_argument('text', '')
         text = text.replace("\n","<br />\n")
+        if self.request.files:
+            file, filetype = upload_file(self.request.files['file'][0])
+        else:
+            file = filetype = None
         result = linkify(text)
         text = result[0]
         count = latest(db) + 1
         oppost = True
         thread = None
-        data = makedata(subject, text, count, board, oppost, thread)
+        data = makedata(subject, text, count, board, oppost, thread, file, filetype)
         db['posts'].insert(data)
         self.redirect('/' + board + '/thread/' + str(data['count']))
 
@@ -71,11 +79,15 @@ class ThreadHandler(tornado.web.RequestHandler):
         result = linkify(text)
         text = result[0]
         text = text.replace("\n","<br />\n")
+        if self.request.files:
+            file, filetype = upload_file(self.request.files['file'][0])
+        else:
+            file = filetype = None
         replies = result[1]
         count = latest(db) + 1
         oppost = False
         thread = thread_count
-        data = makedata(subject, text, count, board, oppost, thread)
+        data = makedata(subject, text, count, board, oppost, thread, file, filetype)
         op = db['posts'].find_one({'count': thread_count})
         db_board = db.boards.find_one({'short': board})
         if not op['locked']:
@@ -94,6 +106,29 @@ class ThreadHandler(tornado.web.RequestHandler):
         posts = db['posts'].find({'thread': thread_count}).sort([('count', pymongo.ASCENDING)])
         boards_list = self.application.database.boards.find({})
         self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list)
+
+
+def upload_file(file):
+    fname = file['filename']
+    fext = os.path.splitext(fname)[1]
+    if fext in ['.jpg', 'gif', '.png','.jpeg']:
+        filetype = 'image'
+    else:
+        filetype = 'video'
+    newname = uploads + str(uuid4()) + fext
+    with open(newname, 'wb') as f:
+        f.write(bytes(file['body']))
+    return newname, filetype
+
+
+class UploadHandler(tornado.web.RequestHandler):
+    def get(self, filename, extension):
+        path = os.path.join(uploads, filename + '.' + extension)
+        if os.path.isfile(path):
+            content_type, _ = guess_type(path)
+            self.add_header('Content-Type', content_type)
+            with open(path, 'rb') as src:
+                self.write(src.read())
 
 
 class LoggedInHandler(tornado.web.RequestHandler):
@@ -144,7 +179,7 @@ class AdminLoginHandler(LoggedInHandler):
             self.redirect('/')
 
 # constructs dictionary to insert into mongodb
-def makedata(subject, text, count, board, oppost=False, thread=None):
+def makedata(subject, text, count, board, oppost=False, thread=None, file=None, filetype=None):
     data = {}
     data['subject'] = subject
     data['text'] = text
@@ -157,6 +192,15 @@ def makedata(subject, text, count, board, oppost=False, thread=None):
     if oppost:
         data['locked'] = False
         data['lastpost'] = datetime.datetime.utcnow()
+    if file:
+        if filetype == 'image':
+            data['image'] = file
+            data['video'] = None
+        else:
+            data['video'] = file
+            data['image'] = None
+    else:
+        data['image'] = data['video'] = None
     return data
 
 
@@ -184,6 +228,7 @@ class Application(tornado.web.Application):
             (r'/(\w+)/thread/(\d+)', ThreadHandler),
             (r'/admin/', AdminHandler),
             (r'/admin/login', AdminLoginHandler),
+            (r'/uploads/(.+)[.](.+)', UploadHandler),
         ]
 
         settings = {
@@ -216,13 +261,27 @@ def schedule_check(app):
         # delete all threads except first N, sorted by bumps
         db = app.database
         boards = db.boards.find({})
-        for board in boards:
-            threads = db.posts.find({'oppost': True, 'board': board['short']}).sort('lastpost', 1)
-            if not threads.count() <= board['thread_catalog']:
-                threads = threads.limit(threads.count() - board['thread_catalog'])
-                for thread in threads:
-                    db.posts.delete_many({'thread': thread['count']})
-                    db.posts.remove({'count': thread['count']})
+        try:
+            for board in boards:
+                threads = db.posts.find({'oppost': True, 'board': board['short']}).sort('lastpost', 1)
+                if not threads.count() <= board['thread_catalog']:
+                    threads = threads.limit(threads.count() - board['thread_catalog'])
+                    for thread in threads:
+                        if thread['video']:
+                            os.remove(thread['video'])
+                        if thread['image']:
+                            os.remove(thread['image'])
+                        posts = db.posts.find({'thread': thread['count']})
+                        for post in posts:
+                            if post['video']:
+                                print(post['video'])
+                                os.remove(post['video'])
+                            if post['image']:
+                                os.remove(post['image'])
+                        db.posts.delete_many({'thread': thread['count']})
+                        db.posts.remove({'count': thread['count']})
+        except Exception as e:
+            print(e)
     def wrapper():
         executor.submit(task)
         schedule_check(app)
