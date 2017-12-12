@@ -7,10 +7,10 @@
 		</div>
 		<div class='thread-media'>
 			{% if thread['video'] != None %}
-				{% module Video(thread['video']) %}
+				{% module Video(thread['video'], thread['count']) %}
 			{% end %}
 			{% if thread['image'] != None %}
-				{% module Image(thread['image']) %}
+				{% module Image(thread['image'], thread['count']) %}
 			{% end %}
 		</div>
 		<p>{% raw thread['text'] %}</p>

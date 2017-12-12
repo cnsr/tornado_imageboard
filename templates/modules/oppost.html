@@ -8,10 +8,10 @@
 		</div>
 		<div class='oppost-media'>
 			{% if op['video'] != None %}
-				{% module Video(op['video']) %}
+				{% module Video(op['video'], op['count']) %}
 			{% end %}
 			{% if op['image'] != None %}
-				{% module Image(op['image']) %}
+				{% module Image(op['image'], op['count']) %}
 			{% end %}
 		</div>
 		<p>{% raw  op['text'] %}</p>

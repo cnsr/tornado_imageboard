@@ -30,11 +30,11 @@ class Board(tornado.web.UIModule):
 
 
 class Image(tornado.web.UIModule):
-    def render(self, image):
-        return self.render_string('modules/image.html', image=image)
+    def render(self, image, objectid):
+        return self.render_string('modules/image.html', image=image, objectid=objectid)
 
 
 class Video(tornado.web.UIModule):
-    def render(self, video):
-        return self.render_string('modules/video.html', video=video)
+    def render(self, video, objectid):
+        return self.render_string('modules/video.html', video=video, objectid=objectid)
 

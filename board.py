@@ -11,6 +11,7 @@ import re
 from uuid import uuid4
 import os
 from mimetypes import guess_type
+import json
 
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
@@ -134,6 +135,27 @@ class UploadHandler(tornado.web.RequestHandler):
                 self.write(src.read())
 
 
+class AjaxFileHandler(tornado.web.RequestHandler):
+
+    def post(self):
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        file = data['image'].decode('utf-8')[1:]
+        if os.path.isfile(file):
+            filesize = self.convert_bytes((os.stat(file).st_size))
+            response = {'status': 'ok',
+                        'file': file.split('/')[1],
+                        'filesize': filesize,
+                        'fileext': file.split('.')[1]}
+        else:
+            response = {'status': 'not ok'}
+        self.write(json.dumps(response))
+
+    def convert_bytes(self, num):
+        for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+            if num < 1024.0:
+                return "%3.1f %s" % (num, x)
+            num /= 1024.0
+
 class LoggedInHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         return self.get_secure_cookie('adminlogin')
@@ -232,6 +254,7 @@ class Application(tornado.web.Application):
             (r'/admin/', AdminHandler),
             (r'/admin/login', AdminLoginHandler),
             (r'/uploads/(.+)[.](.+)', UploadHandler),
+            (r'/ajax/file/', AjaxFileHandler),
         ]
 
         settings = {

@@ -9,10 +9,10 @@
 		<p>{% raw post['text'] %}</p>
 		<div class='post-media'>
 			{% if post['video'] != None %}
-				{% module Video(post['video']) %}
+				{% module Video(post['video'], post['count']) %}
 			{% end %}
 			{% if post['image'] != None %}
-				{% module Image(post['image']) %}
+				{% module Image(post['image'], post['count']]) %}
 			{% end %}
 		</div>
 		{% if post['replies'] %}
