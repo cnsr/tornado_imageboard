@@ -12,7 +12,7 @@ from uuid import uuid4
 import os
 from mimetypes import guess_type
 import json
-
+from getresolution import resolution
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
 
@@ -145,7 +145,12 @@ class AjaxFileHandler(tornado.web.RequestHandler):
             response = {'status': 'ok',
                         'file': file.split('/')[1],
                         'filesize': filesize,
-                        'fileext': file.split('.')[1]}
+                        'fileext': file.split('.')[1],
+            }
+            if file.endswith(('webm', 'mp4')):
+                w,h = resolution(file)
+                response['w'] = w
+                response['h'] = h
         else:
             response = {'status': 'not ok'}
         self.write(json.dumps(response))

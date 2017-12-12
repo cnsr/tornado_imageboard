@@ -6,15 +6,15 @@
 			<a href='#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
 			<p class='post-number'></p>			
 		</div>
-		<p>{% raw post['text'] %}</p>
 		<div class='post-media'>
 			{% if post['video'] != None %}
 				{% module Video(post['video'], post['count']) %}
 			{% end %}
 			{% if post['image'] != None %}
-				{% module Image(post['image'], post['count']]) %}
+				{% module Image(post['image'], post['count']) %}
 			{% end %}
 		</div>
+		<p>{% raw post['text'] %}</p>		
 		{% if post['replies'] %}
 			<li class=replies>
 				<p class='replies-p'>Replies: </p>

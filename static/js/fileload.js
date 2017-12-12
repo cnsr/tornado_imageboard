@@ -5,10 +5,6 @@ $(function() {
 		var filename = file.attr('src');
 		var h = file[0].naturalHeight;
 		var w = file[0].naturalWidth;
-		if (h === undefined) {
-			h = file[0].videoHeight;
-			w = file[0].videoWidth;
-		}
 		var filesize = sendAjax(filename, h, w, fid);
     });
 });
@@ -23,6 +19,11 @@ function sendAjax(file, h, w, fid) {
             // handle a successful response
             success : function(json) {
                 var json = jQuery.parseJSON(json);
+				if (h === undefined) {
+					h = json.h;
+					w = json.w;
+				}
+
 				var filedata = '<a href="' + file + '" class="filedata-a">' + json.file + '</a><p class="filedata-p">' + json.fileext + ', ' +  h + 'x' + w + ', ' + json.filesize;
 				$(fid).append(filedata);
             },

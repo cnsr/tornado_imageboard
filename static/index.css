@@ -60,3 +60,11 @@ p {
 	font-style: italic;
 	margin: 1px;
 }
+
+.post-header {
+	 border-bottom: black 1px solid;
+}
+
+.locked {
+	 display: inline;
+}
