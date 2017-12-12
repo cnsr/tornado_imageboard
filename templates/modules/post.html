@@ -6,7 +6,7 @@
 			<a href='#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
 			<p class='post-number'></p>			
 		</div>
-		<div class='post-media'>
+		<div class='post-media-div'>
 			{% if post['video'] != None %}
 				{% module Video(post['video'], post['count']) %}
 			{% end %}

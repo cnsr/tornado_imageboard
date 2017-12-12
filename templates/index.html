@@ -21,6 +21,9 @@
 			</ul>
 		{% end %}
 	</header>
+	{% block modal %}
+		{% module Modal() %}
+	{% end %}
 	{% block content %}
 		<div class='boards'>
 			{% for board in boards %}
