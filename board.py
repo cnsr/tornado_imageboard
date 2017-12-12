@@ -72,6 +72,7 @@ class ThreadHandler(tornado.web.RequestHandler):
         self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list)
 
     def post(self, board, thread_count):
+        valid = True
         thread_count = int(thread_count)
         db = self.application.database
         subject = self.get_argument('subject', '')
@@ -113,8 +114,10 @@ def upload_file(file):
     fext = os.path.splitext(fname)[1]
     if fext in ['.jpg', 'gif', '.png','.jpeg']:
         filetype = 'image'
-    else:
+    elif fext in ['.webm', '.mp4']:
         filetype = 'video'
+    else:
+        return None, None
     newname = uploads + str(uuid4()) + fext
     with open(newname, 'wb') as f:
         f.write(bytes(file['body']))
@@ -305,7 +308,7 @@ def linkify(text):
 def main():
     tornado.options.parse_command_line()
     application = Application()
-    http_server = tornado.httpserver.HTTPServer(application)
+    http_server = tornado.httpserver.HTTPServer(application, max_buffer_size=_ib.MAX_FILESIZE)
     http_server.listen(options.port)
     schedule_check(application)
     tornado.ioloop.IOLoop.instance().start()
