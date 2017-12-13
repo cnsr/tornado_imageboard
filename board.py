@@ -3,6 +3,7 @@ import tornado.httpserver
 import tornado.web
 import tornado.ioloop
 import pymongo
+import motor.motor_tornado
 import uimodules
 import datetime
 import ib_settings as _ib
@@ -23,58 +24,66 @@ executor = concurrent.futures.ThreadPoolExecutor(8)
 uploads = 'uploads/'
 
 class IndexHandler(tornado.web.RequestHandler):
-    def get(self):
-        boards = self.application.database.boards.find({})
-        boards_list = self.application.database.boards.find({})
+    async def get(self):
+        db = self.application.database
+        boards = await db.boards.find({}).to_list(None)
+        boards_list = await db.boards.find({}).to_list(None)
         self.render('index.html', boards=boards, boards_list=boards_list)
 
 
 class BoardHandler(tornado.web.RequestHandler):
 
-    def get(self, board):
+    async def get(self, board):
+        board = board.split('/')[0]
         db = self.application.database
-        db_board = db.boards.find_one({'short': board})
-        threads = db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog'])
-        boards_list = self.application.database.boards.find({})
-        self.render('board.html', threads=threads, board=db_board, boards_list=boards_list)
+        db_board = await db.boards.find_one({'short': board})
+        if db_board:
+            threads = await db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
+            boards_list = await db.boards.find({}).to_list(None)
+            self.render('board.html', threads=threads, board=db_board, boards_list=boards_list)
+        else:
+            self.redirect('/')
 
-    def post(self, board):
+    async def post(self, board):
         db = self.application.database
-        db_board = db.boards.find_one({'short': board})
-        threads = db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog'])
+        db_board = await db.boards.find_one({'short': board})
+        threads = await db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
         subject = self.get_argument('subject', '')
         text = self.get_argument('text', '')
         text = text.replace("\n","<br />\n")
         if self.request.files:
-            file, filetype = upload_file(self.request.files['file'][0])
+            file, filetype = await upload_file(self.request.files['file'][0])
         else:
             file = filetype = None
         result = linkify(text)
         text = result[0]
-        count = latest(db) + 1
+        count = await latest(db) + 1
         oppost = True
         thread = None
-        data = makedata(db, subject, text, count, board, oppost, thread, file, filetype)
-        db['posts'].insert(data)
+        data = await makedata(db, subject, text, count, board, oppost, thread, file, filetype)
+        await db['posts'].insert(data)
         self.redirect('/' + board + '/thread/' + str(data['count']))
 
 
 class ThreadHandler(tornado.web.RequestHandler):
     thread_count = ''
 
-    def get(self, board, count):
+    async def get(self, board, count):
         thread_count = int(count)
         db = self.application.database
-        db_board = db.boards.find_one({'short': board})
-        posts = db['posts'].find({'thread': thread_count}).sort([('count', pymongo.ASCENDING)])
-        op = db['posts'].find_one({"count": thread_count})
-        if check_thread(db, thread_count, db_board['thread_posts']):
-            op['locked'] = True
-            update_db(db, op['count'], op)
-        boards_list = self.application.database.boards.find({})
-        self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list)
+        db_board = await db.boards.find_one({'short': board})
+        posts = await db['posts'].find({'thread': thread_count}).sort([('count', pymongo.ASCENDING)]).to_list(None)
+        op = await db['posts'].find_one({"count": thread_count})
+        if op != None:
+            if await check_thread(db, thread_count, db_board['thread_posts']):
+                op['locked'] = True
+                await update_db(db, op['count'], op)
+            boards_list = await db.boards.find({}).to_list(None)
+            self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list)
+        else:
+            self.redirect('/' + board)
 
-    def post(self, board, thread_count):
+    async def post(self, board, thread_count):
         valid = True
         thread_count = int(thread_count)
         db = self.application.database
@@ -84,35 +93,39 @@ class ThreadHandler(tornado.web.RequestHandler):
         text = result[0]
         text = text.replace("\n","<br />\n")
         if self.request.files:
-            file, filetype = upload_file(self.request.files['file'][0])
+            file, filetype = await upload_file(self.request.files['file'][0])
         else:
             file = filetype = None
         replies = result[1]
-        count = latest(db) + 1
+        count = await latest(db) + 1
         oppost = False
         thread = thread_count
-        data = makedata(db, subject, text, count, board, oppost, thread, file, filetype)
-        op = db['posts'].find_one({'count': thread_count})
-        db_board = db.boards.find_one({'short': board})
+        data = await makedata(db, subject, text, count, board, oppost, thread, file, filetype)
+        op = await db['posts'].find_one({'count': thread_count})
+        db_board = await db.boards.find_one({'short': board})
         if not op['locked']:
-            if not check_thread(db, thread_count, db_board['thread_bump']):
+            if not await check_thread(db, thread_count, db_board['thread_bump']):
                 if not data['subject'] == 'sage':
                     op['lastpost'] = datetime.datetime.utcnow()
-                    update_db(db, op['count'], op)
-            db['posts'].insert(data)
+                    await update_db(db, op['count'], op)
+            await db.posts.insert(data)
             for number in replies:
-                p = db.posts.find_one({'count': int(number)})
+                p = await db.posts.find_one({'count': int(number)})
                 old_replies = p['replies']
                 if int(data['count']) not in old_replies:
                     old_replies.append(int(data['count']))
                     p['replies'] = old_replies
-                    update_db(db, p['count'], p)
-        posts = db['posts'].find({'thread': thread_count}).sort([('count', pymongo.ASCENDING)])
-        boards_list = self.application.database.boards.find({})
-        self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list)
+                    await update_db(db, p['count'], p)
+        posts = await db['posts'].find({'thread': thread_count}).sort([('count', pymongo.ASCENDING)]).to_list(None)
+        boards_list = await db.boards.find({}).to_list(None)
+        if op != None:
+            self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list)
+        else:
+            self.redirect('/' + board)
 
 
-def upload_file(file):
+
+async def upload_file(file):
     fname = file['filename']
     fext = os.path.splitext(fname)[1]
     if fext in ['.jpg', 'gif', '.png','.jpeg']:
@@ -165,15 +178,15 @@ class LoggedInHandler(tornado.web.RequestHandler):
 
 class AdminHandler(LoggedInHandler):
 
-    def get(self):
+    async def get(self):
         if not self.current_user:
             self.redirect('/admin/login')
             return
         else:
-            boards_list = self.application.database.boards.find({})
+            boards_list = await self.application.database.boards.find({}).to_list(None)
             self.render('admin.html', boards_list=boards_list)
 
-    def post(self):
+    async def post(self):
         if self.current_user:
             data = {}
             data['name'] = self.get_argument('name', '')
@@ -183,15 +196,15 @@ class AdminHandler(LoggedInHandler):
             data['thread_bump'] = int(self.get_argument('thread_bump', ''))
             data['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
             db = self.application.database.boards
-            db.insert(data)
+            await db.insert(data)
             self.redirect('/' + data['short'])
 
 
 class AdminLoginHandler(LoggedInHandler):
 
-    def get(self):
+    async def get(self):
         if not self.current_user:
-            boards_list = self.application.database.boards.find({})
+            boards_list = await self.application.database.boards.find({})
             self.render('admin_login.html', boards_list=boards_list)
         else:
             self.redirect('/admin')
@@ -206,7 +219,7 @@ class AdminLoginHandler(LoggedInHandler):
             self.redirect('/')
 
 # constructs dictionary to insert into mongodb
-def makedata(db, subject, text, count, board, oppost=False, thread=None, file=None, filetype=None):
+async def makedata(db, subject, text, count, board, oppost=False, thread=None, file=None, filetype=None):
     data = {}
     data['subject'] = subject
     data['text'] = text
@@ -217,14 +230,14 @@ def makedata(db, subject, text, count, board, oppost=False, thread=None, file=No
     data['thread'] = thread
     data['replies'] = []
     if thread:
-        t = db.posts.find_one({'count': thread})
+        t = await db.posts.find_one({'count': thread})
     if oppost:
         data['locked'] = False
         data['lastpost'] = datetime.datetime.utcnow()
         data['postcount'] = 0
         data['filecount'] = 0
     else:
-        postcount = db.posts.find({'thread': t['count']}).count()
+        postcount = await db.posts.find({'thread': t['count']}).count()
         t['postcount'] = postcount + 1
     if file:
         if filetype == 'image':
@@ -234,12 +247,12 @@ def makedata(db, subject, text, count, board, oppost=False, thread=None, file=No
             data['video'] = file
             data['image'] = None
         if not oppost:
-            filecount = db.posts.find({'thread': t['count'],
+            filecount = await db.posts.find({'thread': t['count'],
                                         'image': { '$ne': None }
-                                        }).count() + db.posts.find({'thread': t['count'],
+                                        }).count() + await db.posts.find({'thread': t['count'],
                                                                     'video': {'$ne': None}}).count()
             t['filecount'] = filecount + 1
-            update_db(db, t['count'], t)
+            await update_db(db, t['count'], t)
     else:
         data['image'] = data['video'] = None
     return data
@@ -247,17 +260,17 @@ def makedata(db, subject, text, count, board, oppost=False, thread=None, file=No
 
 # this is an ugly hack that works somehow
 # i need to read docs on pymongo cursor
-def latest(db):
+async def latest(db):
     try:
-        return list(db['posts'].find({}).sort('count', -1))[0]['count']
+        return list(await db['posts'].find({}).sort('count', -1).to_list(None))[0]['count']
     except Exception as e:
         print(e)
         return 0
 
 
 # checks if number of posts in thread exceeds whatever number you check it against
-def check_thread(db, thread, subj):
-    return db.posts.find({'thread': thread}).count() >= subj
+async def check_thread(db, thread, subj):
+    return await db.posts.find({'thread': thread}).count() >= subj
 
 
 class Application(tornado.web.Application):
@@ -265,12 +278,12 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r'/', IndexHandler),
-            (r'/(\w+)', BoardHandler),
-            (r'/(\w+)/thread/(\d+)', ThreadHandler),
-            (r'/admin/', AdminHandler),
-            (r'/admin/login', AdminLoginHandler),
-            (r'/uploads/(.*)', tornado.web.StaticFileHandler, {'path': 'uploads'}),
-            (r'/ajax/file/', AjaxFileHandler),
+            (r'/(\w+)/?', BoardHandler),
+            (r'/(\w+)/thread/(\d+)/?', ThreadHandler),
+            (r'/admin/?', AdminHandler),
+            (r'/admin/login/?', AdminLoginHandler),
+            (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': 'uploads'}),
+            (r'/ajax/file/?', AjaxFileHandler),
         ]
 
         settings = {
@@ -281,14 +294,15 @@ class Application(tornado.web.Application):
             'cookie_secret': "__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
         }
 
-        self.con = pymongo.MongoClient('localhost', 27017)
+        # self.con = pymongo.MongoClient('localhost', 27017)
+        self.con = motor.motor_tornado.MotorClient('localhost', 27017)
         self.database = self.con['imageboard']
         tornado.web.Application.__init__(self, handlers, **settings)
 
 
 # updates one db entry by set parametres
-def update_db(db, count, variables):
-    db.posts.update_one(
+async def update_db(db, count, variables):
+    await db.posts.update_one(
         {'count': count},
         {
             '$set': variables
@@ -299,29 +313,32 @@ def update_db(db, count, variables):
 # deletes the threads that are inactive after there are too much threads
 def schedule_check(app):
     next_time = datetime.timedelta(0, _ib.CHECK_TIMEOUT)
+    @tornado.gen.coroutine
     def task():
         # delete all threads except first N, sorted by bumps
         db = app.database
-        boards = db.boards.find({})
+        boards = yield db.boards.find({}).to_list(None)
         try:
             for board in boards:
-                threads = db.posts.find({'oppost': True, 'board': board['short']}).sort('lastpost', 1)
-                if not threads.count() <= board['thread_catalog']:
-                    threads = threads.limit(threads.count() - board['thread_catalog'])
+                threads = yield db.posts.find({'oppost': True,
+                                        'board': board['short']}).sort('lastpost', pymongo.ASCENDING).to_list(None)
+                if not len(threads) <= board['thread_catalog']:
+                    threads = threads[:(threads.count(None) - board['thread_catalog'])]
                     for thread in threads:
+                        print('thred')
                         if thread['video']:
                             os.remove(thread['video'])
                         if thread['image']:
                             os.remove(thread['image'])
-                        posts = db.posts.find({'thread': thread['count']})
+                        posts = yield db.posts.find({'thread': thread['count']}).to_list(None)
                         for post in posts:
                             if post['video']:
-                                print(post['video'])
                                 os.remove(post['video'])
                             if post['image']:
                                 os.remove(post['image'])
-                        db.posts.delete_many({'thread': thread['count']})
-                        db.posts.remove({'count': thread['count']})
+                        print('remove')
+                        yield db.posts.delete_many({'thread': thread['count']})
+                        yield db.posts.remove({'count': thread['count']})
         except Exception as e:
             print(e)
     def wrapper():
