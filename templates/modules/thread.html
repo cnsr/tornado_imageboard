@@ -17,5 +17,8 @@
 			{% end %}
 		</div>
 		<p>{% raw thread['text'] %}</p>
+		{% if thread['postcount']%}{% if thread['postcount'] > 0 %}
+			<p class='ommited'>Posts ommited: {{thread['postcount']}}{% if thread['filecount'] > 0 %}, files: {{thread['filecount']}}{% end %}</p>
+		{% end %}{% end %}
 	</div>
 </div>

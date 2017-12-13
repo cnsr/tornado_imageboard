@@ -14,3 +14,7 @@ h3, .thread-href, .date {
   display: block;
   margin: 3px;
 }
+
+.ommited {
+	color: #666666;
+}

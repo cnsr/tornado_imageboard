@@ -52,7 +52,7 @@ class BoardHandler(tornado.web.RequestHandler):
         count = latest(db) + 1
         oppost = True
         thread = None
-        data = makedata(subject, text, count, board, oppost, thread, file, filetype)
+        data = makedata(db, subject, text, count, board, oppost, thread, file, filetype)
         db['posts'].insert(data)
         self.redirect('/' + board + '/thread/' + str(data['count']))
 
@@ -89,7 +89,7 @@ class ThreadHandler(tornado.web.RequestHandler):
         count = latest(db) + 1
         oppost = False
         thread = thread_count
-        data = makedata(subject, text, count, board, oppost, thread, file, filetype)
+        data = makedata(db, subject, text, count, board, oppost, thread, file, filetype)
         op = db['posts'].find_one({'count': thread_count})
         db_board = db.boards.find_one({'short': board})
         if not op['locked']:
@@ -209,7 +209,7 @@ class AdminLoginHandler(LoggedInHandler):
             self.redirect('/')
 
 # constructs dictionary to insert into mongodb
-def makedata(subject, text, count, board, oppost=False, thread=None, file=None, filetype=None):
+def makedata(db, subject, text, count, board, oppost=False, thread=None, file=None, filetype=None):
     data = {}
     data['subject'] = subject
     data['text'] = text
@@ -219,9 +219,16 @@ def makedata(subject, text, count, board, oppost=False, thread=None, file=None, 
     data['oppost'] = oppost
     data['thread'] = thread
     data['replies'] = []
+    if thread:
+        t = db.posts.find_one({'count': thread})
     if oppost:
         data['locked'] = False
         data['lastpost'] = datetime.datetime.utcnow()
+        data['postcount'] = 0
+        data['filecount'] = 0
+    else:
+        postcount = db.posts.find({'thread': t['count']}).count()
+        t['postcount'] = postcount + 1
     if file:
         if filetype == 'image':
             data['image'] = file
@@ -229,6 +236,13 @@ def makedata(subject, text, count, board, oppost=False, thread=None, file=None, 
         else:
             data['video'] = file
             data['image'] = None
+        if not oppost:
+            filecount = db.posts.find({'thread': t['count'],
+                                        'image': { '$ne': None }
+                                        }).count() + db.posts.find({'thread': t['count'],
+                                                                    'video': {'$ne': None}}).count()
+            t['filecount'] = filecount + 1
+            update_db(db, t['count'], t)
     else:
         data['image'] = data['video'] = None
     return data
