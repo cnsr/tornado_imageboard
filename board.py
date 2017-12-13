@@ -13,6 +13,8 @@ import os
 from mimetypes import guess_type
 import json
 from getresolution import resolution
+from tornado import gen
+
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
 
@@ -125,20 +127,20 @@ def upload_file(file):
     return newname, filetype
 
 
-class UploadHandler(tornado.web.RequestHandler):
-    def get(self, filename, extension):
-        path = os.path.join(uploads, filename + '.' + extension)
-        if os.path.isfile(path):
-            content_type, _ = guess_type(path)
-            self.add_header('Content-Type', content_type)
-            with open(path, 'rb') as src:
-                self.write(src.read())
-
-
 class AjaxFileHandler(tornado.web.RequestHandler):
 
-    def post(self):
+    async def post(self):
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        response = await self.construct(data)
+        self.write(json.dumps(response))
+
+    def convert_bytes(self, num):
+        for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+            if num < 1024.0:
+                return "%3.1f %s" % (num, x)
+            num /= 1024.0
+
+    async def construct(self, data):
         file = data['image'].decode('utf-8')[1:]
         if os.path.isfile(file):
             filesize = self.convert_bytes((os.stat(file).st_size))
@@ -153,13 +155,8 @@ class AjaxFileHandler(tornado.web.RequestHandler):
                 response['h'] = h
         else:
             response = {'status': 'not ok'}
-        self.write(json.dumps(response))
+        return response
 
-    def convert_bytes(self, num):
-        for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
-            if num < 1024.0:
-                return "%3.1f %s" % (num, x)
-            num /= 1024.0
 
 class LoggedInHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -272,7 +269,7 @@ class Application(tornado.web.Application):
             (r'/(\w+)/thread/(\d+)', ThreadHandler),
             (r'/admin/', AdminHandler),
             (r'/admin/login', AdminLoginHandler),
-            (r'/uploads/(.+)[.](.+)', UploadHandler),
+            (r'/uploads/(.*)', tornado.web.StaticFileHandler, {'path': 'uploads'}),
             (r'/ajax/file/', AjaxFileHandler),
         ]
 
