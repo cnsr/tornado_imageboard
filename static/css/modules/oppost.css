@@ -22,3 +22,10 @@ h3, .oppost-href, .date {
 	margin: 1px;
 	color: green;
 }
+
+.username {
+	color: #3333cc;
+	font-weight: bold;
+	display: inline-block;
+}
+

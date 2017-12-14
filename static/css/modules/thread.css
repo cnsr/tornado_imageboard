@@ -18,3 +18,9 @@ h3, .thread-href, .date {
 .ommited {
 	color: #666666;
 }
+
+.username {
+	color: #3333cc;
+	font-weight: bold;
+	display: inline-block;	
+}

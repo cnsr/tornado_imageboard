@@ -2,6 +2,7 @@
 	<div class='post' id='{{post["count"]}}'>
 		<div class='post-header'>
 			{% if post['subject'] %}<h3>{{post['subject']}}</h3>{% end %}
+			{% if post['username'] %}<p class='username'>{{post['username']}}</p>{% end %}
 			<p class='date'>{{ post['date']}}</p>
 			<a href='#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
 			<p class='post-number'></p>			

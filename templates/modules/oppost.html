@@ -2,6 +2,7 @@
 	<div class='oppost' id='{{op["count"]}}'>
 		<div class='post-header'>
 			{% if op['subject'] %}<h3>{{op['subject']}}</h3>{% end %}
+			{% if op['username'] %}<p class='username'>{{op['username']}}</p>{% end %}			
 			<p class='date'>{{ op['date']}}</p>
 			<a href='#{{op["count"]}}' class='post-href'>>>{{op['count']}}</a>
 			<p class='oppost-number'>1</p>

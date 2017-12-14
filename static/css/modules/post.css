@@ -24,3 +24,9 @@ h3, .post-href, .date {
 	color: green;
 }
 
+.username {
+	color: #3333cc;
+	font-weight: bold;
+	display: inline-block;
+}
+

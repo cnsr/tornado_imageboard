@@ -23,6 +23,7 @@ executor = concurrent.futures.ThreadPoolExecutor(8)
 
 uploads = 'uploads/'
 
+
 class IndexHandler(tornado.web.RequestHandler):
     async def get(self):
         db = self.application.database
@@ -84,7 +85,6 @@ class ThreadHandler(tornado.web.RequestHandler):
             self.redirect('/' + board)
 
     async def post(self, board, thread_count):
-        valid = True
         thread_count = int(thread_count)
         db = self.application.database
         subject = self.get_argument('subject', '')
@@ -180,21 +180,34 @@ class AdminHandler(LoggedInHandler):
 
     async def get(self):
         if not self.current_user:
-            self.redirect('/admin/login')
-            return
+            self.redirect('/admin')
         else:
             boards_list = await self.application.database.boards.find({}).to_list(None)
             self.render('admin.html', boards_list=boards_list)
+
+
+class AdminBoardCreationHandler(LoggedInHandler):
+
+    async def get(self):
+        if not self.current_user:
+            self.redirect('/admin/login')
+            # return
+        else:
+            boards_list = await self.application.database.boards.find({}).to_list(None)
+            self.render('admincreate.html', boards_list=boards_list)
 
     async def post(self):
         if self.current_user:
             data = {}
             data['name'] = self.get_argument('name', '')
             data['short']= self.get_argument('short', '')
+            data['username'] = self.get_argument('username', '')
             data['description'] = self.get_argument('description', '')
             data['thread_posts'] = int(self.get_argument('thread_posts', ''))
             data['thread_bump'] = int(self.get_argument('thread_bump', ''))
             data['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
+            data['postcount'] = 0
+            data['mediacount'] = 0
             db = self.application.database.boards
             await db.insert(data)
             self.redirect('/' + data['short'])
@@ -204,13 +217,13 @@ class AdminLoginHandler(LoggedInHandler):
 
     async def get(self):
         if not self.current_user:
-            boards_list = await self.application.database.boards.find({})
+            boards_list = await self.application.database.boards.find({}).to_list(None)
             self.render('admin_login.html', boards_list=boards_list)
         else:
             self.redirect('/admin')
             return
 
-    def post(self):
+    async def post(self):
         password = self.get_argument('password')
         if password == _ib.ADMIN_PASS:
             self.set_secure_cookie('adminlogin', 'true')
@@ -229,6 +242,11 @@ async def makedata(db, subject, text, count, board, oppost=False, thread=None, f
     data['oppost'] = oppost
     data['thread'] = thread
     data['replies'] = []
+    b = await db.boards.find_one({'short': board})
+    if b['username'] != '':
+        data['username'] = b['username']
+    else:
+        data['username'] = None
     if thread:
         t = await db.posts.find_one({'count': thread})
     if oppost:
@@ -240,6 +258,7 @@ async def makedata(db, subject, text, count, board, oppost=False, thread=None, f
         postcount = await db.posts.find({'thread': t['count']}).count()
         t['postcount'] = postcount + 1
     if file:
+        b['filecount'] = b['filecount'] + 1
         if filetype == 'image':
             data['image'] = file
             data['video'] = None
@@ -255,6 +274,8 @@ async def makedata(db, subject, text, count, board, oppost=False, thread=None, f
             await update_db(db, t['count'], t)
     else:
         data['image'] = data['video'] = None
+    b['postcount'] = b['postcount'] + 1
+    await update_db_b(db, b['short'], b)
     return data
 
 
@@ -277,11 +298,12 @@ class Application(tornado.web.Application):
 
     def __init__(self):
         handlers = [
-            (r'/', IndexHandler),
+            (r'/$', IndexHandler),
+            (r'/admin/?', AdminHandler),
             (r'/(\w+)/?', BoardHandler),
             (r'/(\w+)/thread/(\d+)/?', ThreadHandler),
-            (r'/admin/?', AdminHandler),
             (r'/admin/login/?', AdminLoginHandler),
+            (r'/admin/create/?', AdminBoardCreationHandler),
             (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': 'uploads'}),
             (r'/ajax/file/?', AjaxFileHandler),
         ]
@@ -294,7 +316,6 @@ class Application(tornado.web.Application):
             'cookie_secret': "__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
         }
 
-        # self.con = pymongo.MongoClient('localhost', 27017)
         self.con = motor.motor_tornado.MotorClient('localhost', 27017)
         self.database = self.con['imageboard']
         tornado.web.Application.__init__(self, handlers, **settings)
@@ -304,6 +325,16 @@ class Application(tornado.web.Application):
 async def update_db(db, count, variables):
     await db.posts.update_one(
         {'count': count},
+        {
+            '$set': variables
+        }
+    )
+
+
+# for updating board data
+async def update_db_b(db, short, variables):
+    await db.boards.update_one(
+        {'short': short},
         {
             '$set': variables
         }
@@ -325,7 +356,6 @@ def schedule_check(app):
                 if not len(threads) <= board['thread_catalog']:
                     threads = threads[:(threads.count(None) - board['thread_catalog'])]
                     for thread in threads:
-                        print('thred')
                         if thread['video']:
                             os.remove(thread['video'])
                         if thread['image']:
@@ -336,7 +366,6 @@ def schedule_check(app):
                                 os.remove(post['video'])
                             if post['image']:
                                 os.remove(post['image'])
-                        print('remove')
                         yield db.posts.delete_many({'thread': thread['count']})
                         yield db.posts.remove({'count': thread['count']})
         except Exception as e:
