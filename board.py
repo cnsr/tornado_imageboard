@@ -191,7 +191,6 @@ class AdminBoardCreationHandler(LoggedInHandler):
     async def get(self):
         if not self.current_user:
             self.redirect('/admin/login')
-            # return
         else:
             boards_list = await self.application.database.boards.find({}).to_list(None)
             self.render('admincreate.html', boards_list=boards_list)
@@ -208,6 +207,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
             data['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
             data['postcount'] = 0
             data['mediacount'] = 0
+            data['created'] = datetime.datetime.utcnow()
             db = self.application.database.boards
             await db.insert(data)
             self.redirect('/' + data['short'])
@@ -230,6 +230,18 @@ class AdminLoginHandler(LoggedInHandler):
             self.redirect('/admin')
         else:
             self.redirect('/')
+
+
+class AdminStatsHandler(LoggedInHandler):
+
+    async def get(self):
+        if not self.current_user:
+            self.redirect('/')
+        else:
+            boards = await self.application.database.boards.find({}).to_list(None)
+            boards_list = await self.application.database.boards.find({}).to_list(None)
+            self.render('admin_stats.html', boards=boards, boards_list=boards_list)
+
 
 # constructs dictionary to insert into mongodb
 async def makedata(db, subject, text, count, board, oppost=False, thread=None, file=None, filetype=None):
@@ -258,7 +270,7 @@ async def makedata(db, subject, text, count, board, oppost=False, thread=None, f
         postcount = await db.posts.find({'thread': t['count']}).count()
         t['postcount'] = postcount + 1
     if file:
-        b['filecount'] = b['filecount'] + 1
+        b['mediacount'] = b['mediacount'] + 1
         if filetype == 'image':
             data['image'] = file
             data['video'] = None
@@ -304,6 +316,7 @@ class Application(tornado.web.Application):
             (r'/(\w+)/thread/(\d+)/?', ThreadHandler),
             (r'/admin/login/?', AdminLoginHandler),
             (r'/admin/create/?', AdminBoardCreationHandler),
+            (r'/admin/stats/?', AdminStatsHandler),
             (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': 'uploads'}),
             (r'/ajax/file/?', AjaxFileHandler),
         ]

@@ -46,3 +46,9 @@ class Modal(tornado.web.UIModule):
         return 'css/modules/modal.css'
     def render(self):
         return self.render_string('modules/modal.html')
+
+class Stats(tornado.web.UIModule):
+    def css_files(self):
+        return 'css/modules/stats.css'
+    def render(self, board):
+        return self.render_string('modules/stats.html', b=board)

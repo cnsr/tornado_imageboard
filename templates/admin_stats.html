@@ -1,0 +1,24 @@
+{% extends 'index.html' %}
+{% block title %}Add Board{% end %}
+{% block css %}
+{% end %}
+{% block content %}
+<table class='boards'>
+	<tr class='table-header'>
+		<th>Name</th>
+		<th>Short</th>
+		<th>Username</th>
+		<th>Created</th>
+		<!-- description will be too wide TODO: think of simpler way to view it-->
+		<!--th>Description</th-->
+		<th>Max posts in thread</th>
+		<th>Bumplimit</th>
+		<th>Max threads in catalog</th>
+		<th>Posts </th>
+		<th>Posts with media</th>
+	</tr>
+	{% for board in boards %}
+		{% module Stats(board) %}
+	{% end %}
+</table>
+{% end %}
