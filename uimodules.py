@@ -15,13 +15,13 @@ class NewPost(tornado.web.UIModule):
 
 
 class Post(tornado.web.UIModule):
-    def render(self, post):
-        return self.render_string('modules/post.html', post=post)
+    def render(self, post, admin):
+        return self.render_string('modules/post.html', post=post, admin=admin)
 
 
 class OpPost(tornado.web.UIModule):
-    def render(self, op):
-        return self.render_string('modules/oppost.html', op=op)
+    def render(self, op, admin):
+        return self.render_string('modules/oppost.html', op=op, admin=admin)
 
 
 class Board(tornado.web.UIModule):

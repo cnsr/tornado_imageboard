@@ -24,6 +24,11 @@ executor = concurrent.futures.ThreadPoolExecutor(8)
 uploads = 'uploads/'
 
 
+class LoggedInHandler(tornado.web.RequestHandler):
+    def get_current_user(self):
+        return self.get_secure_cookie('adminlogin')
+
+
 class IndexHandler(tornado.web.RequestHandler):
     async def get(self):
         db = self.application.database
@@ -32,7 +37,7 @@ class IndexHandler(tornado.web.RequestHandler):
         self.render('index.html', boards=boards, boards_list=boards_list)
 
 
-class BoardHandler(tornado.web.RequestHandler):
+class BoardHandler(LoggedInHandler):
 
     async def get(self, board):
         board = board.split('/')[0]
@@ -41,7 +46,10 @@ class BoardHandler(tornado.web.RequestHandler):
         if db_board:
             threads = await db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
             boards_list = await db.boards.find({}).to_list(None)
-            self.render('board.html', threads=threads, board=db_board, boards_list=boards_list)
+            admin = False
+            if self.current_user:
+                admin = True
+            self.render('board.html', threads=threads, board=db_board, boards_list=boards_list, admin=admin)
         else:
             self.redirect('/')
 
@@ -66,7 +74,7 @@ class BoardHandler(tornado.web.RequestHandler):
         self.redirect('/' + board + '/thread/' + str(data['count']))
 
 
-class ThreadHandler(tornado.web.RequestHandler):
+class ThreadHandler(LoggedInHandler):
     thread_count = ''
 
     async def get(self, board, count):
@@ -80,7 +88,10 @@ class ThreadHandler(tornado.web.RequestHandler):
                 op['locked'] = True
                 await update_db(db, op['count'], op)
             boards_list = await db.boards.find({}).to_list(None)
-            self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list)
+            admin = False
+            if self.current_user:
+                admin = True
+            self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list, admin=admin)
         else:
             self.redirect('/' + board)
 
@@ -116,10 +127,18 @@ class ThreadHandler(tornado.web.RequestHandler):
                     old_replies.append(int(data['count']))
                     p['replies'] = old_replies
                     await update_db(db, p['count'], p)
+        if op != None:
+            if await check_thread(db, thread_count, db_board['thread_posts']):
+                op['locked'] = True
+                await update_db(db, op['count'], op)
+            boards_list = await db.boards.find({}).to_list(None)
         posts = await db['posts'].find({'thread': thread_count}).sort([('count', pymongo.ASCENDING)]).to_list(None)
         boards_list = await db.boards.find({}).to_list(None)
         if op != None:
-            self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list)
+            admin = False
+            if self.current_user:
+                admin = True
+            self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list, admin=admin)
         else:
             self.redirect('/' + board)
 
@@ -171,16 +190,43 @@ class AjaxFileHandler(tornado.web.RequestHandler):
         return response
 
 
-class LoggedInHandler(tornado.web.RequestHandler):
-    def get_current_user(self):
-        return self.get_secure_cookie('adminlogin')
+class AjaxDeleteHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        files = []
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        pid = int(data['post'].decode('utf-8'))
+        post = await db.posts.find_one({'count': pid})
+        if post['image']:
+            files.append(post['image'])
+        elif post['video']:
+            files.append(post['video'])
+        response = {'succ':'ess'}
+        if post['oppost']:
+            response['op'] = 'true'
+            posts = await db.posts.find({'thread': pid}).to_list(None)
+            for post in posts:
+                if post['image']:
+                    files.append(post['image'])
+                elif post['video']:
+                    files.append(post['video'])
+            await db.posts.delete_many({'thread': pid})
+        await db.posts.delete_one({'count': pid})
+        await self.delete(files)
+        self.write(json.dumps(response))
+
+    async def delete(self, files):
+        for file in files:
+            os.remove(file)
+
 
 
 class AdminHandler(LoggedInHandler):
 
     async def get(self):
         if not self.current_user:
-            self.redirect('/admin')
+            self.redirect('/admin/login')
         else:
             boards_list = await self.application.database.boards.find({}).to_list(None)
             self.render('admin.html', boards_list=boards_list)
@@ -303,7 +349,7 @@ async def latest(db):
 
 # checks if number of posts in thread exceeds whatever number you check it against
 async def check_thread(db, thread, subj):
-    return await db.posts.find({'thread': thread}).count() >= subj
+    return await db.posts.find({'thread': thread}).count() >= subj - 1
 
 
 class Application(tornado.web.Application):
@@ -319,6 +365,7 @@ class Application(tornado.web.Application):
             (r'/admin/stats/?', AdminStatsHandler),
             (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': 'uploads'}),
             (r'/ajax/file/?', AjaxFileHandler),
+            (r'/ajax/remove/?', AjaxDeleteHandler),
         ]
 
         settings = {

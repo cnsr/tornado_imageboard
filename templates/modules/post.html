@@ -5,7 +5,10 @@
 			{% if post['username'] %}<p class='username'>{{post['username']}}</p>{% end %}
 			<p class='date'>{{ post['date']}}</p>
 			<a href='#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
-			<p class='post-number'></p>			
+			<p class='post-number'></p>
+			{% if admin %}
+				<button class='del' data-id='{{post["count"]}}'>&#x2716;</button>
+			{% end %}			
 		</div>
 		<div class='post-media-div'>
 			{% if post['video'] != None %}

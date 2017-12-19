@@ -9,6 +9,9 @@
 			{% if op['locked'] %}
 				<p class='locked' title='Thread is locked.'>&#x1f512;</p>
 			{% end %}
+			{% if admin %}
+				<button class='del' data-id='{{op["count"]}}'>&#x2716;</button>
+			{% end %}
 		</div>
 		<div class='oppost-media'>
 			{% if op['video'] != None %}

@@ -2,7 +2,6 @@ $(document).ready(function(){
 	centerModal();	
 	var win = $(window);	
 	$('.modal').draggable({
-		//containment: 'document'	
 	});
 	$(document).on("click", function(event) {
 		var target = $(event.target);
@@ -69,12 +68,6 @@ $(document).ready(function(){
         var formWidth = $form.innerWidth();
         var formHeight = $form.innerHeight();
 
-		//var x = Math.round(windowWidth / 2) - Math.round(formWidth / 2);
-		//var y = Math.round(windowHeight / 2) - Math.round(formHeight / 2);
-
-
-        //$form.css('top', y + 'px');
-        //$form.css('left', x + 'px');
 		if(x+formWidth > windowWidth) x = windowWidth-formWidth;
 		if(y+formHeight > windowHeight) y = windowHeight-formHeight;
 		if(x<0) x = 0;
