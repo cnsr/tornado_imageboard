@@ -68,3 +68,8 @@ p {
 .locked {
 	 display: inline;
 }
+
+.banned {
+	 color: red;
+	 font-weight: bold;
+}

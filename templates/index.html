@@ -13,10 +13,12 @@
 		{% block header %}
 			<a href='/' class='homebtn'>[HOME]</a>
 			<ul class='boards-list'>
-				{% for b in boards_list %}
-					<li class='boards-list-board'>
-						<a href='/{{b["short"]}}'>[{{b['short']}}]</a>
-					</li>
+				{% if boards_list %}
+					{% for b in boards_list %}
+						<li class='boards-list-board'>
+							<a href='/{{b["short"]}}'>[{{b['short']}}]</a>
+						</li>
+					{% end %}
 				{% end %}
 			</ul>
 		{% end %}
@@ -25,11 +27,15 @@
 		{% module Modal() %}
 	{% end %}
 	{% block content %}
-		<div class='boards'>
-			{% for board in boards %}
-				{% module Board(board) %}
-			{% end %}
-		</div>
+		{% if boards %}
+			<div class='boards'>
+				{% for board in boards %}
+					{% module Board(board) %}
+				{% end %}
+			</div>
+		{% else %}
+			<h1>No boards yet!</h1>
+		{% end %}
 	{% end %}
 	</body>
 </html>

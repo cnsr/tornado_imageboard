@@ -10,6 +10,7 @@
 				<p class='locked' title='Thread is locked.'>&#x1f512;</p>
 			{% end %}
 			{% if admin %}
+				<button class='ban' data-id='{{op["count"]}}'>BAN</button>			
 				<button class='del' data-id='{{op["count"]}}'>&#x2716;</button>
 			{% end %}
 		</div>
@@ -22,6 +23,9 @@
 			{% end %}
 		</div>
 		<p>{% raw  op['text'] %}</p>
+		{% if op['banned'] %}
+			<p class="banned">User has been banned for this post.</p>
+		{% end %}
 		{% if op['replies'] %}
 			<li class=replies>
 				<p class='replies-p'>Replies: </p>

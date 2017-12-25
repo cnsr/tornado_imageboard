@@ -1,0 +1,13 @@
+{% extends 'index.html' %}
+
+{% block title %}Ban Status{% end %}
+
+{% block content %}
+	<div class='status'>
+		{% if ban %}
+			{% module Ban(ban) %}
+		{% else %}
+			<h1>You are not banned</h1>
+		{% end %}
+	</div>
+{% end %}

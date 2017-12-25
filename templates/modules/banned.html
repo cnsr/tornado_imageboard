@@ -1,0 +1,5 @@
+<h1>You are banned!</h1>
+<p>You were banned on {{b['date_of']}} for post #{{b['ban_post']}}</p>
+<p>Ban reason: {{b['reason']}}</p>
+<p>Your ban expires: {% if b['date'] != None %}{{b['date']}}{% else %}NEVER.{% end %}
+<p>At some point you will be able to appeal your ban but not yet</p>

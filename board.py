@@ -2,7 +2,6 @@ import tornado.options
 import tornado.httpserver
 import tornado.web
 import tornado.ioloop
-import pymongo
 import motor.motor_tornado
 import uimodules
 import datetime
@@ -30,10 +29,11 @@ class LoggedInHandler(tornado.web.RequestHandler):
 
 
 class IndexHandler(tornado.web.RequestHandler):
+
     async def get(self):
         db = self.application.database
-        boards = await db.boards.find({}).to_list(None)
-        boards_list = await db.boards.find({}).to_list(None)
+        boards = await db.boards.find({}).to_list(None) or None
+        boards_list = await db.boards.find({}).to_list(None) or None
         self.render('index.html', boards=boards, boards_list=boards_list)
 
 
@@ -69,8 +69,12 @@ class BoardHandler(LoggedInHandler):
         count = await latest(db) + 1
         oppost = True
         thread = None
-        data = await makedata(db, subject, text, count, board, oppost, thread, file, filetype)
-        await db['posts'].insert(data)
+        ip = await get_ip(self.request)
+        data = await makedata(db, subject, text, count, board, ip, oppost, thread, file, filetype)
+        if not await is_banned(db, ip):
+            await db.posts.insert(data)
+        else:
+            self.redirect('/banned')
         self.redirect('/' + board + '/thread/' + str(data['count']))
 
 
@@ -81,7 +85,7 @@ class ThreadHandler(LoggedInHandler):
         thread_count = int(count)
         db = self.application.database
         db_board = await db.boards.find_one({'short': board})
-        posts = await db['posts'].find({'thread': thread_count}).sort([('count', pymongo.ASCENDING)]).to_list(None)
+        posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
         op = await db['posts'].find_one({"count": thread_count})
         if op != None:
             if await check_thread(db, thread_count, db_board['thread_posts']):
@@ -111,7 +115,8 @@ class ThreadHandler(LoggedInHandler):
         count = await latest(db) + 1
         oppost = False
         thread = thread_count
-        data = await makedata(db, subject, text, count, board, oppost, thread, file, filetype)
+        ip = await get_ip(self.request)
+        data = await makedata(db, subject, text, count, board, ip, oppost, thread, file, filetype)
         op = await db['posts'].find_one({'count': thread_count})
         db_board = await db.boards.find_one({'short': board})
         if not op['locked']:
@@ -119,7 +124,10 @@ class ThreadHandler(LoggedInHandler):
                 if not data['subject'] == 'sage':
                     op['lastpost'] = datetime.datetime.utcnow()
                     await update_db(db, op['count'], op)
-            await db.posts.insert(data)
+            if not await is_banned(db, ip):
+                await db.posts.insert(data)
+            else:
+                self.redirect('/banned')
             for number in replies:
                 p = await db.posts.find_one({'count': int(number)})
                 old_replies = p['replies']
@@ -132,7 +140,7 @@ class ThreadHandler(LoggedInHandler):
                 op['locked'] = True
                 await update_db(db, op['count'], op)
             boards_list = await db.boards.find({}).to_list(None)
-        posts = await db['posts'].find({'thread': thread_count}).sort([('count', pymongo.ASCENDING)]).to_list(None)
+        posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
         boards_list = await db.boards.find({}).to_list(None)
         if op != None:
             admin = False
@@ -141,7 +149,6 @@ class ThreadHandler(LoggedInHandler):
             self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list, admin=admin)
         else:
             self.redirect('/' + board)
-
 
 
 async def upload_file(file):
@@ -221,6 +228,35 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
             os.remove(file)
 
 
+class AjaxBanHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        for k, v in data.items(): data[k] = v.decode('utf-8')
+        p = await db.posts.find_one({'count': int(data['post'])})
+        banned = await db.bans.find_one({'ip': p['ip']})
+        if not banned:
+            ban = {
+                'ip': p['ip'],
+                'ban_post': int(data['post']),
+                'reason': data['reason'],
+                'locked': False,
+                'date': None,
+                'date_of': datetime.datetime.utcnow(),
+            }
+            if data['lock'] == 'true':
+                ban['locked'] = True
+            if data['date'] != 'Never':
+                ban['date'] = data['date']
+            await db.bans.insert(ban)
+            p['banned'] = True
+            if ban['locked'] and p['oppost']:
+                p['locked'] = True
+            await update_db(db, p['count'], p)
+        response = {'ok': 'ok'}
+        self.write(json.dumps(response))
+
 
 class AdminHandler(LoggedInHandler):
 
@@ -278,20 +314,42 @@ class AdminLoginHandler(LoggedInHandler):
             self.redirect('/')
 
 
+class BannedHandler(tornado.web.RequestHandler):
+
+    async def get(self):
+        db = self.application.database
+        ip = await get_ip(self.request)
+        ban = await db.bans.find_one({'ip':ip}) or None
+        self.render('banned.html', ban=ban, boards_list=None)
+
+
 class AdminStatsHandler(LoggedInHandler):
 
     async def get(self):
         if not self.current_user:
-            self.redirect('/')
+            self.redirect('/admin/login')
         else:
             boards = await self.application.database.boards.find({}).to_list(None)
             boards_list = await self.application.database.boards.find({}).to_list(None)
             self.render('admin_stats.html', boards=boards, boards_list=boards_list)
 
 
+class AdminBannedHandler(LoggedInHandler):
+
+    async def get(self):
+        if not self.current_user:
+            self.redirect('/admin/login')
+        else:
+            db = self.application.database
+            bans = await db.bans.find({}).sort([('date', 1)]).to_list(None)
+            boards_list = await db.boards.find({}).to_list(None)
+            self.render('admin_banned.html', bans=bans, boards_list=boards_list)
+
+
 # constructs dictionary to insert into mongodb
-async def makedata(db, subject, text, count, board, oppost=False, thread=None, file=None, filetype=None):
+async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, file=None, filetype=None):
     data = {}
+    data['ip'] = ip
     data['subject'] = subject
     data['text'] = text
     data['count'] = count
@@ -299,6 +357,7 @@ async def makedata(db, subject, text, count, board, oppost=False, thread=None, f
     data['date'] = datetime.datetime.utcnow()
     data['oppost'] = oppost
     data['thread'] = thread
+    data['banned'] = False
     data['replies'] = []
     b = await db.boards.find_one({'short': board})
     if b['username'] != '':
@@ -338,7 +397,6 @@ async def makedata(db, subject, text, count, board, oppost=False, thread=None, f
 
 
 # this is an ugly hack that works somehow
-# i need to read docs on pymongo cursor
 async def latest(db):
     try:
         return list(await db['posts'].find({}).sort('count', -1).to_list(None))[0]['count']
@@ -350,35 +408,6 @@ async def latest(db):
 # checks if number of posts in thread exceeds whatever number you check it against
 async def check_thread(db, thread, subj):
     return await db.posts.find({'thread': thread}).count() >= subj - 1
-
-
-class Application(tornado.web.Application):
-
-    def __init__(self):
-        handlers = [
-            (r'/$', IndexHandler),
-            (r'/admin/?', AdminHandler),
-            (r'/(\w+)/?', BoardHandler),
-            (r'/(\w+)/thread/(\d+)/?', ThreadHandler),
-            (r'/admin/login/?', AdminLoginHandler),
-            (r'/admin/create/?', AdminBoardCreationHandler),
-            (r'/admin/stats/?', AdminStatsHandler),
-            (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': 'uploads'}),
-            (r'/ajax/file/?', AjaxFileHandler),
-            (r'/ajax/remove/?', AjaxDeleteHandler),
-        ]
-
-        settings = {
-            'ui_modules': uimodules,
-            'template_path': 'templates',
-            'static_path': 'static',
-            'xsrf_cookies': True,
-            'cookie_secret': "__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
-        }
-
-        self.con = motor.motor_tornado.MotorClient('localhost', 27017)
-        self.database = self.con['imageboard']
-        tornado.web.Application.__init__(self, handlers, **settings)
 
 
 # updates one db entry by set parametres
@@ -412,7 +441,7 @@ def schedule_check(app):
         try:
             for board in boards:
                 threads = yield db.posts.find({'oppost': True,
-                                        'board': board['short']}).sort('lastpost', pymongo.ASCENDING).to_list(None)
+                                        'board': board['short']}).sort('lastpost', 1).to_list(None)
                 if not len(threads) <= board['thread_catalog']:
                     threads = threads[:(threads.count(None) - board['thread_catalog'])]
                     for thread in threads:
@@ -448,6 +477,58 @@ def linkify(text):
             t = re.sub(r'>>\d+', '<a href=\"#' + number[2:] + '\">' + number + '</a>', t)
         new_text.append(t)
     return (' ').join(new_text), replies
+
+
+async def get_ip(req):
+    x_real_ip = req.headers.get('X-Real-IP')
+    return x_real_ip or req.remote_ip
+
+
+async def is_banned(db, ip):
+    ban = await db.bans.find_one({'ip': ip})
+    if ban:
+        if ban['date']:
+            expires = datetime.datetime.strptime(ban['date'], "%d-%m-%Y")
+            print(expires > datetime.datetime.today())
+            if expires > datetime.datetime.today():
+                return True
+            else:
+                await db.bans.delete_one({'ip': ip})
+        else:
+            return True
+    return False
+
+
+class Application(tornado.web.Application):
+
+    def __init__(self):
+        handlers = [
+            (r'/$', IndexHandler),
+            (r'/admin/?', AdminHandler),
+            (r'/banned/?', BannedHandler),
+            (r'/(\w+)/?', BoardHandler),
+            (r'/(\w+)/thread/(\d+)/?', ThreadHandler),
+            (r'/admin/login/?', AdminLoginHandler),
+            (r'/admin/create/?', AdminBoardCreationHandler),
+            (r'/admin/stats/?', AdminStatsHandler),
+            (r'/admin/bans/?', AdminBannedHandler),
+            (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': 'uploads'}),
+            (r'/ajax/file/?', AjaxFileHandler),
+            (r'/ajax/remove/?', AjaxDeleteHandler),
+            (r'/ajax/ban/?', AjaxBanHandler),
+        ]
+
+        settings = {
+            'ui_modules': uimodules,
+            'template_path': 'templates',
+            'static_path': 'static',
+            'xsrf_cookies': True,
+            'cookie_secret': "__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
+        }
+
+        self.con = motor.motor_tornado.MotorClient('localhost', 27017)
+        self.database = self.con['imageboard']
+        tornado.web.Application.__init__(self, handlers, **settings)
 
 
 def main():

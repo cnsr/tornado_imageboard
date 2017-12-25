@@ -1,0 +1,27 @@
+{% extends 'index.html' %}
+{% block title %}Bans{% end %}
+
+{% block css %}
+	<link rel='stylesheet' href="{{ static_url('css/admin_banned.css') }}">
+{% end %}
+
+{% block content %}
+	<table class='bans'>
+	<tr>
+		<td>IP</td>
+		<td>Post</td>
+		<td>Reason</td>
+		<td>Expires</td>
+		<td>Banned</td>
+	</tr>
+	{% for ban in bans %}
+		<tr>
+			<td>{{ban['ip']}}</td>
+			<td>#{{ban['ban_post']}}</td>
+			<td>{{ban['reason']}}</td>
+			<td>{% if ban['date'] %}{{ban['date']}}{% else %}Never{% end %}</td>
+			<td>{{ban['date_of']}}</td>
+		</tr>
+	{% end %}
+	</table>
+{% end %}

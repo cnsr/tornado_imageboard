@@ -1,0 +1,16 @@
+.banform {
+	 display:none;
+	 border: 1px solid black;
+	 background: white;
+	 position: fixed;
+	 z-index: 10;
+}
+
+.banform p {
+	 margin: 0px;
+}
+
+.ui-datepicker {
+	 background:lightgray;
+}
+

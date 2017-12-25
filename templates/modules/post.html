@@ -7,6 +7,7 @@
 			<a href='#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
 			<p class='post-number'></p>
 			{% if admin %}
+				<button class='ban' data-id='{{post["count"]}}'>BAN</button>				
 				<button class='del' data-id='{{post["count"]}}'>&#x2716;</button>
 			{% end %}			
 		</div>
@@ -19,6 +20,9 @@
 			{% end %}
 		</div>
 		<p>{% raw post['text'] %}</p>		
+		{% if post['banned'] %}
+			<p class="banned">User has been banned for this post.</p>
+		{% end %}		
 		{% if post['replies'] %}
 			<li class=replies>
 				<p class='replies-p'>Replies: </p>
