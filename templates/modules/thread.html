@@ -17,7 +17,7 @@
 				{% module Image(thread['image'], thread['count']) %}
 			{% end %}
 		</div>
-		<p>{% raw thread['text'] %}</p>
+		<p class='text'>{% raw thread['text'] %}</p>
 		{% if thread['banned'] %}
 			<p class="banned">User has been banned for this post.</p>
 		{% end %}		

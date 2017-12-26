@@ -14,6 +14,7 @@ from mimetypes import guess_type
 import json
 from getresolution import resolution
 from tornado import gen
+from html.parser import HTMLParser
 
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
@@ -21,6 +22,25 @@ define('port', default=8000, help='run on given port', type=int)
 executor = concurrent.futures.ThreadPoolExecutor(8)
 
 uploads = 'uploads/'
+
+
+class MLStripper(HTMLParser):
+    def __init__(self):
+        self.reset()
+        self.strict = False
+        self.convert_charrefs= True
+        self.fed = []
+    def handle_data(self, d):
+        self.fed.append(d)
+    def get_data(self):
+        return ''.join(self.fed)
+
+
+# this is done to ensure user does not input any html in posting form
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
 
 
 class LoggedInHandler(tornado.web.RequestHandler):
@@ -59,7 +79,8 @@ class BoardHandler(LoggedInHandler):
         threads = await db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
         subject = self.get_argument('subject', '')
         text = self.get_argument('text', '')
-        text = text.replace("\n","<br />\n")
+        text = strip_tags(text)
+        text = text.replace("\n","<br />")
         if self.request.files:
             file, filetype = await upload_file(self.request.files['file'][0])
         else:
@@ -106,17 +127,18 @@ class ThreadHandler(LoggedInHandler):
         text = self.get_argument('text', 'empty post')
         result = linkify(text)
         text = result[0]
-        text = text.replace("\n","<br />\n")
+        text = strip_tags(text)
+        text = text.replace("\n","<br />")
         if self.request.files:
-            file, filetype = await upload_file(self.request.files['file'][0])
+            ffile, filetype = await upload_file(self.request.files['file'][0])
         else:
-            file = filetype = None
+            ffile = filetype = None
         replies = result[1]
         count = await latest(db) + 1
         oppost = False
         thread = thread_count
         ip = await get_ip(self.request)
-        data = await makedata(db, subject, text, count, board, ip, oppost, thread, file, filetype)
+        data = await makedata(db, subject, text, count, board, ip, oppost, thread, ffile, filetype)
         op = await db['posts'].find_one({'count': thread_count})
         db_board = await db.boards.find_one({'short': board})
         if not op['locked']:
@@ -151,8 +173,8 @@ class ThreadHandler(LoggedInHandler):
             self.redirect('/' + board)
 
 
-async def upload_file(file):
-    fname = file['filename']
+async def upload_file(f):
+    fname = f['filename']
     fext = os.path.splitext(fname)[1]
     if fext in ['.jpg', 'gif', '.png','.jpeg']:
         filetype = 'image'
@@ -161,8 +183,8 @@ async def upload_file(file):
     else:
         return None, None
     newname = uploads + str(uuid4()) + fext
-    with open(newname, 'wb') as f:
-        f.write(bytes(file['body']))
+    with open(newname, 'wb') as nf:
+        nf.write(bytes(f['body']))
     return newname, filetype
 
 

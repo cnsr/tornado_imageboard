@@ -4,8 +4,16 @@
 		<div class='subject'>
 			<p>Subject</p><input type='text' name='subject'/>
 		</div>
-		<div class='text'>
-			<p>Text</p><textarea rows=4 cols=55 name='text' maxlength=2000 placeholder='Your post' required></textarea>
+		<div class='bb'>
+			<button id='bb-b' onclick="return wrapText('b')"><b>b</b></button>
+			<button id='bb-i' onclick="return wrapText('i')"><i>i</i></button>
+			<button id='bb-u' onclick="return wrapText('u')"><u>u</u></button>
+			<button id='bb-s' onclick="return wrapText('s')"><s>s</s></button>
+			<button id='bb-sp' onclick="return wrapText('spoiler')">spoiler</button>
+		</div>
+		<div class='textarea'>
+			<p>Text</p><textarea rows=4 cols=55 name='text' maxlength=2000 placeholder='Your post' required
+			id='text-area'></textarea>
 		</div>
 		<div class='file'>
 			<p class='file-about'>Supported filetypes: .jpg .png .gif .webm .mp4</p>

@@ -73,3 +73,39 @@ p {
 	 color: red;
 	 font-weight: bold;
 }
+
+strong {
+	 font-weight: bold;
+}
+
+em {
+	 font-style: italic;
+}
+
+underline {
+	 text-decoration: underline;
+}
+
+strike {
+	 text-decoration: line-through;
+}
+
+spoiler {
+  color:black;
+  background-color: black;
+	padding-bottom: 1px;
+}
+
+spoiler:hover {
+  color:black;
+  background-color: transparent;
+}
+
+.text {
+	white-space: pre-line
+}
+
+citation {
+	color: #007777;
+	display: block;
+}

@@ -19,7 +19,7 @@
 				{% module Image(post['image'], post['count']) %}
 			{% end %}
 		</div>
-		<p>{% raw post['text'] %}</p>		
+		<p class='text'>{% raw post['text'] %}</p>	
 		{% if post['banned'] %}
 			<p class="banned">User has been banned for this post.</p>
 		{% end %}		

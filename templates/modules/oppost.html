@@ -22,7 +22,7 @@
 				{% module Image(op['image'], op['count']) %}
 			{% end %}
 		</div>
-		<p>{% raw  op['text'] %}</p>
+		<p class='text'>{% raw  op['text'] %}</p>
 		{% if op['banned'] %}
 			<p class="banned">User has been banned for this post.</p>
 		{% end %}
