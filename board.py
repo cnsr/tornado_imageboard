@@ -43,11 +43,13 @@ def strip_tags(html):
     return s.get_data()
 
 
+# crappy handler that checks if user is admin
 class LoggedInHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         return self.get_secure_cookie('adminlogin')
 
 
+# list of boards
 class IndexHandler(tornado.web.RequestHandler):
 
     async def get(self):
@@ -57,6 +59,7 @@ class IndexHandler(tornado.web.RequestHandler):
         self.render('index.html', boards=boards, boards_list=boards_list)
 
 
+# list of threads, more like catalog
 class BoardHandler(LoggedInHandler):
 
     async def get(self, board):
@@ -82,16 +85,16 @@ class BoardHandler(LoggedInHandler):
         text = strip_tags(text)
         text = text.replace("\n","<br />")
         if self.request.files:
-            file, filetype = await upload_file(self.request.files['file'][0])
+            ff, filetype = await upload_file(self.request.files['file'][0])
         else:
-            file = filetype = None
+            ff = filetype = None
         result = linkify(text)
         text = result[0]
         count = await latest(db) + 1
         oppost = True
         thread = None
         ip = await get_ip(self.request)
-        data = await makedata(db, subject, text, count, board, ip, oppost, thread, file, filetype)
+        data = await makedata(db, subject, text, count, board, ip, oppost, thread, ff, filetype)
         if not await is_banned(db, ip):
             await db.posts.insert(data)
         else:
@@ -99,6 +102,7 @@ class BoardHandler(LoggedInHandler):
         self.redirect('/' + board + '/thread/' + str(data['count']))
 
 
+# posts in thread
 class ThreadHandler(LoggedInHandler):
     thread_count = ''
 
@@ -117,6 +121,7 @@ class ThreadHandler(LoggedInHandler):
             if self.current_user:
                 admin = True
             self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list, admin=admin)
+
         else:
             self.redirect('/' + board)
 
@@ -161,18 +166,10 @@ class ThreadHandler(LoggedInHandler):
             if await check_thread(db, thread_count, db_board['thread_posts']):
                 op['locked'] = True
                 await update_db(db, op['count'], op)
-            boards_list = await db.boards.find({}).to_list(None)
-        posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
-        boards_list = await db.boards.find({}).to_list(None)
-        if op != None:
-            admin = False
-            if self.current_user:
-                admin = True
-            self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list, admin=admin)
-        else:
-            self.redirect('/' + board)
+        self.redirect('/' + str(board) + '/thread/' + str(op['count']))
 
 
+# should be rewriten to calculate file resolution and size
 async def upload_file(f):
     fname = f['filename']
     fext = os.path.splitext(fname)[1]
@@ -188,6 +185,7 @@ async def upload_file(f):
     return newname, filetype
 
 
+# loads data of files using ajax
 class AjaxFileHandler(tornado.web.RequestHandler):
 
     async def post(self):
@@ -219,6 +217,7 @@ class AjaxFileHandler(tornado.web.RequestHandler):
         return response
 
 
+# delete posts using ajax; doesnt have admin rights check and idk how to make it
 class AjaxDeleteHandler(tornado.web.RequestHandler):
 
     async def post(self):
@@ -250,6 +249,7 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
             os.remove(file)
 
 
+# banning users using ajax; same stuff as with previous one
 class AjaxBanHandler(tornado.web.RequestHandler):
 
     async def post(self):
@@ -280,6 +280,7 @@ class AjaxBanHandler(tornado.web.RequestHandler):
         self.write(json.dumps(response))
 
 
+# admin main page
 class AdminHandler(LoggedInHandler):
 
     async def get(self):
@@ -290,6 +291,7 @@ class AdminHandler(LoggedInHandler):
             self.render('admin.html', boards_list=boards_list)
 
 
+# creation of boards
 class AdminBoardCreationHandler(LoggedInHandler):
 
     async def get(self):
@@ -317,6 +319,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
             self.redirect('/' + data['short'])
 
 
+# login for admin; it's fucking awful since pass is in plaintext and that's only one of shitty things
 class AdminLoginHandler(LoggedInHandler):
 
     async def get(self):
@@ -336,6 +339,7 @@ class AdminLoginHandler(LoggedInHandler):
             self.redirect('/')
 
 
+# ban status for your ip
 class BannedHandler(tornado.web.RequestHandler):
 
     async def get(self):
@@ -345,6 +349,7 @@ class BannedHandler(tornado.web.RequestHandler):
         self.render('banned.html', ban=ban, boards_list=None)
 
 
+# stats of boards for admins
 class AdminStatsHandler(LoggedInHandler):
 
     async def get(self):
@@ -356,6 +361,7 @@ class AdminStatsHandler(LoggedInHandler):
             self.render('admin_stats.html', boards=boards, boards_list=boards_list)
 
 
+# you can view bans here
 class AdminBannedHandler(LoggedInHandler):
 
     async def get(self):
@@ -367,6 +373,14 @@ class AdminBannedHandler(LoggedInHandler):
             boards_list = await db.boards.find({}).to_list(None)
             self.render('admin_banned.html', bans=bans, boards_list=boards_list)
 
+    async def post(self):
+        if not self.current_user:
+            self.redirect('/admin/login')
+        else:
+            db = self.application.database
+            ip = self.get_argument('ip')
+            await db.bans.delete_one({'ip': ip})
+            self.redirect('/admin/bans')
 
 # constructs dictionary to insert into mongodb
 async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, file=None, filetype=None):
