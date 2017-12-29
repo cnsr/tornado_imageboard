@@ -107,5 +107,5 @@ spoiler:hover {
 
 citation {
 	color: #007777;
-	display: block;
+	display: inline-block;
 }

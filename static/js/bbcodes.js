@@ -4,7 +4,7 @@ $format_search =  [
     /\[u\](.*?)\[\/u\]/ig,
     /\[s\](.*?)\[\/s\]/ig,
     /\[spoiler\](.*?)\[\/spoiler\]/ig,
-	/\>(.*)\n/ig
+	/([^\w]|^)\>(.*)\n?/ig
 ];
 $format_replace = [
     '<strong>$1</strong>',
@@ -12,7 +12,7 @@ $format_replace = [
 	'<underline>$1</underline>',
 	'<strike>$1</strike>',
 	'<spoiler>$1</spoiler>',
-	'<citation>>$1</citation>',
+	'<citation>>$2</citation>',
 ];
 $(document).ready(function() {
 	$('.text').each(function(){
@@ -22,9 +22,18 @@ $(document).ready(function() {
 		}
 		$(this).html(txt);
 	});
-	$('#bb-b, #bb-i, #bb-u, #bb-s, #bb-sp').on('click', function(e) {
+	$('#bb-b, #bb-i, #bb-u, #bb-s, #bb-sp, #bb-c').on('click', function(e) {
 		e.preventDefault();
 	})
+	$('#bb-c').on('click', function(e) {
+		var sel = window.getSelection().toString();
+		var ta = $('#text-area');
+		if (ta.text() != '') {
+			ta.text(ta.text() + '\n>' + sel + '\n');
+		} else {
+			ta.text('>' + sel + '\n');
+		};
+	});
 });
 
 function wrapText(openTag) {
