@@ -13,10 +13,14 @@
 		</div>
 		<div class='post-media-div'>
 			{% if post['video'] != None %}
+				<a href='{{post["video"]}}' class='filedata-a'>{{post['original']}}</a>
+				<p class='filedata-p'>{{post['filedata']}}</p>							
 				{% module Video(post['video'], post['count']) %}
 			{% end %}
 			{% if post['image'] != None %}
-				{% module Image(post['image'], post['count']) %}
+				<a href='{{post["video"]}}' class='filedata-a'>{{post['original']}}</a>
+				<p class='filedata-p'>{{post['filedata']}}</p>
+				{% module Image(post['image'], post['count']) %}				
 			{% end %}
 		</div>
 		<p class='text'>{% raw post['text'] %}</p>	

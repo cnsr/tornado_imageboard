@@ -15,6 +15,7 @@ import json
 from getresolution import resolution
 from tornado import gen
 from html.parser import HTMLParser
+from PIL import Image
 
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
@@ -85,16 +86,16 @@ class BoardHandler(LoggedInHandler):
         text = strip_tags(text)
         text = text.replace("\n","<br />")
         if self.request.files:
-            ff, filetype = await upload_file(self.request.files['file'][0])
+            fo, ff, filetype, filedata = await upload_file(self.request.files['file'][0])
         else:
-            ff = filetype = None
+            fo = ff = filetype = filedata = None
         result = linkify(text)
         text = result[0]
         count = await latest(db) + 1
         oppost = True
         thread = None
         ip = await get_ip(self.request)
-        data = await makedata(db, subject, text, count, board, ip, oppost, thread, ff, filetype)
+        data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata)
         if not await is_banned(db, ip):
             await db.posts.insert(data)
         else:
@@ -135,15 +136,15 @@ class ThreadHandler(LoggedInHandler):
         text = strip_tags(text)
         text = text.replace("\n","<br />")
         if self.request.files:
-            ffile, filetype = await upload_file(self.request.files['file'][0])
+            foriginal, ffile, filetype, filedata = await upload_file(self.request.files['file'][0])
         else:
-            ffile = filetype = None
+            foriginal = ffile = filetype = filedata = None
         replies = result[1]
         count = await latest(db) + 1
         oppost = False
         thread = thread_count
         ip = await get_ip(self.request)
-        data = await makedata(db, subject, text, count, board, ip, oppost, thread, ffile, filetype)
+        data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata)
         op = await db['posts'].find_one({'count': thread_count})
         db_board = await db.boards.find_one({'short': board})
         if not op['locked']:
@@ -169,7 +170,6 @@ class ThreadHandler(LoggedInHandler):
         self.redirect('/' + str(board) + '/thread/' + str(op['count']))
 
 
-# should be rewriten to calculate file resolution and size
 async def upload_file(f):
     fname = f['filename']
     fext = os.path.splitext(fname)[1]
@@ -182,39 +182,29 @@ async def upload_file(f):
     newname = uploads + str(uuid4()) + fext
     with open(newname, 'wb') as nf:
         nf.write(bytes(f['body']))
-    return newname, filetype
+    filedata = await process_file(newname)
+    return fname, newname, filetype, filedata
 
 
-# loads data of files using ajax
-class AjaxFileHandler(tornado.web.RequestHandler):
+async def convert_bytes(num):
+    for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+        if num < 1024.0:
+            return "%3.1f %s" % (num, x)
+        num /= 1024.0
 
-    async def post(self):
-        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
-        response = await self.construct(data)
-        self.write(json.dumps(response))
 
-    def convert_bytes(self, num):
-        for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
-            if num < 1024.0:
-                return "%3.1f %s" % (num, x)
-            num /= 1024.0
+async def process_file(fn):
 
-    async def construct(self, data):
-        file = data['image'].decode('utf-8')[1:]
-        if os.path.isfile(file):
-            filesize = self.convert_bytes((os.stat(file).st_size))
-            response = {'status': 'ok',
-                        'file': file.split('/')[1],
-                        'filesize': filesize,
-                        'fileext': file.split('.')[1],
-            }
-            if file.endswith(('webm', 'mp4')):
-                w,h = resolution(file)
-                response['w'] = w
-                response['h'] = h
+    if os.path.isfile(fn):
+        filesize = await convert_bytes((os.stat(fn).st_size))
+        if fn.endswith(('webm', 'mp4')):
+            w,h = resolution(fn)
         else:
-            response = {'status': 'not ok'}
-        return response
+            with Image.open(fn) as img:
+                w, h = img.size
+        return '{0}, {1}x{2}, {3}'.format(fn.split('.')[-1].upper(), w, h, filesize)
+    else:
+        return False
 
 
 # delete posts using ajax; doesnt have admin rights check and idk how to make it
@@ -383,7 +373,7 @@ class AdminBannedHandler(LoggedInHandler):
             self.redirect('/admin/bans')
 
 # constructs dictionary to insert into mongodb
-async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, file=None, filetype=None):
+async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, fo=None, f=None, filetype=None, filedata=False):
     data = {}
     data['ip'] = ip
     data['subject'] = subject
@@ -410,13 +400,14 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
     else:
         postcount = await db.posts.find({'thread': t['count']}).count()
         t['postcount'] = postcount + 1
-    if file:
+    if f:
         b['mediacount'] = b['mediacount'] + 1
+        data['original'] = fo
         if filetype == 'image':
-            data['image'] = file
+            data['image'] = f
             data['video'] = None
         else:
-            data['video'] = file
+            data['video'] = f
             data['image'] = None
         if not oppost:
             filecount = await db.posts.find({'thread': t['count'],
@@ -425,6 +416,8 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
                                                                     'video': {'$ne': None}}).count()
             t['filecount'] = filecount + 1
             await update_db(db, t['count'], t)
+        if filedata:
+            data['filedata'] = filedata
     else:
         data['image'] = data['video'] = None
     b['postcount'] = b['postcount'] + 1
@@ -549,7 +542,6 @@ class Application(tornado.web.Application):
             (r'/admin/stats/?', AdminStatsHandler),
             (r'/admin/bans/?', AdminBannedHandler),
             (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': 'uploads'}),
-            (r'/ajax/file/?', AjaxFileHandler),
             (r'/ajax/remove/?', AjaxDeleteHandler),
             (r'/ajax/ban/?', AjaxBanHandler),
         ]

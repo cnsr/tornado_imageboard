@@ -16,9 +16,13 @@
 		</div>
 		<div class='oppost-media'>
 			{% if op['video'] != None %}
+				<a href='{{op["video"]}}' class='filedata-a'>{{op['original']}}</a>
+				<p class='filedata-p'>{{op['filedata']}}</p>
 				{% module Video(op['video'], op['count']) %}
 			{% end %}
 			{% if op['image'] != None %}
+				<a href='{{op["image"]}}' class='filedata-a'>{{op['original']}}</a>
+				<p class='filedata-p'>{{op['filedata']}}</p>							
 				{% module Image(op['image'], op['count']) %}
 			{% end %}
 		</div>
