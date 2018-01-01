@@ -34,6 +34,10 @@ $(document).ready(function() {
 			ta.text('>' + sel + '\n');
 		};
 	});
+	$('#toggle').on('click', function(e){
+		 e.preventDefault();
+		 $('form').toggle();
+	})
 });
 
 function wrapText(openTag) {

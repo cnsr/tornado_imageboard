@@ -5,4 +5,5 @@
 	position:fixed !important;
 	left: 400px;
 	padding: 5px;
+	z-index: 100;
 }
