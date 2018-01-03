@@ -3,7 +3,7 @@
 	<form method='POST' action='' enctype="multipart/form-data" id='newpost'>
 		{% module xsrf_form_html() %}
 		<div class='subject'>
-			<p>Subject</p><input type='text' name='subject'/>
+			<p class='subj'>Subject</p><input type='text' name='subject'/>
 		</div>
 		<div class='bb'>
 			<button id='bb-b' onclick="return wrapText('b')"><b>b</b></button>

@@ -65,6 +65,10 @@ p {
 	 border-bottom: black 1px solid;
 }
 
+.post-header * {
+	 margin: 0px;
+}
+
 .locked {
 	 display: inline;
 }
