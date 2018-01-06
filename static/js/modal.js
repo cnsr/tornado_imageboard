@@ -14,7 +14,19 @@ $(document).ready(function(){
 				modalMedia.addClass('modal-image');
 				modalMedia.removeClass('post-image post-video')
 				if (!target.is('video')) {
-					$('.modal-image').css('max-width', window.innerWidth);
+					if ($('.modal-image')[0].naturalHeight >= window.innerHeight) {
+						$('.modal').css('top', '0px');
+						$('.modal-image').css('height', window.innerHeight + 'px');						
+						$('.modal-image').css('width',$('.modal-image').width());
+					}
+					if ($('.modal-image').width() >= window.innerWidth) {
+						$('.modal').css('left', '0px');
+						$('.modal-image').css('width', $('.modal-image').width() + 'px');
+						$('.modal-image').css('height',$('.modal-image').height());						
+					}
+					var aspect = aspectRatio($('.modal-image'));					
+					var w = $('.modal-image').width() * aspect * 0.1;
+					var h = $('.modal-image').height() * aspect * 0.1;					
 					$('.modal-image').on('DOMMouseScroll mousewheel wheel', function(e){
 						var win = $(window);
 						formX = intify('left');
@@ -23,13 +35,19 @@ $(document).ready(function(){
 						lastCursorY = e.pageY - win.scrollTop();
 						cursorInBoxPosX = lastCursorX-formX;
 						cursorInBoxPosY = lastCursorY-formY;
+						console.log(w);
+						console.log(h);
+						var nwu = ($(this).width() + w).toString();
+						var nhu = ($(this).height() + h).toString();
+						var nwd = ($(this).width() - w).toString();
+						var nhd = ($(this).height() - h).toString();						
 						if(e.originalEvent.detail > 0 || e.originalEvent.wheelDelta < 0) {
-							$(this).css("width", "-=100");
-							$(this).css('max-width', '-=100');
+							$(this).css("width", nwd);
+							$(this).css("height", nhd);
 							moveForm(lastCursorX-cursorInBoxPosX, lastCursorY-cursorInBoxPosY);
 						} else {
-							$(this).css('max-width', '+=100')
-							$(this).css("width", "+=100");
+							$(this).css("width", nwu);
+							$(this).css("height", nhu);
 							moveForm(lastCursorX-cursorInBoxPosX, lastCursorY-cursorInBoxPosY);
 						}
 						return false;
@@ -44,7 +62,6 @@ $(document).ready(function(){
 					if (vol < 0) {vol = 0.0};
 					vid.prop('volume', parseFloat(vol));
 					document.cookie = "volume="+vol;					
-					
 					vid.on('DOMMouseScroll mousewheel wheel', function(e){
 						vol = parseFloat(getCookie('volume'));
 						if (isNaN(vol)) {vol = 0.5};
@@ -84,6 +101,8 @@ $(document).ready(function(){
 		return parseInt($('.modal').css(shit))
 	}
 
+	// broken if image exceeds window
+	// replace forn W and H with image ones?
 	function moveForm(x, y) {
         var win = $(window);
 		var $form = $('.modal');
@@ -104,23 +123,6 @@ $(document).ready(function(){
 		formX = x;
 		formY = y;
     };
-	/*
-	function getCookie(cname) {
-		var name = cname + "=";
-		var decodedCookie = decodeURIComponent(document.cookie);
-		var ca = decodedCookie.split(';');
-		for(var i = 0; i <ca.length; i++) {
-			var c = ca[i];
-			while (c.charAt(0) == ' ') {
-				c = c.substring(1);
-			}
-			if (c.indexOf(name) == 0) {
-				return c.substring(name.length, c.length);
-			}
-		}
-		return "";
-	}
-	*/
 });
 
 function getCookie(c_name) {
@@ -138,4 +140,6 @@ function getCookie(c_name) {
 	return "";
 };
 
-
+function aspectRatio(element) {
+    return $(element).width() / $(element).height();
+}

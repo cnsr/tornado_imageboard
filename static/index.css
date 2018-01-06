@@ -113,3 +113,11 @@ citation {
 	color: #007777;
 	display: inline-block;
 }
+
+.username {
+	 margin: 0px;
+}
+
+#text-area {
+	 resize: none;
+}

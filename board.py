@@ -16,6 +16,7 @@ from getresolution import resolution
 from tornado import gen
 from html.parser import HTMLParser
 from PIL import Image
+import requests
 
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
@@ -89,8 +90,6 @@ class BoardHandler(LoggedInHandler):
             fo, ff, filetype, filedata = await upload_file(self.request.files['file'][0])
         else:
             fo = ff = filetype = filedata = None
-        result = linkify(text)
-        text = result[0]
         count = await latest(db) + 1
         oppost = True
         thread = None
@@ -98,6 +97,7 @@ class BoardHandler(LoggedInHandler):
         data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata)
         if not await is_banned(db, ip):
             await db.posts.insert(data)
+            requests.get(('http://127.0.0.1:8888/'+ str(board)), headers={'my-secret-cookie':'true'})
         else:
             self.redirect('/banned')
         self.redirect('/' + board + '/thread/' + str(data['count']))
@@ -131,8 +131,6 @@ class ThreadHandler(LoggedInHandler):
         db = self.application.database
         subject = self.get_argument('subject', '')
         text = self.get_argument('text', 'empty post')
-        result = linkify(text)
-        text = result[0]
         text = strip_tags(text)
         text = text.replace("\n","<br />")
         if self.request.files:
@@ -146,28 +144,32 @@ class ThreadHandler(LoggedInHandler):
         ip = await get_ip(self.request)
         data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata)
         op = await db['posts'].find_one({'count': thread_count})
-        db_board = await db.boards.find_one({'short': board})
-        if not op['locked']:
-            if not await check_thread(db, thread_count, db_board['thread_bump']):
-                if not data['subject'] == 'sage':
-                    op['lastpost'] = datetime.datetime.utcnow()
+        if op:
+            db_board = await db.boards.find_one({'short': board})
+            if not op['locked']:
+                if not await check_thread(db, thread_count, db_board['thread_bump']):
+                    if not data['subject'] == 'sage':
+                        op['lastpost'] = datetime.datetime.utcnow()
+                        await update_db(db, op['count'], op)
+                if not await is_banned(db, ip):
+                    await db.posts.insert(data)
+                else:
+                    self.redirect('/banned')
+                for number in replies:
+                    p = await db.posts.find_one({'count': int(number)})
+                    old_replies = p['replies']
+                    if int(data['count']) not in old_replies:
+                        old_replies.append(int(data['count']))
+                        p['replies'] = old_replies
+                        await update_db(db, p['count'], p)
+            if op != None:
+                if await check_thread(db, thread_count, db_board['thread_posts']):
+                    op['locked'] = True
                     await update_db(db, op['count'], op)
-            if not await is_banned(db, ip):
-                await db.posts.insert(data)
-            else:
-                self.redirect('/banned')
-            for number in replies:
-                p = await db.posts.find_one({'count': int(number)})
-                old_replies = p['replies']
-                if int(data['count']) not in old_replies:
-                    old_replies.append(int(data['count']))
-                    p['replies'] = old_replies
-                    await update_db(db, p['count'], p)
-        if op != None:
-            if await check_thread(db, thread_count, db_board['thread_posts']):
-                op['locked'] = True
-                await update_db(db, op['count'], op)
-        self.redirect('/' + str(board) + '/thread/' + str(op['count']))
+            requests.get(('http://127.0.0.1:8888/'+ board + '/thread/' + str(op['count'])), headers={'my-secret-cookie':'true'})
+            self.redirect('/' + str(board) + '/thread/' + str(op['count']))
+        else:
+            self.redirect('/' + str(board))
 
 
 async def upload_file(f):
@@ -492,20 +494,6 @@ def schedule_check(app):
         executor.submit(task)
         schedule_check(app)
     tornado.ioloop.IOLoop.current().add_timeout(next_time, wrapper)
-
-
-def linkify(text):
-    new_text = []
-    replies = []
-    text_list = re.split(r'(\s+)', text)
-    for t in text_list:
-        x = re.compile(r'(>>\d+)').match(t)
-        if x:
-            number = x.group(1)
-            replies.append(number[2:])
-            t = re.sub(r'>>\d+', '<a href=\"#' + number[2:] + '\">' + number + '</a>', t)
-        new_text.append(t)
-    return (' ').join(new_text), replies
 
 
 async def get_ip(req):
