@@ -16,7 +16,6 @@ from getresolution import resolution
 from tornado import gen
 from html.parser import HTMLParser
 from PIL import Image
-import requests
 
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
@@ -97,7 +96,6 @@ class BoardHandler(LoggedInHandler):
         data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata)
         if not await is_banned(db, ip):
             await db.posts.insert(data)
-            requests.get(('http://127.0.0.1:8888/'+ str(board)), headers={'my-secret-cookie':'true'})
         else:
             self.redirect('/banned')
         self.redirect('/' + board + '/thread/' + str(data['count']))
@@ -166,7 +164,6 @@ class ThreadHandler(LoggedInHandler):
                 if await check_thread(db, thread_count, db_board['thread_posts']):
                     op['locked'] = True
                     await update_db(db, op['count'], op)
-            requests.get(('http://127.0.0.1:8888/'+ board + '/thread/' + str(op['count'])), headers={'my-secret-cookie':'true'})
             self.redirect('/' + str(board) + '/thread/' + str(op['count']))
         else:
             self.redirect('/' + str(board))
