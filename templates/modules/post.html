@@ -4,6 +4,7 @@
 			{% if post['subject'] %}<h3>{{post['subject']}}</h3>{% end %}
 			{% if post['username'] %}<p class='username'>{{post['username']}}</p>{% end %}
 			<p class='date'>{{ post['date']}}</p>
+			{% if post['country'] %}<img class='flag' src='/flags/{{post["country"]}}.png'/>{% end %}			
 			<a href='#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
 			<p class='post-number'></p>
 			{% if admin %}

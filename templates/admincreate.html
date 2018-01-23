@@ -8,27 +8,29 @@
 	<form method='POST' action=''>
 		{% module xsrf_form_html() %}
 		<div class='name'>
-			<p>Name</p><input type='text' name='name' maxlength=50 required/>
+			<label for='name'>Name</label><input type='text' name='name' maxlength=50 required/>
 		</div>
 		<div class='short'>
-			<p>Short</p><input type='text' name='short' maxlength=3 required/>
+			<label for='short'>Short</label><input type='text' name='short' maxlength=3 required/>
 		</div>
 		<div class='username'>
-			<p>Username</p><input type='text' name='username' maxlength=20 />
+			<label for='username'>Username</label><input type='text' name='username' maxlength=20 />
 		</div>		
 		<div class='description'>
-			<p>Description</p><textarea rows=4 cols=55 name='description' maxlength=500></textarea>
+			<label for'description'>Description</label><textarea rows=4 cols=55 name='description' maxlength=500></textarea>
 		</div>
 		<div class='thread_posts'>
-			<p>Max amount of posts in thread</p><input type='text' name='thread_posts' maxlength=4 onkeypress='validate(event)' required/>
+			<label for='thread_posts'>Max amount of posts in thread</label><input type='text' name='thread_posts' maxlength=4 onkeypress='validate(event)' required/>
 		</div>
 		<div class='thread_bump'>
-			<p>Bumplimit</p><input type='text' name='thread_bump' onkeypress='validate(event)' maxlength=4 required/>
+			<label for='thread_bump'>Bumplimit</label><input type='text' name='thread_bump' onkeypress='validate(event)' maxlength=4 required/>
 		</div>
+		<div class='thread_bump'>
+			<label for='country'>Country flags?</label><input id='country' type='checkbox' name='country'/>
+		</div>		
 		<div class='thread_catalog'>
-			<p>Max amount of threads in catalog</p><input type='text' name='thread_catalog' onkeypress='validate(event)' maxlength=2 required/>
+			<label for='thread_catalog'>Max amount of threads in catalog</label><input type='text' name='thread_catalog' onkeypress='validate(event)' maxlength=2 required/>
 		</div>
-
 		<input type='submit'>
 	</form>
 </div>

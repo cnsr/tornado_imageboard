@@ -23,6 +23,9 @@ $(document).ready(function(){
 		++i;
     	$(this).find(".post-number").text(i++);
 	});
+	$('.date').each(function() {
+		$(this).text(localTime($(this).text()));
+	});
 	$(window).on('resize', function(){
 		var win = $(this); //this = window
 		if ($(window).width() > 768) {
@@ -39,3 +42,12 @@ $(document).ready(function(){
 		}
 	});
 });
+
+function localTime(utc) {
+	utc = utc + ' UTC';
+	var month = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+	var d = new Date(utc);
+	var date = d.getDate() + '-' + month[d.getMonth()] + '-' + d.getFullYear();
+	var time = d.toLocaleTimeString(navigator.languages[0]);
+	return date + ' ' + time
+}

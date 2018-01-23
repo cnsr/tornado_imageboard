@@ -16,6 +16,7 @@ from getresolution import resolution
 from tornado import gen
 from html.parser import HTMLParser
 from PIL import Image
+import geoip2.database as gdb
 
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
@@ -24,6 +25,7 @@ executor = concurrent.futures.ThreadPoolExecutor(8)
 
 uploads = 'uploads/'
 
+gdbr = gdb.Reader('GeoLite2-Country.mmdb')
 
 class MLStripper(HTMLParser):
     def __init__(self):
@@ -135,7 +137,7 @@ class ThreadHandler(LoggedInHandler):
             foriginal, ffile, filetype, filedata = await upload_file(self.request.files['file'][0])
         else:
             foriginal = ffile = filetype = filedata = None
-        replies = result[1]
+        replies = get_replies(text)
         count = await latest(db) + 1
         oppost = False
         thread = thread_count
@@ -300,6 +302,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
             data['thread_posts'] = int(self.get_argument('thread_posts', ''))
             data['thread_bump'] = int(self.get_argument('thread_bump', ''))
             data['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
+            data['country'] = 'country' in self.request.arguments
             data['postcount'] = 0
             data['mediacount'] = 0
             data['created'] = datetime.datetime.utcnow()
@@ -384,7 +387,13 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
     data['thread'] = thread
     data['banned'] = False
     data['replies'] = []
+    data['country'] = ''
     b = await db.boards.find_one({'short': board})
+    if b['country']:
+        # workaround for localhost, replaces localhost with google ip (US)
+        if ip == '127.0.0.1':
+            ip = '172.217.20.206'
+        data['country'] = gdbr.country(ip).country.iso_code
     if b['username'] != '':
         data['username'] = b['username']
     else:
@@ -513,6 +522,17 @@ async def is_banned(db, ip):
     return False
 
 
+def get_replies(text):
+    replies = []
+    text_list = re.split(r'(\s+)', text)
+    for t in text_list:
+        x = re.compile(r'(>>\d+)').match(t)
+        if x:
+            number = x.group(1)
+            replies.append(number[2:])
+    return replies
+
+
 class Application(tornado.web.Application):
 
     def __init__(self):
@@ -520,6 +540,7 @@ class Application(tornado.web.Application):
             (r'/$', IndexHandler),
             (r'/admin/?', AdminHandler),
             (r'/banned/?', BannedHandler),
+            (r'/flags/(.*)/?', tornado.web.StaticFileHandler, {'path': 'flags'}),
             (r'/(\w+)/?', BoardHandler),
             (r'/(\w+)/thread/(\d+)/?', ThreadHandler),
             (r'/admin/login/?', AdminLoginHandler),

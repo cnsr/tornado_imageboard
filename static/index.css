@@ -21,6 +21,7 @@ p {
 
 .replies-p {
 	 display: inline-block;
+	 margin: 0;
 }
 
 .boards-list-board {
@@ -120,4 +121,19 @@ citation {
 
 #text-area {
 	 resize: none;
+}
+
+.license {
+	font-size: 12px;
+	position: fixed;
+	bottom: 0;
+}
+
+.add_board form * {
+	 margin-top: 12px;
+}
+
+.flag {
+	max-height: 24px;
+	vertical-align: bottom;
 }

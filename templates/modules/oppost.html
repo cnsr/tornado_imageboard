@@ -4,6 +4,7 @@
 			{% if op['subject'] %}<h3>{{op['subject']}}</h3>{% end %}
 			{% if op['username'] %}<p class='username'>{{op['username']}}</p>{% end %}			
 			<p class='date'>{{ op['date']}}</p>
+			{% if op['country'] %}<img class='flag' src='/flags/{{op["country"]}}.png'/>{% end %}			
 			<a href='#{{op["count"]}}' class='post-href'>>>{{op['count']}}</a>
 			<p class='oppost-number'>1</p>
 			{% if op['locked'] %}
