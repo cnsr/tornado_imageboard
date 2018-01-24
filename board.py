@@ -26,6 +26,9 @@ executor = concurrent.futures.ThreadPoolExecutor(8)
 
 uploads = 'uploads/'
 
+thumb_def = 'static/missing_thumbnail.jpg'
+
+
 gdbr = gdb.Reader('GeoLite2-Country.mmdb')
 
 class MLStripper(HTMLParser):
@@ -45,6 +48,15 @@ def strip_tags(html):
     s = MLStripper()
     s.feed(html)
     return s.get_data()
+
+
+# decorator that checks if user is admin
+def ifadmin(f):
+    def wrapper(self, *args, **kwargs):
+        if not self.current_user:
+            self.redirect('/admin/login')
+        return f(self, *args, *kwargs)
+    return wrapper
 
 
 # crappy handler that checks if user is admin
@@ -67,7 +79,6 @@ class IndexHandler(tornado.web.RequestHandler):
 class BoardHandler(LoggedInHandler):
 
     async def get(self, board):
-        board = board.split('/')[0]
         db = self.application.database
         db_board = await db.boards.find_one({'short': board})
         if db_board:
@@ -231,6 +242,8 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
                     files.append(post['image'])
                 elif post['video']:
                     files.append(post['video'])
+                if post['thumb'] != thumb_def:
+                    files.append(post['thumb'])
             await db.posts.delete_many({'thread': pid})
         await db.posts.delete_one({'count': pid})
         await self.delete(files)
@@ -285,34 +298,32 @@ class AdminHandler(LoggedInHandler):
 
 # creation of boards
 class AdminBoardCreationHandler(LoggedInHandler):
-
+    @ifadmin
     async def get(self):
-        if not self.current_user:
-            self.redirect('/admin/login')
-        else:
-            boards_list = await self.application.database.boards.find({}).to_list(None)
-            self.render('admincreate.html', boards_list=boards_list)
+        boards_list = await self.application.database.boards.find({}).to_list(None)
+        self.render('admincreate.html', boards_list=boards_list)
 
+    @ifadmin
     async def post(self):
-        if self.current_user:
-            data = {}
-            data['name'] = self.get_argument('name', '')
-            data['short']= self.get_argument('short', '')
-            data['username'] = self.get_argument('username', '')
-            data['description'] = self.get_argument('description', '')
-            data['thread_posts'] = int(self.get_argument('thread_posts', ''))
-            data['thread_bump'] = int(self.get_argument('thread_bump', ''))
-            data['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
-            data['country'] = 'country' in self.request.arguments
-            data['postcount'] = 0
-            data['mediacount'] = 0
-            data['created'] = datetime.datetime.utcnow()
-            db = self.application.database.boards
-            await db.insert(data)
-            self.redirect('/' + data['short'])
+        data = {}
+        data['name'] = self.get_argument('name', '')
+        data['short']= self.get_argument('short', '')
+        data['username'] = self.get_argument('username', '')
+        data['description'] = self.get_argument('description', '')
+        data['thread_posts'] = int(self.get_argument('thread_posts', ''))
+        data['thread_bump'] = int(self.get_argument('thread_bump', ''))
+        data['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
+        data['country'] = 'country' in self.request.arguments
+        data['postcount'] = 0
+        data['mediacount'] = 0
+        data['created'] = datetime.datetime.utcnow()
+        db = self.application.database.boards
+        await db.insert(data)
+        self.redirect('/' + data['short'])
 
 
 # login for admin; it's fucking awful since pass is in plaintext and that's only one of shitty things
+# also cant use decorator here thus it's ugly as fuck
 class AdminLoginHandler(LoggedInHandler):
 
     async def get(self):
@@ -334,7 +345,6 @@ class AdminLoginHandler(LoggedInHandler):
 
 # ban status for your ip
 class BannedHandler(tornado.web.RequestHandler):
-
     async def get(self):
         db = self.application.database
         ip = await get_ip(self.request)
@@ -344,36 +354,29 @@ class BannedHandler(tornado.web.RequestHandler):
 
 # stats of boards for admins
 class AdminStatsHandler(LoggedInHandler):
-
+    @ifadmin
     async def get(self):
-        if not self.current_user:
-            self.redirect('/admin/login')
-        else:
-            boards = await self.application.database.boards.find({}).to_list(None)
-            boards_list = await self.application.database.boards.find({}).to_list(None)
-            self.render('admin_stats.html', boards=boards, boards_list=boards_list)
+        boards = await self.application.database.boards.find({}).to_list(None)
+        boards_list = await self.application.database.boards.find({}).to_list(None)
+        self.render('admin_stats.html', boards=boards, boards_list=boards_list)
 
 
 # you can view bans here
 class AdminBannedHandler(LoggedInHandler):
-
+    @ifadmin
     async def get(self):
-        if not self.current_user:
-            self.redirect('/admin/login')
-        else:
-            db = self.application.database
-            bans = await db.bans.find({}).sort([('date', 1)]).to_list(None)
-            boards_list = await db.boards.find({}).to_list(None)
-            self.render('admin_banned.html', bans=bans, boards_list=boards_list)
+        db = self.application.database
+        bans = await db.bans.find({}).sort([('date', 1)]).to_list(None)
+        boards_list = await db.boards.find({}).to_list(None)
+        self.render('admin_banned.html', bans=bans, boards_list=boards_list)
 
+    @ifadmin
     async def post(self):
-        if not self.current_user:
-            self.redirect('/admin/login')
-        else:
-            db = self.application.database
-            ip = self.get_argument('ip')
-            await db.bans.delete_one({'ip': ip})
-            self.redirect('/admin/bans')
+        db = self.application.database
+        ip = self.get_argument('ip')
+        await db.bans.delete_one({'ip': ip})
+        self.redirect('/admin/bans')
+
 
 # constructs dictionary to insert into mongodb
 async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, fo=None, f=None, filetype=None, filedata=False):
@@ -485,6 +488,8 @@ def schedule_check(app):
                 if not len(threads) <= board['thread_catalog']:
                     threads = threads[:(threads.count(None) - board['thread_catalog'])]
                     for thread in threads:
+                        if thread['thumb'] != thumb_def:
+                            os.remove(thread['thumb'])
                         if thread['video']:
                             os.remove(thread['video'])
                         if thread['image']:
@@ -495,6 +500,9 @@ def schedule_check(app):
                                 os.remove(post['video'])
                             if post['image']:
                                 os.remove(post['image'])
+                            if post['thumb'] != thumb_def:
+                                os.remove(post['thumb'])
+
                         yield db.posts.delete_many({'thread': thread['count']})
                         yield db.posts.remove({'count': thread['count']})
         except Exception as e:
