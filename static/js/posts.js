@@ -41,7 +41,37 @@ $(document).ready(function(){
 			 $(form).hide();
 		}
 	});
+	$('body').on('mouseover', 'a.reply', function() {
+		var display = $($(this).attr('href')).clone();
+		display.toggleClass('to_die', true);
+		display.css({
+			 display:'inline',
+			 position: 'absolute',
+			 top: $(this).offset().top - $(this).height()/2,
+			 left: $(this).offset().left + $(this).width(),
+			 border: '1px black solid',
+			 zIndex: 1000,
+			 background: 'white'
+		});
+		$('body').append(display);
+	});
+	$('body').on('mouseleave', 'a.reply', function(e) {
+		$('.to_die').remove();
+	});
+	/*
+	$('body').on('mouseleave', 'a.reply', function(e) {
+		setTimeout(function() {
+			if (!$(e.relatedTarget).parents('.to_die').length) {
+				console.log($(e.relatedTarget).parents('.to_die').length);
+				$('.to_die').remove();
+			}
+		}, 1000);
+	});*/
 });
+
+function die() {
+	 
+}
 
 function localTime(utc) {
 	utc = utc + ' UTC';

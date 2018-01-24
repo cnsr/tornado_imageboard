@@ -16,12 +16,12 @@
 			{% if post['video'] != None %}
 				<a href='{{post["video"]}}' class='filedata-a'>{{post['original']}}</a>
 				<p class='filedata-p'>{{post['filedata']}}</p>							
-				{% module Video(post['video'], post['count']) %}
+				{% module Video(post['video'], post['count'], post['thumb']) %}
 			{% end %}
 			{% if post['image'] != None %}
 				<a href='{{post["video"]}}' class='filedata-a'>{{post['original']}}</a>
 				<p class='filedata-p'>{{post['filedata']}}</p>
-				{% module Image(post['image'], post['count']) %}				
+				{% module Image(post['image'], post['count'], post['thumb']) %}				
 			{% end %}
 		</div>
 		<p class='text'>{% raw post['text'] %}</p>	
@@ -32,7 +32,7 @@
 			<li class=replies>
 				<p class='replies-p'>Replies: </p>
 				{% for reply in post['replies'] %}
-					<ul class='reply'><a href='#{{ reply }}'>>>{{reply}}</a></ul>
+					<ul class='reply'><a href='#{{ reply }}' class='reply'>>>{{reply}}</a></ul>
 				{% end %}
 			</li>
 		{% end %}

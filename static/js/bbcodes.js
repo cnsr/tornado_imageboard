@@ -14,7 +14,7 @@ $format_replace = [
 	'<strike>$1</strike>',
 	'<spoiler>$1</spoiler>',
 	'<citation>&gt;$3</citation>',
-	'<a href="#$2">&gt;&gt;$2</a>',
+	'<a href="#$2" class="reply">&gt;&gt;$2</a>',
 ];
 $(document).ready(function() {
 	$('.text').each(function(){

@@ -1,4 +1,7 @@
 $(document).ready(function(){
+	if (localStorage.volume === null || localStorage.volume === '' || typeof localStorage.volume === 'undefined') {
+		localStorage.volume = 0.5;
+	}
 	centerModal();	
 	var win = $(window);	
 	$('.modal').draggable({
@@ -9,6 +12,10 @@ $(document).ready(function(){
 			if (!target.parents('.modal').length){
 				$('.modal').empty();
 				target.clone().appendTo('.modal');
+				if (!target.is('video')){
+					 $('.modal').find('img').attr('src', target.attr('data-image'));
+				}
+				//centering is broken
 				centerModal();
 				var modalMedia = $('.modal').find('.post-media');
 				modalMedia.addClass('modal-image');
@@ -26,7 +33,8 @@ $(document).ready(function(){
 					}
 					var aspect = aspectRatio($('.modal-image'));					
 					var w = $('.modal-image').width() * aspect * 0.1;
-					var h = $('.modal-image').height() * aspect * 0.1;					
+					var h = $('.modal-image').height() * aspect * 0.1;
+					centerModal();
 					$('.modal-image').on('DOMMouseScroll mousewheel wheel', function(e){
 						var win = $(window);
 						formX = intify('left');
@@ -35,8 +43,6 @@ $(document).ready(function(){
 						lastCursorY = e.pageY - win.scrollTop();
 						cursorInBoxPosX = lastCursorX-formX;
 						cursorInBoxPosY = lastCursorY-formY;
-						console.log(w);
-						console.log(h);
 						var nwu = ($(this).width() + w).toString();
 						var nhu = ($(this).height() + h).toString();
 						var nwd = ($(this).width() - w).toString();
@@ -53,27 +59,28 @@ $(document).ready(function(){
 						return false;
 					});
 				} else {
+					centerModal();
 					var vid = $('.modal-image');
 					vid.attr('autoplay', '');
-					
-					var vol = parseFloat(getCookie('volume'));
+					var vol = parseFloat(localStorage.volume);
 					if (isNaN(vol)) {vol = 0.5};
 					if (vol > 1.0) {vol = 1.0};
 					if (vol < 0) {vol = 0.0};
 					vid.prop('volume', parseFloat(vol));
-					document.cookie = "volume="+vol;					
+					localStorage.volume = vol;
 					vid.on('DOMMouseScroll mousewheel wheel', function(e){
-						vol = parseFloat(getCookie('volume'));
-						if (isNaN(vol)) {vol = 0.5};
+						e.preventDefault();
+						vol = parseFloat(localStorage.volume);
 						if (vol > 1.0) {vol = 1.0};
 						if (vol < 0) {vol = 0.0};
 						vid.prop('volume', parseFloat(vol));
 						if(e.originalEvent.detail > 0 || e.originalEvent.wheelDelta < 0) {
 							var volume = (vol - 0.1);
-							document.cookie = "volume="+volume;
+							localStorage.volume = volume;
 						} else {
 							var volume = (vol + 0.1);
-							document.cookie = "volume="+volume;
+							localStorage.volume = volume;
+
 						}
 					});
 
@@ -86,11 +93,12 @@ $(document).ready(function(){
 	});
 	function centerModal() {
 		var $form = $('.modal');
+		var $fform = $form.find('.modal-image');
         var win = $(window);
         var windowWidth = win.width();
         var windowHeight = win.height();
-        var formWidth = $form.innerWidth();
-        var formHeight = $form.innerHeight();
+        var formWidth = $fform.innerWidth();
+        var formHeight = $fform.innerHeight();
 		var x = Math.round(windowWidth / 2) - Math.round(formWidth / 2);
 		var y = Math.round(windowHeight / 2) - Math.round(formHeight / 2);
         $form.css('top', y + 'px');
@@ -110,12 +118,10 @@ $(document).ready(function(){
         var windowHeight = win.height();
         var formWidth = $form.innerWidth();
         var formHeight = $form.innerHeight();
-
 		if(x+formWidth > windowWidth) x = windowWidth-formWidth;
 		if(y+formHeight > windowHeight) y = windowHeight-formHeight;
 		if(x<0) x = 0;
 		if(y<0) y = 0;
-
 
 		$form.css('top', y + 'px');
 		$form.css('left', x + 'px');
@@ -124,21 +130,6 @@ $(document).ready(function(){
 		formY = y;
     };
 });
-
-function getCookie(c_name) {
-	if (document.cookie.length > 0)
-	{
-		c_start = document.cookie.indexOf(c_name + "=");
-		if (c_start != -1)
-		{
-			c_start = c_start + c_name.length + 1;
-			c_end = document.cookie.indexOf(";", c_start);
-			if (c_end == -1) c_end = document.cookie.length;
-			return unescape(document.cookie.substring(c_start,c_end));
-		}
-	}
-	return "";
-};
 
 function aspectRatio(element) {
     return $(element).width() / $(element).height();

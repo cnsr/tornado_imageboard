@@ -14,12 +14,12 @@
 			{% if thread['video'] != None %}
 				<a href='{{thread["video"]}}' class='filedata-a'>{{thread['original']}}</a>
 				<p class='filedata-p'>{{thread['filedata']}}</p>			
-				{% module Video(thread['video'], thread['count']) %}
+				{% module Video(thread['video'], thread['count'], thread['thumb']) %}
 			{% end %}
 			{% if thread['image'] != None %}
 				<a href='{{thread["video"]}}' class='filedata-a'>{{thread['original']}}</a>
 				<p class='filedata-p'>{{thread['filedata']}}</p>			
-				{% module Image(thread['image'], thread['count']) %}
+				{% module Image(thread['image'], thread['count'], thread['thumb']) %}
 			{% end %}
 		</div>
 		<p class='text'>{% raw thread['text'] %}</p>

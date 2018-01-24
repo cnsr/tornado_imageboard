@@ -17,6 +17,7 @@ from tornado import gen
 from html.parser import HTMLParser
 from PIL import Image
 import geoip2.database as gdb
+from thumbnail import video_thumb, pic_thumb
 
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
@@ -414,9 +415,11 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
         if filetype == 'image':
             data['image'] = f
             data['video'] = None
+            data['thumb'] = pic_thumb(f)
         else:
             data['video'] = f
             data['image'] = None
+            data['thumb'] = video_thumb(f)
         if not oppost:
             filecount = await db.posts.find({'thread': t['count'],
                                         'image': { '$ne': None }
