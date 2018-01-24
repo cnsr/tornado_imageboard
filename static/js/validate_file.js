@@ -5,7 +5,8 @@ $(document).ready( function() {
 			if (fileSize > 5242880) {
 				alert("File too large!");
 				$('input[type="file"]').val(null);
-			}
+				$('#text-area').prop('required',true);
+			} else { $('#text-area').prop('required',false);}
 		}
 	});
 });
