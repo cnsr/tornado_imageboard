@@ -1,6 +1,6 @@
 .modal {
 	 display: inline-block;
-	 z-index: 1;
+	 z-index: 1000;
 	 display: inline-block;
    position: fixed !important;
 	 max-width: 10000px;
@@ -10,4 +10,40 @@
 }
 
 .modal-image {
+}
+
+.modal-controls {
+	z-index: 10000;
+	display: none;
+	position: relative;
+	width: 100%;
+	position: fixed;
+	top: 50%;
+}
+
+.modal-c {
+	font-size: 24px;
+	display: inline-block;
+	border: none;
+	box-shadow: 0px 1px 14px 1px lightgrey;
+	font-weight: bold;
+	background: white;
+	color:black;
+}
+
+.modal-c:focus {
+	 outline: 0;
+}
+
+.modal-c:active {
+	 background-color: lightgray;
+}
+
+#modalL {
+	 float: left;
+}
+
+#modalR {
+	 float: right;
+	 margin-right: 15px;
 }
