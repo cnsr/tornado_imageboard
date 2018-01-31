@@ -1,0 +1,35 @@
+{% extends 'index.html' %}
+{% block title %}Bans{% end %}
+
+{% block css %}
+	<link rel='stylesheet' href="{{ static_url('css/admin_banned.css') }}">
+{% end %}
+
+{% block content %}
+	<table class='bans reports'>
+	<tr>
+		<th>IP</th>
+		<th>Reason</th>
+		<th>Date</th>
+		<th>Url</th>
+		<th>Remove report</th>
+	</tr>
+	{% for report in reports %}
+		<tr>
+			<td>{{report['ip']}}</td>
+			<td>{{report['reason']}}</td>
+			<td>{{report['date']}}</td>
+			<td><a href="{{report['url']}}">View</a></td>
+			<td>
+				<div class='unban'>
+					<form method='POST' action=''>
+						{% module xsrf_form_html() %}
+						<input type='text' value='{{report['ip']}}' name='ip' hidden/>
+						<input type='submit' value='Remove'/>
+					</form>
+				</div>
+			</td>
+		</tr>
+	{% end %}
+	</table>
+{% end %}

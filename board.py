@@ -254,6 +254,29 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
             os.remove(file)
 
 
+# reporting users using ajax; same stuff as with previous one
+class AjaxReportHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        for k, v in data.items(): data[k] = v.decode('utf-8')
+        p = await db.posts.find_one({'count': int(data['post'])})
+        report = {
+            'ip': p['ip'],
+            'post': int(data['post']),
+            'reason': data['reason'],
+            'date': datetime.datetime.utcnow(),
+        }
+        if not p['oppost']:
+            report['url'] = '/' + p['board'] + '/thread/' + str(p['thread']) + '#' + str(p['count'])
+        else:
+            report['url'] = '/' + p['board'] + '/thread/' + str(p['count']) + '#' + str(p['count'])
+        await db.reports.insert(report)
+        response = {'ok': 'ok'}
+        self.write(json.dumps(response))
+
+
 # banning users using ajax; same stuff as with previous one
 class AjaxBanHandler(tornado.web.RequestHandler):
 
@@ -377,6 +400,22 @@ class AdminBannedHandler(LoggedInHandler):
         await db.bans.delete_one({'ip': ip})
         self.redirect('/admin/bans')
 
+
+# you can view reports here
+class AdminReportsHandler(LoggedInHandler):
+    @ifadmin
+    async def get(self):
+        db = self.application.database
+        reports = await db.reports.find({}).sort([('date', 1)]).to_list(None)
+        boards_list = await db.boards.find({}).to_list(None)
+        self.render('admin_reported.html', reports=reports, boards_list=boards_list)
+
+    @ifadmin
+    async def post(self):
+        db = self.application.database
+        ip = self.get_argument('ip')
+        await db.reports.delete_one({'ip': ip})
+        self.redirect('/admin/reports')
 
 # constructs dictionary to insert into mongodb
 async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, fo=None, f=None, filetype=None, filedata=False):
@@ -558,9 +597,11 @@ class Application(tornado.web.Application):
             (r'/admin/create/?', AdminBoardCreationHandler),
             (r'/admin/stats/?', AdminStatsHandler),
             (r'/admin/bans/?', AdminBannedHandler),
+            (r'/admin/reports/?', AdminReportsHandler),
             (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': 'uploads'}),
             (r'/ajax/remove/?', AjaxDeleteHandler),
             (r'/ajax/ban/?', AjaxBanHandler),
+            (r'/ajax/report/?', AjaxReportHandler),
         ]
 
         settings = {

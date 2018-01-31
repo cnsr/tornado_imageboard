@@ -137,3 +137,16 @@ citation {
 	max-height: 24px;
 	vertical-align: bottom;
 }
+
+.report {
+	padding: 0px 6px;
+	border: 1px solid;
+	cursor: pointer;
+	max-height: 22px;
+	margin-bottom: 1px;
+	-moz-user-select: -moz-none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}

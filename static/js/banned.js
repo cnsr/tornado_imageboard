@@ -35,19 +35,19 @@ $(document).ready(function() {
 
 $.ajaxSettings.traditional = true;
 function sendAjaxBan(post, date, reason, lock) {
-        $.ajax({
-            url : "/ajax/ban/",
-            type : "POST",
-            data : {post: post, date: date, reason: reason, lock: lock, _xsrf: getCookie("_xsrf")},
-            success : function(json) {
-				$('#' + post).append('<p class="banned">User has been banned for this post</p>');
-            },
+	$.ajax({
+		url : "/ajax/ban/",
+		type : "POST",
+		data : {post: post, date: date, reason: reason, lock: lock, _xsrf: getCookie("_xsrf")},
+		success : function(json) {
+			$('#' + post).append('<p class="banned">User has been banned for this post</p>');
+		},
 
-            error : function(xhr,errmsg,err) {
-                console.log(xhr.status + ": " + xhr.responseText);
-            }
-        });
-    };
+		error : function(xhr,errmsg,err) {
+			console.log(xhr.status + ": " + xhr.responseText);
+		}
+	});
+};
 
 function getCookie(c_name)
 {

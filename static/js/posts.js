@@ -55,6 +55,41 @@ $(document).ready(function(){
 		});
 		$('body').append(display);
 	});
+	$('.report').on('click', function() {
+		$('.report-popup').remove();
+		var id = $(this).attr('data-id');		
+		var popup = "<div class='report-popup' data-id="+id+"><select>"+
+			"<option>Spam</option>"+
+			"<option>Inapropriate content</option>"+
+			"<option>Harassment</option>"+
+			"<option>Wow rude</option>"+
+			"<option>Other</option>"+
+			"</select><button id='close-report'>X</button>"+
+			"<button id='submit-report'>Report</button></div>";
+		var off_top = $(this).offset()['top'] + 9;
+		var off_left= $(this).offset()['left'] + 9;
+		$('body').append(popup);
+		var pop = $('.report-popup');
+		pop.css({
+				"position":'relative',
+				"background": 'white',
+				"border": '1px solid black',
+				"z-index": '1000',
+				"display": 'inline-block',
+				});
+		pop.find('#submit-report').css('display', 'block');
+		pop.offset({'top': off_top, 'left': off_left});
+	});
+	$('body').on('click', '#close-report', function(){
+		 $('.report-popup').remove();
+	});
+	$('body').on('click', '#submit-report', function(e){
+		e.preventDefault();
+		var id = $(this).closest('.report-popup').attr('data-id');
+		var reason = $(this).closest('.report-popup').find('select :selected').text();
+		sendAjaxReport(id, reason);
+		$('.report-popup').remove();		
+	});
 	$('body').on('mouseleave', 'a.reply', function(e) {
 		$('.to_die').remove();
 	});
@@ -81,3 +116,34 @@ function localTime(utc) {
 	var time = d.toLocaleTimeString(navigator.languages[0]);
 	return date + ' ' + time
 }
+
+$.ajaxSettings.traditional = true;
+function sendAjaxReport(post, reason) {
+        $.ajax({
+            url : "/ajax/report/",
+            type : "POST",
+            data : {post: post, reason: reason, _xsrf: getCookie("_xsrf")},
+            success : function(json) {
+            },
+
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText);
+            }
+        });
+    };
+
+function getCookie(c_name)
+{
+	if (document.cookie.length > 0)
+	{
+		c_start = document.cookie.indexOf(c_name + "=");
+		if (c_start != -1)
+		{
+			c_start = c_start + c_name.length + 1;
+			c_end = document.cookie.indexOf(";", c_start);
+			if (c_end == -1) c_end = document.cookie.length;
+			return unescape(document.cookie.substring(c_start,c_end));
+		}
+	}
+	return "";
+};
