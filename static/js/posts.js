@@ -88,7 +88,8 @@ $(document).ready(function(){
 		var id = $(this).closest('.report-popup').attr('data-id');
 		var reason = $(this).closest('.report-popup').find('select :selected').text();
 		sendAjaxReport(id, reason);
-		$('.report-popup').remove();		
+		$('.report-popup').remove();
+		popUp('Report has been sent!');
 	});
 	$('body').on('mouseleave', 'a.reply', function(e) {
 		$('.to_die').remove();

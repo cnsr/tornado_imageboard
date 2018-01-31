@@ -299,6 +299,10 @@ class AjaxBanHandler(tornado.web.RequestHandler):
                 ban['locked'] = True
             if data['date'] != 'Never':
                 ban['date'] = data['date']
+            if not p['oppost']:
+                ban['url'] = '/' + p['board'] + '/thread/' + str(p['thread']) + '#' + str(p['count'])
+            else:
+                ban['url'] = '/' + p['board'] + '/thread/' + str(p['count']) + '#' + str(p['count'])
             await db.bans.insert(ban)
             p['banned'] = True
             if ban['locked'] and p['oppost']:

@@ -2,15 +2,15 @@ $(document).ready(function() {
 	$('.del').on('click', function(){
 		var id = $(this).attr('data-id');
 		sendAjaxRemove(id);
+		popUp('Post has been deleted.');
 	});
 });
 $.ajaxSettings.traditional = true;
 function sendAjaxRemove(id) {
         $.ajax({
-            url : "/ajax/remove/", // the endpoint
-            type : "POST", // http method
-            data : {post: id, _xsrf: getCookie("_xsrf")}, // data sent with the post request
-            // handle a successful response
+            url : "/ajax/remove/",
+            type : "POST",
+            data : {post: id, _xsrf: getCookie("_xsrf")},
             success : function(json) {
                 var json = jQuery.parseJSON(json);
 				if (json.op == 'true') {
@@ -20,11 +20,8 @@ function sendAjaxRemove(id) {
 					post.remove();
 				}
             },
-
-            // handle a non-successful response
             error : function(xhr,errmsg,err) {
                 console.log(xhr.status + ": " + xhr.responseText);
-                // provide a bit more info about the error to the console
             }
         });
     };

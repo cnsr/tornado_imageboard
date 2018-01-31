@@ -13,8 +13,13 @@ $(document).ready(function() {
 		 $('.ban-expires-div').toggle();
 	})
 	$('.ban').on('click', function(){
-		 $('.banform').css('display','inline-block');
-		 $('#ban-post').val($(this).attr('data-id'));
+		$('.banform').css({'display':'inline-block', 'top': '25px', 'right': '25px'});
+		$('#ban-post').val($(this).attr('data-id'));
+		/* sets all box values to default */
+		$('#ban-never').val('');
+		$('#ban-lock').val('');
+		$('#ban-expires').val('');
+		$('#ban-reason').val('');		
 	})
 	$('#ban-submit').on('click', function(e) {
 		e.preventDefault();
@@ -30,6 +35,11 @@ $(document).ready(function() {
 		} else { var lock = 'false'; }
 		var reason = $('#ban-reason').val();
 		sendAjaxBan(post, ban, reason, lock);
+		popUp('User has been banned');
+		$('.banform').hide();
+	})
+	$('#ban-close').on('click', function() {
+		$('.banform').hide();		 
 	})
 });
 

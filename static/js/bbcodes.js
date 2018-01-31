@@ -51,25 +51,18 @@ function wrapText(openTag) {
         var selection = textArea.val().substr(textArea[0].selectionStart, textArea[0].selectionEnd - textArea[0].selectionStart);
         var end = textArea.val().substr(textArea[0].selectionEnd);
         var position = begin.length + openTag.length;
-		console.log(begin);
-		console.log(selection);
-		console.log(end);
-		console.log(position);
         if (position < 0){ position = position * -1;}
         if (selection === "") {
-			console.log('noselect');
 			textArea.val(begin + openTag + selection + closeTag + end);
 			textArea.focus();
 			textArea[0].setSelectionRange(position, position);
         } else {
-			console.log('select');
 			textArea.val(begin + openTag + selection + closeTag + end);
 			textArea.focus();
 			var position = begin.length + openTag.length + selection.length;
 			textArea[0].setSelectionRange(position, position);
         }
     } else {
-		console.log('undefined selection');	
 	}
     return false;
 }

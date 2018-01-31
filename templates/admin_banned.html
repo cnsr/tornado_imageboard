@@ -18,7 +18,7 @@
 	{% for ban in bans %}
 		<tr>
 			<td>{{ban['ip']}}</td>
-			<td>#{{ban['ban_post']}}</td>
+			<td><a href="{{ban['url']}}">#{{ban['ban_post']}}</a></td>
 			<td>{{ban['reason']}}</td>
 			<td>{% if ban['date'] %}{{ban['date']}}{% else %}Never{% end %}</td>
 			<td>{{ban['date_of']}}</td>

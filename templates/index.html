@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" type="text/javascript"></script>
 		{% block css %}
 			<link rel='stylesheet' href="{{ static_url('css/modules/board.css') }}">
 		{% end %}
 		<link rel='stylesheet' href="{{ static_url('index.css') }}">
 		<link rel='stylesheet' href="{{ static_url('css/modules/board.css') }}">		
 		<script src='{{static_url("js/bbcodes.js")}}'></script>
+		<script src='{{static_url("js/popup.js")}}'></script>		
 		<title>{% block title %}Index{% end %}</title>
 	</head>
 	<body>

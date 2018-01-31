@@ -150,3 +150,25 @@ citation {
 	-ms-user-select: none;
 	user-select: none;
 }
+
+.popup {
+  max-width:400px;
+  position: fixed;
+  z-index: 100000;
+  border: 1px solid black;
+  top: 25px;
+  right: 25px;
+	background: white;
+}
+
+#popup-inner {
+  display: inline-block;
+  padding: 3px;
+}
+
+#popup-close {
+  display: inline-block;
+  padding: 3px;
+  margin: 5px;
+  vertical-align: middle;
+}
