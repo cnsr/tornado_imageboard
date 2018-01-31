@@ -11,11 +11,14 @@ Tornado-based imageboard
     Maximum of one file per post.
 # Requirements
 python 3
+
 mongodb
+
 mediainfo
 # How to run
 ```sh
 $ pip install -r requirements.txt
 $ sudo service mongod start
+$ mkdir uploads
 $ python board.py
 ```
