@@ -9,6 +9,14 @@
 	 min-height: 10px;
 }
 
+.modal-controls *, .modal * {
+	user-select: none;
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	-o-user-select: none;
+} 
+
 .modal-image {
 }
 
@@ -32,18 +40,25 @@
 }
 
 .modal-c:focus {
-	 outline: 0;
+	outline: 0;
 }
 
 .modal-c:active {
-	 background-color: lightgray;
+	background-color: lightgray;
 }
 
 #modalL {
-	 float: left;
+	float: left;
 }
 
 #modalR {
-	 float: right;
-	 margin-right: 15px;
+	float: right;
+	margin-right: 15px;
+}
+
+#modalC {
+	top: 25px;
+	max-height: 30px;
+	position: fixed;
+	right: 25px;
 }

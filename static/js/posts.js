@@ -1,9 +1,11 @@
 $(document).ready(function(){
 	if ($(window).width() > 768) {
 		$('.add').addClass('drag');
-		$(".drag").draggable({
-		  containment: "window"
-		});
+		if (typeof nodrag === 'undefined') {
+			$(".drag").draggable({
+			  containment: "window"
+			});
+		}
 	}
 	$('.post-href').click(function() {
 		var number = $(this).attr('href');
@@ -38,7 +40,7 @@ $(document).ready(function(){
 			$('.add').removeClass('drag')
 		}
 		if (win.width() <= 480) {
-			 $(form).hide();
+			 $('form').hide();
 		}
 	});
 	$('body').on('mouseover', 'a.reply', function() {
@@ -110,7 +112,7 @@ function die() {
 }
 
 function localTime(utc) {
-	utc = utc + ' UTC';
+	//utc = utc + ' UTC';
 	var month = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 	var d = new Date(utc);
 	var date = d.getDate() + '-' + month[d.getMonth()] + '-' + d.getFullYear();
@@ -120,18 +122,18 @@ function localTime(utc) {
 
 $.ajaxSettings.traditional = true;
 function sendAjaxReport(post, reason) {
-        $.ajax({
-            url : "/ajax/report/",
-            type : "POST",
-            data : {post: post, reason: reason, _xsrf: getCookie("_xsrf")},
-            success : function(json) {
-            },
+	$.ajax({
+		url : "/ajax/report/",
+		type : "POST",
+		data : {post: post, reason: reason, _xsrf: getCookie("_xsrf")},
+		success : function(json) {
+		},
 
-            error : function(xhr,errmsg,err) {
-                console.log(xhr.status + ": " + xhr.responseText);
-            }
-        });
-    };
+		error : function(xhr,errmsg,err) {
+			console.log(xhr.status + ": " + xhr.responseText);
+		}
+	});
+};
 
 function getCookie(c_name)
 {

@@ -191,7 +191,8 @@ async def upload_file(f):
     elif fext in ['.webm', '.mp4']:
         filetype = 'video'
     else:
-        return None, None
+        # if format not supported
+        return None, None, None, None
     newname = uploads + str(uuid4()) + fext
     with open(newname, 'wb') as nf:
         nf.write(bytes(f['body']))
@@ -566,7 +567,6 @@ async def is_banned(db, ip):
     if ban:
         if ban['date']:
             expires = datetime.datetime.strptime(ban['date'], "%d-%m-%Y")
-            print(expires > datetime.datetime.today())
             if expires > datetime.datetime.today():
                 return True
             else:

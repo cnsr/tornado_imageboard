@@ -9,6 +9,7 @@
 {% block content %}
 	{% block add %}
 		{% module NewPost() %}
+		<script>var nodrag=true;</script>
 	{% end %}
 	<div class='threads'>
 		{% for thread in threads %}
