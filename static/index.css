@@ -176,3 +176,11 @@ citation {
 header {
 	margin-bottom: 15px;
 }
+
+.tripcode {
+	display: inline-block;
+	vertical-align: middle;
+	color: green;
+	font-size: 0.9rem;
+	margin: 0;
+}

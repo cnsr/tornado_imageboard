@@ -1,4 +1,5 @@
 $(document).ready(function(){
+	if (localStorage.name != '' && localStorage.name != null) $('#username').val(localStorage.name);
 	if ($(window).width() > 768) {
 		$('.add').addClass('drag');
 		if (typeof nodrag === 'undefined') {
@@ -28,6 +29,9 @@ $(document).ready(function(){
 	$('.date').each(function() {
 		$(this).text(localTime($(this).text()));
 	});
+	$('#sendpost').on('click', function(){
+		if ($('#username').length != 0) localStorage.name = $('#username').val();
+	})
 	$(window).on('resize', function(){
 		var win = $(this); //this = window
 		if ($(window).width() > 768) {

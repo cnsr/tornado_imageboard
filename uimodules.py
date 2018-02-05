@@ -10,8 +10,8 @@ class Thread(tornado.web.UIModule):
 class NewPost(tornado.web.UIModule):
     def javascript_files(self):
         return('js/validate_file.js')
-    def render(self):
-        return self.render_string('modules/newpost.html')
+    def render(self, name):
+        return self.render_string('modules/newpost.html', name=name)
 
 
 class Post(tornado.web.UIModule):

@@ -11,7 +11,7 @@ def video_thumb(path):
         new = pic_thumb(new, v=True)
         return new
     except Exception as e:
-        print(e)
+        # print(e)
         return 'static/missing_thumbnail.jpg'
 
 
@@ -30,5 +30,5 @@ def pic_thumb(path, v=False):
         img.save(new, optimize=True, quality=85)
         return new
     except IOError as e:
-        print(e)
+        # print(e)
         return 'static/missing_thumbnail.jpg'

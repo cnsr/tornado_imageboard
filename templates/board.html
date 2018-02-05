@@ -8,7 +8,11 @@
 {% block title %}Threads{% end %}
 {% block content %}
 	{% block add %}
-		{% module NewPost() %}
+		{% if board['custom'] %}
+			{% module NewPost(name=True) %}
+		{% else %}
+			{% module NewPost(name=False) %}
+		{% end %}
 		<script>var nodrag=true;</script>
 	{% end %}
 	<div class='threads'>

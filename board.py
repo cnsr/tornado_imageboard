@@ -18,6 +18,7 @@ from html.parser import HTMLParser
 from PIL import Image
 import geoip2.database as gdb
 from thumbnail import video_thumb, pic_thumb
+from tripcode import tripcode
 
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
@@ -28,6 +29,9 @@ uploads = 'uploads/'
 
 thumb_def = 'static/missing_thumbnail.jpg'
 
+def check_uploads():
+    if not os.path.exists(uploads):
+        os.makedirs(uploads)
 
 gdbr = gdb.Reader('GeoLite2-Country.mmdb')
 
@@ -97,6 +101,7 @@ class BoardHandler(LoggedInHandler):
         threads = await db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
         subject = self.get_argument('subject', '')
         text = self.get_argument('text', '')
+        username = self.get_argument('username', '') or False
         text = strip_tags(text)
         text = text.replace("\n","<br />")
         if self.request.files:
@@ -107,7 +112,7 @@ class BoardHandler(LoggedInHandler):
         oppost = True
         thread = None
         ip = await get_ip(self.request)
-        data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata)
+        data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata, username)
         if not await is_banned(db, ip):
             await db.posts.insert(data)
         else:
@@ -145,6 +150,7 @@ class ThreadHandler(LoggedInHandler):
         text = self.get_argument('text', 'empty post')
         text = strip_tags(text)
         text = text.replace("\n","<br />")
+        username = self.get_argument('username', '') or False
         if self.request.files:
             foriginal, ffile, filetype, filedata = await upload_file(self.request.files['file'][0])
         else:
@@ -154,7 +160,8 @@ class ThreadHandler(LoggedInHandler):
         oppost = False
         thread = thread_count
         ip = await get_ip(self.request)
-        data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata)
+        data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
+            username)
         op = await db['posts'].find_one({'count': thread_count})
         if op:
             db_board = await db.boards.find_one({'short': board})
@@ -342,6 +349,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
         data['thread_bump'] = int(self.get_argument('thread_bump', ''))
         data['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
         data['country'] = 'country' in self.request.arguments
+        data['custom'] = 'custom' in self.request.arguments
         data['postcount'] = 0
         data['mediacount'] = 0
         data['created'] = datetime.datetime.utcnow()
@@ -423,7 +431,8 @@ class AdminReportsHandler(LoggedInHandler):
         self.redirect('/admin/reports')
 
 # constructs dictionary to insert into mongodb
-async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, fo=None, f=None, filetype=None, filedata=False):
+async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, fo=None, f=None, filetype=None,
+filedata=False, username=False):
     data = {}
     data['ip'] = ip
     data['subject'] = subject
@@ -436,16 +445,31 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
     data['banned'] = False
     data['replies'] = []
     data['country'] = ''
+    data['trip'] = None
     b = await db.boards.find_one({'short': board})
     if b['country']:
         # workaround for localhost, replaces localhost with google ip (US)
         if ip == '127.0.0.1':
             ip = '172.217.20.206'
         data['country'] = gdbr.country(ip).country.iso_code
-    if b['username'] != '':
-        data['username'] = b['username']
+    if not b['custom']:
+        if b['username'] != '':
+            data['username'] = b['username']
+        else:
+            data['username'] = None
     else:
-        data['username'] = None
+        if username and username != '':
+            if '#' in username:
+                uname, trip = username.split('#')
+                data['username'] = uname
+                data['trip'] = '!' + tripcode(trip)
+            else:
+                data['username'] = username
+        else:
+            if b['username'] != '':
+                data['username'] = b['username']
+            else:
+                data['username'] = None
     if thread:
         t = await db.posts.find_one({'count': thread})
     if oppost:
@@ -546,7 +570,6 @@ def schedule_check(app):
                                 os.remove(post['image'])
                             if post['thumb'] != thumb_def:
                                 os.remove(post['thumb'])
-
                         yield db.posts.delete_many({'thread': thread['count']})
                         yield db.posts.remove({'count': thread['count']})
         except Exception as e:
@@ -622,6 +645,7 @@ class Application(tornado.web.Application):
 
 
 def main():
+    check_uploads()
     tornado.options.parse_command_line()
     application = Application()
     http_server = tornado.httpserver.HTTPServer(application, max_buffer_size=_ib.MAX_FILESIZE)

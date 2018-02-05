@@ -3,8 +3,14 @@
 	<form method='POST' action='' enctype="multipart/form-data" id='newpost'>
 		{% module xsrf_form_html() %}
 		<div class='subject'>
-			<p class='subj'>Subject</p><input type='text' name='subject'/>
+			<label for='subject' class='subj'>Subject</label><input id='subject' type='text' name='subject'/>
 		</div>
+		{% if name %}
+		<div class='name'>
+				<label for='username'>Name</label>
+				<input type='input' maxlength=25 id='username' name='username'/>
+		</div>
+		{% end %}
 		<div class='bb'>
 			<button id='bb-b' onclick="return wrapText('b')"><b>b</b></button>
 			<button id='bb-i' onclick="return wrapText('i')"><i>i</i></button>
@@ -23,6 +29,6 @@
 			<p class='file-about'>Maximal size: 5mb</p>
 			<input type='file' name='file' class='fileinput'/>
 		</div>
-		<input type='submit'>
+		<input type='submit' id='sendpost'>
 	</form>
 </div>

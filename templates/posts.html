@@ -14,7 +14,11 @@
 {% block content %}
 	{% if not op['locked'] %}
 		{% block add %}
-			{% module NewPost() %}
+			{% if board['custom'] %}
+				{% module NewPost(name=True) %}
+			{% else %}
+				{% module NewPost(name=False) %}
+			{% end %}
 		{% end %}
 	{% end %}
 	<div class='op'>
