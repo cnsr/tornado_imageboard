@@ -28,6 +28,7 @@ executor = concurrent.futures.ThreadPoolExecutor(8)
 uploads = 'uploads/'
 
 thumb_def = 'static/missing_thumbnail.jpg'
+spoilered = 'static/spoiler.jpg'
 
 def check_uploads():
     if not os.path.exists(uploads):
@@ -104,6 +105,7 @@ class BoardHandler(LoggedInHandler):
         username = self.get_argument('username', '') or False
         text = strip_tags(text)
         text = text.replace("\n","<br />")
+        spoiler = 'spoilerimage' in self.request.arguments
         if self.request.files:
             fo, ff, filetype, filedata = await upload_file(self.request.files['file'][0])
         else:
@@ -112,7 +114,7 @@ class BoardHandler(LoggedInHandler):
         oppost = True
         thread = None
         ip = await get_ip(self.request)
-        data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata, username)
+        data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata, username, spoiler=spoiler)
         if not await is_banned(db, ip):
             await db.posts.insert(data)
         else:
@@ -160,8 +162,9 @@ class ThreadHandler(LoggedInHandler):
         oppost = False
         thread = thread_count
         ip = await get_ip(self.request)
+        spoiler = 'spoilerimage' in self.request.arguments
         data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
-            username)
+        username, spoiler=spoiler)
         op = await db['posts'].find_one({'count': thread_count})
         if op:
             db_board = await db.boards.find_one({'short': board})
@@ -188,6 +191,26 @@ class ThreadHandler(LoggedInHandler):
             self.redirect('/' + str(board) + '/thread/' + str(op['count']))
         else:
             self.redirect('/' + str(board))
+
+
+class JsonThreadHandler(LoggedInHandler):
+    thread_count = ''
+
+    async def get(self, board, count):
+        thread_count = int(count)
+        db = self.application.database
+        db_board = await db.boards.find_one({'short': board})
+        op = await db.posts.find_one({'count': thread_count})
+        res = [op]
+        del op['_id']
+        op['date'] = op['date'].strftime("%Y-%m-%d %H:%M:%S")
+        op['lastpost'] = op['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
+        posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
+        for post in posts:
+            del post['_id']
+            post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
+            res.append(post)
+        self.write(json.dumps(res, indent=4))
 
 
 async def upload_file(f):
@@ -250,7 +273,7 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
                     files.append(post['image'])
                 elif post['video']:
                     files.append(post['video'])
-                if post['thumb'] != thumb_def:
+                if post['thumb'] != thumb_def and post['thumb'] != spoilered:
                     files.append(post['thumb'])
             await db.posts.delete_many({'thread': pid})
         await db.posts.delete_one({'count': pid})
@@ -432,7 +455,7 @@ class AdminReportsHandler(LoggedInHandler):
 
 # constructs dictionary to insert into mongodb
 async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, fo=None, f=None, filetype=None,
-filedata=False, username=False):
+filedata=False, username=False, spoiler=False):
     data = {}
     data['ip'] = ip
     data['subject'] = subject
@@ -486,11 +509,17 @@ filedata=False, username=False):
         if filetype == 'image':
             data['image'] = f
             data['video'] = None
-            data['thumb'] = pic_thumb(f)
+            if not spoiler:
+                data['thumb'] = pic_thumb(f)
+            else:
+                data['thumb'] = spoilered
         else:
             data['video'] = f
             data['image'] = None
-            data['thumb'] = video_thumb(f)
+            if not spoiler:
+                data['thumb'] = video_thumb(f)
+            else:
+                data['thumb'] = spoilered
         if not oppost:
             filecount = await db.posts.find({'thread': t['count'],
                                         'image': { '$ne': None }
@@ -556,7 +585,7 @@ def schedule_check(app):
                 if not len(threads) <= board['thread_catalog']:
                     threads = threads[:(threads.count(None) - board['thread_catalog'])]
                     for thread in threads:
-                        if thread['thumb'] != thumb_def:
+                        if thread['thumb'] != thumb_def and thread['thumb'] != spoilered:
                             os.remove(thread['thumb'])
                         if thread['video']:
                             os.remove(thread['video'])
@@ -565,11 +594,14 @@ def schedule_check(app):
                         posts = yield db.posts.find({'thread': thread['count']}).to_list(None)
                         for post in posts:
                             if post['video']:
-                                os.remove(post['video'])
+                                if os.path.isfile(post['video']):
+                                    os.remove(post['video'])
                             if post['image']:
-                                os.remove(post['image'])
-                            if post['thumb'] != thumb_def:
-                                os.remove(post['thumb'])
+                                if os.path.isfile(post['image']):
+                                    os.remove(post['image'])
+                            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+                                if os.path.isfile(post['thumb']):
+                                    os.remove(post['thumb'])
                         yield db.posts.delete_many({'thread': thread['count']})
                         yield db.posts.remove({'count': thread['count']})
         except Exception as e:
@@ -620,6 +652,7 @@ class Application(tornado.web.Application):
             (r'/flags/(.*)/?', tornado.web.StaticFileHandler, {'path': 'flags'}),
             (r'/(\w+)/?', BoardHandler),
             (r'/(\w+)/thread/(\d+)/?', ThreadHandler),
+            (r'/(\w+)/thread/(\d+)/json/?', JsonThreadHandler),
             (r'/admin/login/?', AdminLoginHandler),
             (r'/admin/create/?', AdminBoardCreationHandler),
             (r'/admin/stats/?', AdminStatsHandler),

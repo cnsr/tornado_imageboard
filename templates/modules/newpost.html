@@ -7,8 +7,8 @@
 		</div>
 		{% if name %}
 		<div class='name'>
-				<label for='username'>Name</label>
-				<input type='input' maxlength=25 id='username' name='username'/>
+			<label for='username'>Name</label>
+			<input type='input' maxlength=25 id='username' name='username'/>
 		</div>
 		{% end %}
 		<div class='bb'>
@@ -29,6 +29,9 @@
 			<p class='file-about'>Maximal size: 5mb</p>
 			<input type='file' name='file' class='fileinput'/>
 		</div>
+		<label for='spoilerimages' title='Hide image previews'>Spoiler</label>
+		<input type='checkbox' name='spoilerimage' id='spoilerimages'/>
+		<br />
 		<input type='submit' id='sendpost'>
 	</form>
 </div>
