@@ -9,7 +9,7 @@
 	<link rel='stylesheet' href="{{ static_url('css/modules/newpost.css') }}">
 {% end %}
 
-{% block title %}Thread #{{ op['count'] }} {% end %}
+{% block title %}/{{board['short']}}/ - #{{ op['count'] }} - {{ op['subject'] }}{% end %}
 
 {% block content %}
 	{% if not op['locked'] %}

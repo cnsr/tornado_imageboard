@@ -5,7 +5,7 @@
 	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.13.1/additional-methods.js"></script>
 	<script src='{{static_url("js/posts.js")}}'></script>	
 {% end %}
-{% block title %}Threads{% end %}
+{% block title %}/{{board['short']}}/ - {{board['name']}}{% end %}
 {% block content %}
 	{% block add %}
 		{% if board['custom'] %}
