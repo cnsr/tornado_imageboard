@@ -97,10 +97,10 @@ class BoardHandler(LoggedInHandler):
             self.redirect('/')
 
     async def post(self, board):
+        db = self.application.database
         ip = await get_ip(self.request)
         if not await is_banned(db, ip):
             await db.posts.insert(data)
-            db = self.application.database
             db_board = await db.boards.find_one({'short': board})
             threads = await db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
             subject = self.get_argument('subject', '')
@@ -146,10 +146,10 @@ class ThreadHandler(LoggedInHandler):
             self.redirect('/' + board)
 
     async def post(self, board, thread_count):
+        db = self.application.database
         ip = await get_ip(self.request)
         if not await is_banned(db, ip):
             thread_count = int(thread_count)
-            db = self.application.database
             subject = self.get_argument('subject', '')
             text = self.get_argument('text', 'empty post')
             text = strip_tags(text)
