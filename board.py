@@ -97,29 +97,29 @@ class BoardHandler(LoggedInHandler):
             self.redirect('/')
 
     async def post(self, board):
-        db = self.application.database
-        db_board = await db.boards.find_one({'short': board})
-        threads = await db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
-        subject = self.get_argument('subject', '')
-        text = self.get_argument('text', '')
-        username = self.get_argument('username', '') or False
-        text = strip_tags(text)
-        text = text.replace("\n","<br />")
-        spoiler = 'spoilerimage' in self.request.arguments
-        if self.request.files:
-            fo, ff, filetype, filedata = await upload_file(self.request.files['file'][0])
-        else:
-            fo = ff = filetype = filedata = None
-        count = await latest(db) + 1
-        oppost = True
-        thread = None
         ip = await get_ip(self.request)
-        data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata, username, spoiler=spoiler)
         if not await is_banned(db, ip):
             await db.posts.insert(data)
+            db = self.application.database
+            db_board = await db.boards.find_one({'short': board})
+            threads = await db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
+            subject = self.get_argument('subject', '')
+            text = self.get_argument('text', '')
+            username = self.get_argument('username', '') or False
+            text = strip_tags(text)
+            text = text.replace("\n","<br />")
+            spoiler = 'spoilerimage' in self.request.arguments
+            if self.request.files:
+                fo, ff, filetype, filedata = await upload_file(self.request.files['file'][0])
+            else:
+                fo = ff = filetype = filedata = None
+            count = await latest(db) + 1
+            oppost = True
+            thread = None
+            data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata, username, spoiler=spoiler)
+            self.redirect('/' + board + '/thread/' + str(data['count']))
         else:
             self.redirect('/banned')
-        self.redirect('/' + board + '/thread/' + str(data['count']))
 
 
 # posts in thread
@@ -146,51 +146,51 @@ class ThreadHandler(LoggedInHandler):
             self.redirect('/' + board)
 
     async def post(self, board, thread_count):
-        thread_count = int(thread_count)
-        db = self.application.database
-        subject = self.get_argument('subject', '')
-        text = self.get_argument('text', 'empty post')
-        text = strip_tags(text)
-        text = text.replace("\n","<br />")
-        username = self.get_argument('username', '') or False
-        if self.request.files:
-            foriginal, ffile, filetype, filedata = await upload_file(self.request.files['file'][0])
-        else:
-            foriginal = ffile = filetype = filedata = None
-        replies = get_replies(text)
-        count = await latest(db) + 1
-        oppost = False
-        thread = thread_count
         ip = await get_ip(self.request)
-        spoiler = 'spoilerimage' in self.request.arguments
-        data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
-        username, spoiler=spoiler)
-        op = await db['posts'].find_one({'count': thread_count})
-        if op:
-            db_board = await db.boards.find_one({'short': board})
-            if not op['locked']:
-                if not await check_thread(db, thread_count, db_board['thread_bump']):
-                    if not data['subject'] == 'sage':
-                        op['lastpost'] = datetime.datetime.utcnow()
+        if not await is_banned(db, ip):
+            thread_count = int(thread_count)
+            db = self.application.database
+            subject = self.get_argument('subject', '')
+            text = self.get_argument('text', 'empty post')
+            text = strip_tags(text)
+            text = text.replace("\n","<br />")
+            username = self.get_argument('username', '') or False
+            if self.request.files:
+                foriginal, ffile, filetype, filedata = await upload_file(self.request.files['file'][0])
+            else:
+                foriginal = ffile = filetype = filedata = None
+            replies = get_replies(text)
+            count = await latest(db) + 1
+            oppost = False
+            thread = thread_count
+            ip = await get_ip(self.request)
+            spoiler = 'spoilerimage' in self.request.arguments
+            data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
+            username, spoiler=spoiler)
+            op = await db['posts'].find_one({'count': thread_count})
+            if op:
+                db_board = await db.boards.find_one({'short': board})
+                if not op['locked']:
+                    if not await check_thread(db, thread_count, db_board['thread_bump']):
+                        if not data['subject'] == 'sage':
+                            op['lastpost'] = datetime.datetime.utcnow()
+                            await update_db(db, op['count'], op)
+                    for number in replies:
+                        p = await db.posts.find_one({'count': int(number)})
+                        old_replies = p['replies']
+                        if int(data['count']) not in old_replies:
+                            old_replies.append(int(data['count']))
+                            p['replies'] = old_replies
+                            await update_db(db, p['count'], p)
+                if op != None:
+                    if await check_thread(db, thread_count, db_board['thread_posts']):
+                        op['locked'] = True
                         await update_db(db, op['count'], op)
-                if not await is_banned(db, ip):
-                    await db.posts.insert(data)
-                else:
-                    self.redirect('/banned')
-                for number in replies:
-                    p = await db.posts.find_one({'count': int(number)})
-                    old_replies = p['replies']
-                    if int(data['count']) not in old_replies:
-                        old_replies.append(int(data['count']))
-                        p['replies'] = old_replies
-                        await update_db(db, p['count'], p)
-            if op != None:
-                if await check_thread(db, thread_count, db_board['thread_posts']):
-                    op['locked'] = True
-                    await update_db(db, op['count'], op)
-            self.redirect('/' + str(board) + '/thread/' + str(op['count']))
+                self.redirect('/' + str(board) + '/thread/' + str(op['count']))
+            else:
+                self.redirect('/' + str(board))
         else:
-            self.redirect('/' + str(board))
+            self.redirect('/banned')
 
 
 class JsonThreadHandler(LoggedInHandler):
@@ -264,30 +264,24 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
             await self.delete_post(post, pid)
             for post in posts:
                 await self.delete_post(post, pid)
-            self.write(json.dumps(response))
+            response = {'succ':'ess'}
         else:
             await self.delete_post(post, pid)
+            response = {'succ':'ess'}
+            response['op'] = 'true'
+        self.write(json.dumps(response))
 
     async def delete_post(self, post, pid):
         files = []
         db = self.application.database
         if post['image']:
             files.append(post['image'])
+            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+                files.append(post['thumb'])
         elif post['video']:
             files.append(post['video'])
-        response = {'succ':'ess'}
-        if post['oppost']:
-            response['op'] = 'true'
-            posts = await db.posts.find({'thread': pid}).to_list(None)
-            for post in posts:
-                if post['image']:
-                    files.append(post['image'])
-                    if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                        files.append(post['thumb'])
-                elif post['video']:
-                    files.append(post['video'])
-                    if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                        files.append(post['thumb'])
+            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+                files.append(post['thumb'])
             await db.posts.delete_many({'thread': pid})
         await db.posts.delete_one({'count': pid})
         await self.delete(files)
