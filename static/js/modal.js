@@ -209,14 +209,14 @@ function aspectRatio(element) {
 }
 
 $.fn.draggable = function(){
-    var $this = this,
-	ns = 'draggable_'+(Math.random()+'').replace('.',''),
-	mm = 'mousemove.'+ns,
-	mu = 'mouseup.'+ns,
-	$w = $(window),
-	isFixed = ($this.css('position') === 'fixed'),
-	adjX = 0, adjY = 0;
+    var $this = this;
 	if (!$this.is('textarea') && !$this.is('input:text') && !$this.is('button')) {
+		var ns = 'draggable_'+(Math.random()+'').replace('.',''),
+		mm = 'mousemove.'+ns,
+		mu = 'mouseup.'+ns,
+		$w = $(window),
+		isFixed = ($this.css('position') === 'fixed'),
+		adjX = 0, adjY = 0;		
 		$this.mousedown(function(ev){
 			var pos = $this.offset();
 			if (isFixed) {
