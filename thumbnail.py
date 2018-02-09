@@ -4,6 +4,7 @@ import logging
 import json
 from subprocess import Popen, PIPE
 import os.path
+from PIL import Image
 
 image_extensions = ["jpg", "jpeg", "png", "gif"]
 video_extensions = ["webm", "mp4"]
@@ -49,13 +50,10 @@ async def ffprobe(path):
 
 
 async def get_image_size(path):
-    ps = Subprocess(['identify', '-format', '%m,%w,%h ', path], stderr=PIPE, stdout=PIPE)
-    try:
-        ret = await ps.wait_for_exit()
-    except:
-        raise Exception("Corrupt image file")
-    format, width, height = ps.stdout.read().decode('utf-8').split(' ')[0].split(',')
-    width, height = int(width), int(height)
+    im = Image.open(path)
+    width, height = im.size
+    format = path.split('.')[-1].upper()
+    if format == 'JPG': format = 'JPEG'
     if format not in image_codecs:
         raise Exception('Corrupt image file')
     return width, height
