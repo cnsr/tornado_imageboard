@@ -93,7 +93,8 @@ class BoardHandler(LoggedInHandler):
                 posts = await db.posts.find({'thread': int(thread['count'])}).sort([('date', -1)]).limit(3).to_list(None)
                 posts.reverse()
                 thread['latest'] = posts
-            admin = b'true' in self.current_user
+            admin = False
+            if self.current_user: admin = True
             self.render('board.html', threads=threads, board=db_board, boards_list=boards_list, admin=admin)
         else:
             self.redirect('/')
@@ -117,7 +118,8 @@ class BoardHandler(LoggedInHandler):
             count = await latest(db) + 1
             oppost = True
             thread = None
-            admin = b'true' in self.current_user
+            admin = False
+            if self.current_user: admin = True
             data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata,
                 username, spoiler=spoiler, admin=admin)
             await db.posts.insert(data)
@@ -141,7 +143,8 @@ class ThreadHandler(LoggedInHandler):
                 op['locked'] = True
                 await update_db(db, op['count'], op)
             boards_list = await db.boards.find({}).to_list(None)
-            admin = b'true' in self.current_user
+            admin = False
+            if self.current_user: admin = True
             self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list, admin=admin)
 
         else:
@@ -167,7 +170,8 @@ class ThreadHandler(LoggedInHandler):
             thread = thread_count
             ip = await get_ip(self.request)
             spoiler = 'spoilerimage' in self.request.arguments
-            admin = b'true' in self.current_user
+            admin = False
+            if self.current_user: admin = True
             data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
                 username, spoiler=spoiler, admin=admin)
             await db.posts.insert(data)
