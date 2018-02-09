@@ -100,7 +100,6 @@ class BoardHandler(LoggedInHandler):
         db = self.application.database
         ip = await get_ip(self.request)
         if not await is_banned(db, ip):
-            await db.posts.insert(data)
             db_board = await db.boards.find_one({'short': board})
             threads = await db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
             subject = self.get_argument('subject', '')
@@ -117,6 +116,7 @@ class BoardHandler(LoggedInHandler):
             oppost = True
             thread = None
             data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata, username, spoiler=spoiler)
+            await db.posts.insert(data)
             self.redirect('/' + board + '/thread/' + str(data['count']))
         else:
             self.redirect('/banned')
