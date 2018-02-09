@@ -6,7 +6,7 @@
 			{% if post['trip'] %}<p class='tripcode'>{{post['trip']}}</p>{% end %}
 			<p class='date'>{{ post['date']}}</p>
 			{% if post['country'] %}<img class='flag' src='/flags/{{post["country"]}}.png'/>{% end %}
-			<a href='/{{post["board"]}}/{{post["thread"]}}#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
+			<a href='/{{post["board"]}}/thread/{{post["thread"]}}#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
 			<p class='post-number'></p>
 			<span class='report' data-id='{{post["count"]}}'>&#33;</span>
 		</div>
