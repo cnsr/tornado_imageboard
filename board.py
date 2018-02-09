@@ -217,7 +217,7 @@ class JsonThreadHandler(LoggedInHandler):
         posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
         for post in posts:
             del post['_id']
-            de; post['ip']
+            del post['ip']
             post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
             res.append(post)
         self.write(json.dumps(res, indent=4))
@@ -683,12 +683,11 @@ async def is_banned(db, ip):
 
 def get_replies(text):
     replies = []
-    text_list = re.split(r'(\s+)', text)
-    for t in text_list:
-        x = re.compile(r'(>>\d+)').match(t)
-        if x:
-            number = x.group(1)
-            replies.append(number[2:])
+    x = re.compile(r'(>>\d+)')
+    it = re.finditer(x, text)
+    for x in it:
+        number = x.group(0)
+        replies.append(int(number[2:]))
     return replies
 
 
