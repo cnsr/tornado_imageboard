@@ -211,11 +211,13 @@ class JsonThreadHandler(LoggedInHandler):
         op = await db.posts.find_one({'count': thread_count})
         res = [op]
         del op['_id']
+        del op['id']
         op['date'] = op['date'].strftime("%Y-%m-%d %H:%M:%S")
         op['lastpost'] = op['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
         posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
         for post in posts:
             del post['_id']
+            de; post['ip']
             post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
             res.append(post)
         self.write(json.dumps(res, indent=4))
@@ -263,6 +265,35 @@ async def process_file(fn):
         return '{0}, {1}x{2}, {3}'.format(fn.split('.')[-1].upper(), w, h, filesize)
     else:
         return False
+
+
+class AjaxNewHandler(tornado.web.RequestHandler):
+
+    async def post(self, board, thread):
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        try:
+            pid = int(data['latest'].decode('utf-8'))
+            post = await db.posts.find_one({'count': pid})
+            posts = await db.posts.find({'thread': int(thread)}).to_list(None)
+            response = []
+            for post in posts:
+                if int(post['count']) <= pid:
+                    del post
+                else:
+                    del post['_id']
+                    del post['ip']
+                    post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
+                    post['text'] = ('').join(post['text'].split('<br />'))
+                    response.append(post)
+            self.write(json.dumps(response))
+        except KeyError:
+            posts = await db.posts.find({'thread': int(thread)}).to_list(None)
+            for post in posts:
+                del post['_id']
+                del post['ip']
+                post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
+            self.write(json.dumps(posts))
 
 
 # delete posts using ajax; doesnt have admin rights check and idk how to make it
@@ -493,6 +524,7 @@ filedata=False, username=False, spoiler=False, admin=False):
     data['video'] = None
     data['audio'] = None
     data['admin'] = admin
+    data['thumb'] = None
     b = await db.boards.find_one({'short': board})
     if b['country']:
         # workaround for localhost, replaces localhost with google ip (US)
@@ -557,7 +589,7 @@ async def latest(db):
     try:
         return list(await db['posts'].find({}).sort('count', -1).to_list(None))[0]['count']
     except Exception as e:
-        print(e)
+        #print(e)
         return 0
 
 
@@ -601,8 +633,9 @@ def schedule_check(app):
                 if not len(threads) <= board['thread_catalog']:
                     threads = threads[:(threads.count(None) - board['thread_catalog'])]
                     for thread in threads:
-                        if thread['thumb'] != thumb_def and thread['thumb'] != spoilered:
-                            os.remove(thread['thumb'])
+                        if thread['thumb']:
+                            if thread['thumb'] != thumb_def and thread['thumb'] != spoilered:
+                                os.remove(thread['thumb'])
                         if thread['video']:
                             os.remove(thread['video'])
                         if thread['image']:
@@ -615,13 +648,14 @@ def schedule_check(app):
                             if post['image']:
                                 if os.path.isfile(post['image']):
                                     os.remove(post['image'])
-                            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                                if os.path.isfile(post['thumb']):
+                            if post['thumb']:
+                                if post['thumb'] != thumb_def and post['thumb'] != spoilered:
                                     os.remove(post['thumb'])
                         yield db.posts.delete_many({'thread': thread['count']})
                         yield db.posts.remove({'count': thread['count']})
         except Exception as e:
-            print(e)
+            print(repr(e))
+            pass
     def wrapper():
         executor.submit(task)
         schedule_check(app)
@@ -668,6 +702,7 @@ class Application(tornado.web.Application):
             (r'/flags/(.*)/?', tornado.web.StaticFileHandler, {'path': 'flags'}),
             (r'/(\w+)/?', BoardHandler),
             (r'/(\w+)/thread/(\d+)/?', ThreadHandler),
+            (r'/(\w+)/thread/(\d+)/new/?', AjaxNewHandler),
             (r'/(\w+)/thread/(\d+)/json/?', JsonThreadHandler),
             (r'/admin/login/?', AdminLoginHandler),
             (r'/admin/create/?', AdminBoardCreationHandler),

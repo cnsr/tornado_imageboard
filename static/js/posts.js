@@ -30,9 +30,10 @@ $(document).ready(function(){
 	});
 	$('.date').each(function() {
 		var localTime  = moment.utc($(this).text()).toDate();
-	    localTime = moment(localTime).format('DD-MM-YYYY HH:mm:ss');
+		localTime = moment(localTime).format('DD-MM-YYYY HH:mm:ss');
 		$(this).text(localTime);
-	});
+	});	
+	refreshThread();
 	$('#sendpost').on('click', function(){
 		if ($('#username').length != 0) localStorage.name = $('#username').val();
 	})
@@ -51,6 +52,12 @@ $(document).ready(function(){
 			 $('form').hide();
 		}
 	});
+	$('#getnew').on('click', function(e) {
+		e.preventDefault();
+		var latest = $($('.post').slice(-1)[0]).attr('id');
+		var url = '/' + board + '/thread/' + thread + '/new/';
+		getNewAjax(latest, url);
+	});
 	$('body').on('mouseover', 'a.reply', function() {
 		var display = $($(this).attr('href')).clone();
 		display.toggleClass('to_die', true);
@@ -66,7 +73,6 @@ $(document).ready(function(){
 		$('body').append(display);
 		if ($('.to_die').is(':offscreen')) {
 			 $(this).css('bottom', 0);
-			 console.log('off');
 		}
 	});
 	$('.report').on('click', function() {
@@ -123,6 +129,13 @@ function die() {
 	 
 }
 
+function loadPost(dict) {
+	var template = $('#template').html();
+	Mustache.parse(template);
+	var rendered = Mustache.render(template, dict);
+	$('.posts').append(rendered);
+}
+
 $.ajaxSettings.traditional = true;
 function sendAjaxReport(post, reason) {
 	$.ajax({
@@ -132,6 +145,25 @@ function sendAjaxReport(post, reason) {
 		success : function(json) {
 		},
 
+		error : function(xhr,errmsg,err) {
+			console.log(xhr.status + ": " + xhr.responseText);
+		}
+	});
+};
+
+function getNewAjax(latest, url) {
+	$.ajax({
+		url : url,
+		type : "POST",
+		data : {latest:latest, _xsrf: getCookie("_xsrf")},
+		success : function(json) {
+			var json = jQuery.parseJSON(json);
+			$.each(json, function(index, obj) {
+				obj['date'] = switchDate(obj['date']);
+				obj['text'] = replaceText(obj['text']);
+				loadPost(obj);
+			})
+		},
 		error : function(xhr,errmsg,err) {
 			console.log(xhr.status + ": " + xhr.responseText);
 		}
@@ -161,4 +193,24 @@ jQuery.expr.filters.offscreen = function(el) {
              || (rect.y + rect.height) < 0
              || (rect.x > window.innerWidth || rect.y > window.innerHeight)
          );
+};
+
+function switchDate(date){
+	var localTime  = moment.utc(date).toDate();
+	return moment(localTime).format('DD-MM-YYYY HH:mm:ss');
+}
+
+function refreshThread() {
+	$('#newremain').text('20');
+	$('#getnew').trigger('click');
+	//switchDate();
+	var i = 20;
+	let changer = setInterval(function(){
+		i--;
+		$('#newremain').text(i);
+	}, 1000);
+	setTimeout(function(){
+		clearInterval(changer);
+		refreshThread();
+	}, 20000);
 };

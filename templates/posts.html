@@ -2,6 +2,7 @@
 {% block css %}
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" type="text/javascript"></script>
+	<script src="https://rawgit.com/janl/mustache.js/master/mustache.min.js" type='text/javascript'></script>
 	<script src='{{static_url("js/posts.js")}}'></script>
 	<script src='{{static_url("js/remove.js")}}'></script>	
 	<link rel='stylesheet' href="{{ static_url('css/modules/post.css') }}">
@@ -12,6 +13,10 @@
 {% block title %}/{{board['short']}}/ - #{{ op['count'] }} - {{ op['subject'] }}{% end %}
 
 {% block content %}
+	<script type="text/javascript">
+		var board="{{board['short']}}";
+		var thread="{{op['count']}}";
+	</script>
 	{% if not op['locked'] %}
 		{% block add %}
 			{% if board['custom'] %}
@@ -54,5 +59,76 @@
 				<input type='Submit' value='Ban' id='ban-submit'>
 			</form>
 		</div>
-	{% end %}	
+	{% end %}
+	<script type='x-tmpl-mustache' id='template'>
+		<div class='post-outer'>
+			<div class='post' id='{{! count}}'>
+				<div class='post-header'>
+					{{! #subject}}<h3>{{! subject}}</h3>{{! /subject}}
+					{{! #admin}}
+						<p class='username adminpost'>## Admin ##</p>
+					{{!/admin}}
+					{{!^admin}}
+						{{! #username}}<p class='username'>{{!username}}</p>{{! /username}}
+					{{! /admin}}
+					{{! #trip}}<p class='tripcode'>{{! trip}}</p>{{! /trip}}
+					<p class='date'>{{! date}}</p>
+					{{! #country}}<img class='flag' src='/flags/{{! country}}.png'/>{{! /country}}
+					<a href='#{{! count}}' class='post-href'>>>{{! count}}</a>
+					<p class='post-number'></p>
+					{{! #admin}}
+						<button class='ban' data-id='{{! count}}'>BAN</button>
+						<button class='del' data-id='{{! count}}'>&#x2716;</button>
+					{{! /admin}}
+					<span class='report' data-id='{{! count}}'>&#33;</span>
+				</div>
+				<div class='post-media-div'>
+					{{! #video}}
+						<a href='/{{! video}}' class='filedata-a'>{{! original}}</a>
+						<p class='filedata-p'>{{! filedata}}</p>
+						<div class='post-video-div'>
+							<div class='info' id='media{{! count}}'></div>	
+							<div>
+								<video class='post-media post-video' height=180px width=200px src='/{{! video}}'
+									poster='/{{! thumb}}' data-oid='{{! count}}' controls>
+							</div>
+						</div>
+					{{! /video}}
+					{{! #image}}
+						<a href='/{{! image}}' class='filedata-a'>{{! original}}</a>
+						<p class='filedata-p'>{{! filedata}}</p>
+						<div class='post-image-div'>
+							<div class='info' id='media{{! count}}'></div>
+							<div>
+								<img src='/{{! thumb}}' data-image='/{{! image}}' class='post-image post-media'
+									data-oid='{{! count}}'>
+							</div>
+						</div>
+					{{! /image}}
+					{{! #audio}}
+						<p class='filedata-p'>{{! original}} {{! filedata}}</p>
+						<div class='post-audio-div'>
+							<div class='info' id='media{{! count}}'></div>	
+							<div>
+								<audio class='post-media post-audio' src='/{{! audio}}' data-oid='{{! count}}' controls>
+							</div>
+						</div>
+					{{! /audio}}
+				</div>
+				<p class='text'>{{{! text}}}</p>	
+				{{! #banned}}
+					<p class="banned">User has been banned for this post.</p>
+				{{! /banned}}		
+				{{! #replies}}
+					<li class=replies>
+						<p class='replies-p'>Replies: </p>
+						<ul class='reply'><a href='#{{! .}}' class='reply'>>>{{! .}}</a></ul>
+					</li>
+				{{! /replies}}
+			</div>
+		</script>
+	<div class='getnew'>
+		<button id='getnew'>Get New Posts</button>
+		<span id='newremain'>20</span>
+	</div>
 {% end %}
