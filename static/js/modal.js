@@ -34,7 +34,7 @@ $(document).ready(function(){
 	})
 	$(document).on("click", function(event) {
 		var target = $(event.target);
-		if( target.hasClass('post-media')) {
+		if(target.hasClass('post-media')) {
 			$('.modal-controls').css('display', 'block');
 			if (!target.parents('.modal').length){
 				$('.modal').empty();
@@ -123,6 +123,8 @@ $(document).ready(function(){
 				$('.modal-image').css('width', '0px').attr('top', 0).attr('left', 0);
 				$('.modal-controls').hide();
 			}
+			//if ($(target).parents().hasClass('add')) {
+			//}
 		}
 	});
 	function centerModal() {

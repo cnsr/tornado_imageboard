@@ -17,7 +17,7 @@ from tornado import gen
 from html.parser import HTMLParser
 from PIL import Image
 import geoip2.database as gdb
-from thumbnail import video_thumb, pic_thumb
+from thumbnail import make_thumbnail
 from tripcode import tripcode
 
 from tornado.options import define, options
@@ -166,7 +166,8 @@ class ThreadHandler(LoggedInHandler):
             ip = await get_ip(self.request)
             spoiler = 'spoilerimage' in self.request.arguments
             data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
-            username, spoiler=spoiler)
+                username, spoiler=spoiler)
+            await db.posts.insert(data)
             op = await db['posts'].find_one({'count': thread_count})
             if op:
                 db_board = await db.boards.find_one({'short': board})
@@ -517,14 +518,14 @@ filedata=False, username=False, spoiler=False):
             data['image'] = f
             data['video'] = None
             if not spoiler:
-                data['thumb'] = pic_thumb(f)
+                data['thumb'] = await make_thumbnail(f)
             else:
                 data['thumb'] = spoilered
         else:
             data['video'] = f
             data['image'] = None
             if not spoiler:
-                data['thumb'] = video_thumb(f)
+                data['thumb'] = await make_thumbnail(f)
             else:
                 data['thumb'] = spoilered
         if not oppost:

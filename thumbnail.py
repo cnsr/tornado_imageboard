@@ -1,34 +1,101 @@
-from PIL import Image
-import os
-import sys
-import subprocess
+from tornado.process import Subprocess
+from tornado import gen
+import logging
+import json
+from subprocess import Popen, PIPE
+import os.path
 
-def video_thumb(path):
-    new = path.split('.')[0] + '_thumb.jpeg'
-    # this might not work if video is under 1 second long
+image_extensions = ["jpg", "jpeg", "png", "gif"]
+video_extensions = ["webm", "mp4", "flv"]
+audio_extensions = ["ogg", "mp3"]
+image_codecs = ['JPEG', 'PNG', 'GIF']
+video_codecs = ['theora', 'vp8', 'vp9', 'h264', 'vp6f']
+thumbnail_size = (120, 100)
+
+def get_extension(path):
+    return os.path.splitext(path)[1].lstrip('.').lower()
+
+
+def get_basename(path):
+    return os.path.splitext(os.path.basename(path))[0]
+
+
+async def get_video_size(path):
+    streams = await ffprobe(path)
     try:
-        subprocess.call(['ffmpeg', '-i', path, '-ss', '00:00:01.000', '-vframes', '1', new], stdout=subprocess.PIPE)
-        new = pic_thumb(new, v=True)
-        return new
-    except Exception as e:
-        # print(e)
-        return 'static/missing_thumbnail.jpg'
-
-
-def pic_thumb(path, v=False):
-    if not v:
-        name, ext = path.split('.')
-    try:
-        img = Image.open(path)
-        img.thumbnail((180,180), Image.ANTIALIAS)
-        if not v:
-            new = name + '_thumb.' + ext
+        x = streams['format']['duration'].split('.')
+        x[-1] = x[-1][:2]
+        if int(x[0]) <= 59:
+            duration = ('.').join(x) + 's'
         else:
-            new = path
-        # resizes with optimizing filesize
-        # if picture is in png you're fucked anyway lol
-        img.save(new, optimize=True, quality=85)
-        return new
-    except IOError as e:
-        # print(e)
-        return 'static/missing_thumbnail.jpg'
+            m, s = divmod(int(x[0]), 60)
+            duration = '{0}:{1}'.format(m, s)
+    except KeyError:
+        duration = None
+    for stream in streams['streams']:
+        if stream['codec_name'] in video_codecs:
+            return stream['width'], stream['height'], duration
+    raise Exception("Corrupt video file")
+
+
+async def ffprobe(path):
+    ps = Subprocess(['ffprobe', '-print_format', 'json', '-show_format', '-show_streams', path], stdout=PIPE, stderr=PIPE)
+    try:
+        ret = await ps.wait_for_exit()
+    except:
+        raise Exception("Corrupt video file")
+    stdout, stderr = ps.stdout.read(), ps.stderr.read()
+    return json.loads(stdout.decode('utf-8'))
+
+
+async def get_image_size(path):
+    ps = Subprocess(['identify', '-format', '%m,%w,%h ', path], stderr=PIPE, stdout=PIPE)
+    try:
+        ret = await ps.wait_for_exit()
+    except:
+        raise Exception("Corrupt image file")
+    format, width, height = ps.stdout.read().decode('utf-8').split(' ')[0].split(',')
+    width, height = int(width), int(height)
+    if format not in image_codecs:
+        raise Exception('Corrupt image file')
+    return width, height
+
+
+async def make_thumbnail(path):
+    duration = None
+    ex = 'jpg'
+    if path.split('.')[-1].lower() == 'png':
+        ex = 'png'
+    tname = "uploads/{0}_thumb.{1}".format(get_basename(path), ex)
+    if get_extension(path) in image_extensions:
+        width, height = await get_image_size(path)
+        #if width > 6000 or height > 6000:
+        #    raise Exception("Image too large")
+        scale = min(float(thumbnail_size[0]) / width, float(thumbnail_size[1]) / height, 1.0)
+        twidth = int(scale * width)
+        theight = int(scale * height)
+        tsize = '%sx%s!' % (twidth, theight)
+        ps = Subprocess(['convert', path+'[0]', '-thumbnail', tsize, '-strip', tname], stderr=PIPE, stdout=PIPE)
+        try:
+            ret = await ps.wait_for_exit()
+        except:
+            #raise Exception("Corrupt image file")
+            return 'static/missing_thumbnail.jpg'
+        return tname#, width, height, duration
+    elif get_extension(path) in video_extensions:
+        width, height, duration = await get_video_size(path)
+        scale = min(float(thumbnail_size[0]) / width, float(thumbnail_size[1]) / height, 1.0)
+        twidth = int(scale * width)
+        theight = int(scale * height)
+        tsize = '%sx%s' % (twidth, theight)
+        ps = Subprocess(['ffmpeg', '-i', path, '-y', '-s', tsize, '-vframes', '1', '-f', 'image2', '-c:v', 'mjpeg', tname], stderr=PIPE, stdout=PIPE)
+        try:
+            ret = await ps.wait_for_exit()
+        except:
+            return 'static/missing_thumbnail.jpg'
+            #raise Exception("Corrupt video file")
+        return tname#, width, height, duration
+    elif get_extension(path) in audio_extensions:
+        return ''#, 0, 0, None
+    else:
+        raise Exception("Format not supported")
