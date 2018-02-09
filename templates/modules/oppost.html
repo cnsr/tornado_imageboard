@@ -18,16 +18,20 @@
 			<span class='report' data-id='{{op["count"]}}'>&#33;</span>			
 		</div>
 		<div class='oppost-media'>
-			{% if op['video'] != None %}
+			{% if op['video'] %}
 				<a href='/{{op["video"]}}' class='filedata-a'>{{op['original']}}</a>
 				<p class='filedata-p'>{{op['filedata']}}</p>
 				{% module Video(op['video'], op['count'], op['thumb']) %}
 			{% end %}
-			{% if op['image'] != None %}
+			{% if op['image'] %}
 				<a href='/{{op["image"]}}' class='filedata-a'>{{op['original']}}</a>
 				<p class='filedata-p'>{{op['filedata']}}</p>							
 				{% module Image(op['image'], op['count'], op['thumb']) %}
 			{% end %}
+			{% if op['audio'] %}
+				<p class='filedata-p'>{{op['original']}} {{op['filedata']}}</p>
+				{% module Audio(op['audio'], op['count']) %}
+			{% end %}			
 		</div>
 		<p class='text'>{% raw  op['text'] %}</p>
 		{% if op['banned'] %}

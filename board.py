@@ -221,6 +221,8 @@ async def upload_file(f):
         filetype = 'image'
     elif fext in ['.webm', '.mp4']:
         filetype = 'video'
+    elif fext in ['.mp3', '.ogg']:
+        filetype = 'audio'
     else:
         # if format not supported
         return None, None, None, None
@@ -244,9 +246,13 @@ async def process_file(fn):
         filesize = await convert_bytes((os.stat(fn).st_size))
         if fn.endswith(('webm', 'mp4')):
             w,h = resolution(fn)
-        else:
+        elif fn.endswith(('png', 'jpg', 'jpeg', 'gif')):
             with Image.open(fn) as img:
                 w, h = img.size
+        elif fn.endswith(('ogg', 'mp3')):
+            return '{0}, {1}'.format(fn.split('.')[-1].upper(), filesize)
+        else:
+            return False
         return '{0}, {1}x{2}, {3}'.format(fn.split('.')[-1].upper(), w, h, filesize)
     else:
         return False
@@ -476,6 +482,9 @@ filedata=False, username=False, spoiler=False):
     data['replies'] = []
     data['country'] = ''
     data['trip'] = None
+    data['image'] = None
+    data['video'] = None
+    data['audio'] = None
     b = await db.boards.find_one({'short': board})
     if b['country']:
         # workaround for localhost, replaces localhost with google ip (US)
@@ -514,20 +523,11 @@ filedata=False, username=False, spoiler=False):
     if f:
         b['mediacount'] = b['mediacount'] + 1
         data['original'] = fo
-        if filetype == 'image':
-            data['image'] = f
-            data['video'] = None
-            if not spoiler:
-                data['thumb'] = await make_thumbnail(f)
-            else:
-                data['thumb'] = spoilered
+        data[filetype] = f
+        if not spoiler:
+            data['thumb'] = await make_thumbnail(f)
         else:
-            data['video'] = f
-            data['image'] = None
-            if not spoiler:
-                data['thumb'] = await make_thumbnail(f)
-            else:
-                data['thumb'] = spoilered
+            data['thumb'] = spoilered
         if not oppost:
             filecount = await db.posts.find({'thread': t['count'],
                                         'image': { '$ne': None }

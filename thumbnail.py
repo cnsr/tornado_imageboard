@@ -6,7 +6,7 @@ from subprocess import Popen, PIPE
 import os.path
 
 image_extensions = ["jpg", "jpeg", "png", "gif"]
-video_extensions = ["webm", "mp4", "flv"]
+video_extensions = ["webm", "mp4"]
 audio_extensions = ["ogg", "mp3"]
 image_codecs = ['JPEG', 'PNG', 'GIF']
 video_codecs = ['theora', 'vp8', 'vp9', 'h264', 'vp6f']
@@ -69,8 +69,6 @@ async def make_thumbnail(path):
     tname = "uploads/{0}_thumb.{1}".format(get_basename(path), ex)
     if get_extension(path) in image_extensions:
         width, height = await get_image_size(path)
-        #if width > 6000 or height > 6000:
-        #    raise Exception("Image too large")
         scale = min(float(thumbnail_size[0]) / width, float(thumbnail_size[1]) / height, 1.0)
         twidth = int(scale * width)
         theight = int(scale * height)
@@ -79,9 +77,8 @@ async def make_thumbnail(path):
         try:
             ret = await ps.wait_for_exit()
         except:
-            #raise Exception("Corrupt image file")
             return 'static/missing_thumbnail.jpg'
-        return tname#, width, height, duration
+        return tname
     elif get_extension(path) in video_extensions:
         width, height, duration = await get_video_size(path)
         scale = min(float(thumbnail_size[0]) / width, float(thumbnail_size[1]) / height, 1.0)
@@ -93,9 +90,8 @@ async def make_thumbnail(path):
             ret = await ps.wait_for_exit()
         except:
             return 'static/missing_thumbnail.jpg'
-            #raise Exception("Corrupt video file")
-        return tname#, width, height, duration
+        return tname
     elif get_extension(path) in audio_extensions:
-        return ''#, 0, 0, None
+        return None
     else:
         raise Exception("Format not supported")

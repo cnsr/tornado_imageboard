@@ -39,6 +39,11 @@ class Video(tornado.web.UIModule):
         return self.render_string('modules/video.html', video=video, objectid=objectid, thumb=thumb)
 
 
+class Audio(tornado.web.UIModule):
+    def render(self, audio, objectid):
+        return self.render_string('modules/audio.html', audio=audio, objectid=objectid)
+
+
 class Modal(tornado.web.UIModule):
     def javascript_files(self):
         return 'js/modal.js'

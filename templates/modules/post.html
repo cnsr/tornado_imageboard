@@ -15,15 +15,19 @@
 			<span class='report' data-id='{{post["count"]}}'>&#33;</span>
 		</div>
 		<div class='post-media-div'>
-			{% if post['video'] != None %}
+			{% if post['video'] %}
 				<a href='/{{post["video"]}}' class='filedata-a'>{{post['original']}}</a>
 				<p class='filedata-p'>{{post['filedata']}}</p>							
 				{% module Video(post['video'], post['count'], post['thumb']) %}
 			{% end %}
-			{% if post['image'] != None %}
+			{% if post['image'] %}
 				<a href='/{{post["image"]}}' class='filedata-a'>{{post['original']}}</a>
 				<p class='filedata-p'>{{post['filedata']}}</p>
 				{% module Image(post['image'], post['count'], post['thumb']) %}				
+			{% end %}
+			{% if post['audio'] %}
+				<p class='filedata-p'>{{post['original']}} {{post['filedata']}}</p>
+				{% module Audio(post['audio'], post['count']) %}
 			{% end %}
 		</div>
 		<p class='text'>{% raw post['text'] %}</p>	

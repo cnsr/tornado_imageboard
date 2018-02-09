@@ -76,6 +76,8 @@ $(document).ready(function(){
 						}
 						return false;
 					});
+				} else if (target.is('audio')) {
+					return false;
 				} else {
 					centerModal();
 					var vid = $('.modal-image');
@@ -119,12 +121,12 @@ $(document).ready(function(){
 			}
 		} else {
 			if (!$(target).hasClass('modal-c')) {
-				$('.modal').empty();
-				$('.modal-image').css('width', '0px').attr('top', 0).attr('left', 0);
-				$('.modal-controls').hide();
+				if (!$(target).parents().hasClass('add')) {
+					$('.modal').empty();
+					$('.modal-image').css('width', '0px').attr('top', 0).attr('left', 0);
+					$('.modal-controls').hide();
+				}
 			}
-			//if ($(target).parents().hasClass('add')) {
-			//}
 		}
 	});
 	function centerModal() {
