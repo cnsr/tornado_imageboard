@@ -2,7 +2,11 @@
 	<div class='thread'>
 		<div class='thread-header'>
 			{% if thread['subject'] %}<h3>{{thread['subject']}}</h3>{% end %}
-			{% if thread['username'] %}<p class='username'>{{thread['username']}}</p>{% end %}
+			{% if thread['admin'] %}
+				<p class='username adminpost'>## Admin ##</p>
+			{% else %}
+				{% if thread['username'] %}<p class='username'>{{thread['username']}}</p>{% end %}
+			{% end %}
 			{% if thread['trip'] %}<p class='tripcode'>{{thread['trip']}}</p>{% end %}
 			<p class='date'>{{ thread['date']}}</p>
 			{% if thread['country'] %}<img class='flag' src='/flags/{{thread["country"]}}.png'/>{% end %}			

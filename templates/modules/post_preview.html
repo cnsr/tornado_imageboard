@@ -2,7 +2,11 @@
 	<div class='preview-post' id='{{post["count"]}}'>
 		<div class='post-header preview-header'>
 			{% if post['subject'] %}<h3>{{post['subject']}}</h3>{% end %}
-			{% if post['username'] %}<p class='username'>{{post['username']}}</p>{% end %}
+			{% if post['admin'] %}
+				<p class='username adminpost'>## Admin ##</p>
+			{% else %}
+				{% if post['username'] %}<p class='username'>{{post['username']}}</p>{% end %}
+			{% end %}
 			{% if post['trip'] %}<p class='tripcode'>{{post['trip']}}</p>{% end %}
 			<p class='date'>{{ post['date']}}</p>
 			{% if post['country'] %}<img class='flag' src='/flags/{{post["country"]}}.png'/>{% end %}

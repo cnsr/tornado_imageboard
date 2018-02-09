@@ -204,3 +204,8 @@ header {
 	margin-bottom: 3px;
 	margin-top: 3px;
 }
+
+.adminpost {
+	font-weight: bold;
+	color: red;
+}

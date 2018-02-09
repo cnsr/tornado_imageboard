@@ -93,9 +93,7 @@ class BoardHandler(LoggedInHandler):
                 posts = await db.posts.find({'thread': int(thread['count'])}).sort([('date', -1)]).limit(3).to_list(None)
                 posts.reverse()
                 thread['latest'] = posts
-            admin = False
-            if self.current_user:
-                admin = True
+            admin = b'true' in self.current_user
             self.render('board.html', threads=threads, board=db_board, boards_list=boards_list, admin=admin)
         else:
             self.redirect('/')
@@ -119,7 +117,9 @@ class BoardHandler(LoggedInHandler):
             count = await latest(db) + 1
             oppost = True
             thread = None
-            data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata, username, spoiler=spoiler)
+            admin = b'true' in self.current_user
+            data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata,
+                username, spoiler=spoiler, admin=admin)
             await db.posts.insert(data)
             self.redirect('/' + board + '/thread/' + str(data['count']))
         else:
@@ -141,9 +141,7 @@ class ThreadHandler(LoggedInHandler):
                 op['locked'] = True
                 await update_db(db, op['count'], op)
             boards_list = await db.boards.find({}).to_list(None)
-            admin = False
-            if self.current_user:
-                admin = True
+            admin = b'true' in self.current_user
             self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list, admin=admin)
 
         else:
@@ -169,8 +167,9 @@ class ThreadHandler(LoggedInHandler):
             thread = thread_count
             ip = await get_ip(self.request)
             spoiler = 'spoilerimage' in self.request.arguments
+            admin = b'true' in self.current_user
             data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
-                username, spoiler=spoiler)
+                username, spoiler=spoiler, admin=admin)
             await db.posts.insert(data)
             op = await db['posts'].find_one({'count': thread_count})
             if op:
@@ -472,7 +471,7 @@ class AdminReportsHandler(LoggedInHandler):
 
 # constructs dictionary to insert into mongodb
 async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, fo=None, f=None, filetype=None,
-filedata=False, username=False, spoiler=False):
+filedata=False, username=False, spoiler=False, admin=False):
     data = {}
     data['ip'] = ip
     data['subject'] = subject
@@ -489,6 +488,7 @@ filedata=False, username=False, spoiler=False):
     data['image'] = None
     data['video'] = None
     data['audio'] = None
+    data['admin'] = admin
     b = await db.boards.find_one({'short': board})
     if b['country']:
         # workaround for localhost, replaces localhost with google ip (US)

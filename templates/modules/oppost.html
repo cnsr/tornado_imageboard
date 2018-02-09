@@ -2,7 +2,11 @@
 	<div class='oppost' id='{{op["count"]}}'>
 		<div class='post-header'>
 			{% if op['subject'] %}<h3>{{op['subject']}}</h3>{% end %}
-			{% if op['username'] %}<p class='username'>{{op['username']}}</p>{% end %}
+			{% if op['admin'] %}
+				<p class='username adminpost'>## Admin ##</p>
+			{% else %}
+				{% if op['username'] %}<p class='username'>{{op['username']}}</p>{% end %}
+			{% end %}
 			{% if op['trip'] %}<p class='tripcode'>{{op['trip']}}</p>{% end %}
 			<p class='date'>{{ op['date']}}</p>
 			{% if op['country'] %}<img class='flag' src='/flags/{{op["country"]}}.png'/>{% end %}			
