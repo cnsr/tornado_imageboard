@@ -28,7 +28,7 @@
 			<p class="banned">User has been banned for this post.</p>
 		{% end %}		
 		{% if thread['postcount']%}{% if thread['postcount'] > 0 %}
-			<p class='ommited'>Posts ommited: {{thread['postcount']}}{% if thread['filecount'] > 0 %}, files: {{thread['filecount']}}{% end %}</p>
+			<p class='ommited'>Posts ommited: {{thread['postcount']}}{% if thread['filecount'] != 0 %}, files: {{thread['filecount']}}{% end %}</p>
 		{% end %}{% end %}
 	</div>
 </div>

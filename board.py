@@ -216,7 +216,7 @@ class JsonThreadHandler(LoggedInHandler):
 async def upload_file(f):
     fname = f['filename']
     fext = os.path.splitext(fname)[1]
-    if fext in ['.jpg', 'gif', '.png','.jpeg']:
+    if fext in ['.jpg', '.gif', '.png','.jpeg']:
         filetype = 'image'
     elif fext in ['.webm', '.mp4']:
         filetype = 'video'
@@ -501,8 +501,9 @@ filedata=False, username=False, spoiler=False):
         data['postcount'] = 0
         data['filecount'] = 0
     else:
-        postcount = await db.posts.find({'thread': t['count']}).count()
+        postcount = int(await db.posts.find({'thread': t['count']}).count())
         t['postcount'] = postcount + 1
+        await update_db(db, t['count'], t)
     if f:
         b['mediacount'] = b['mediacount'] + 1
         data['original'] = fo
@@ -531,7 +532,7 @@ filedata=False, username=False, spoiler=False):
             data['filedata'] = filedata
     else:
         data['image'] = data['video'] = None
-    b['postcount'] = b['postcount'] + 1
+    b['postcount'] = int(b['postcount']) + 1
     await update_db_b(db, b['short'], b)
     return data
 
