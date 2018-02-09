@@ -3,12 +3,12 @@
 	<form method='POST' action='' enctype="multipart/form-data" id='newpost'>
 		{% module xsrf_form_html() %}
 		<div class='subject'>
-			<label for='subject' class='subj'>Subject</label><input id='subject' type='text' name='subject'/>
+			<label for='subject' class='subj'>Subject</label><input id='subject' type='text' name='subject' maxlength=40/>
 		</div>
 		{% if name %}
 		<div class='name'>
 			<label for='username'>Name</label>
-			<input type='input' maxlength=25 id='username' name='username'/>
+			<input type='text' maxlength=25 id='username' name='username'/>
 		</div>
 		{% end %}
 		<div class='bb'>
@@ -20,13 +20,13 @@
 			<button id='bb-c'><citation>></citation></button>
 		</div>
 		<div class='textarea'>
-			<p>Text</p><textarea rows=4 cols=55 name='text' maxlength=2000 placeholder='Your post' required
+			<textarea rows=4 cols=55 name='text' maxlength=2000 placeholder='Your post' required
 			id='text-area'></textarea>
 		</div>
 		<div class='file'>
-			<p class='file-about'>Supported filetypes: .jpg .png .gif .webm .mp4</p>
-			<p class='file-about'>Unsupported filetypes will not be uploaded</p>
-			<p class='file-about'>Maximal size: 5mb</p>
+			<pre class='file-about'>Supported filetypes: .jpg .png .gif .webm .mp4
+			Unsupported filetypes will not be uploaded
+			Maximal size: 5mb</pre>
 			<input type='file' name='file' class='fileinput'/>
 		</div>
 		<label for='spoilerimages' title='Hide image previews'>Spoiler</label>
