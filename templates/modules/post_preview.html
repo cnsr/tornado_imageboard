@@ -1,0 +1,42 @@
+<div class='post-outer preview-outer'>
+	<div class='preview-post' id='{{post["count"]}}'>
+		<div class='post-header preview-header'>
+			{% if post['subject'] %}<h3>{{post['subject']}}</h3>{% end %}
+			{% if post['username'] %}<p class='username'>{{post['username']}}</p>{% end %}
+			{% if post['trip'] %}<p class='tripcode'>{{post['trip']}}</p>{% end %}
+			<p class='date'>{{ post['date']}}</p>
+			{% if post['country'] %}<img class='flag' src='/flags/{{post["country"]}}.png'/>{% end %}
+			<a href='/{{post["board"]}}/{{post["thread"]}}#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
+			<p class='post-number'></p>
+			<span class='report' data-id='{{post["count"]}}'>&#33;</span>
+		</div>
+		<div class='post-media-div'>
+			{% if post['video'] %}
+				<a href='/{{post["video"]}}' class='filedata-a'>{{post['original']}}</a>
+				<p class='filedata-p'>{{post['filedata']}}</p>							
+				{% module Video(post['video'], post['count'], post['thumb']) %}
+			{% end %}
+			{% if post['image'] %}
+				<a href='/{{post["image"]}}' class='filedata-a'>{{post['original']}}</a>
+				<p class='filedata-p'>{{post['filedata']}}</p>
+				{% module Image(post['image'], post['count'], post['thumb']) %}				
+			{% end %}
+			{% if post['audio'] %}
+				<p class='filedata-p'>{{post['original']}} {{post['filedata']}}</p>
+				{% module Audio(post['audio'], post['count']) %}
+			{% end %}
+		</div>
+		<p class='text'>{% raw post['text'] %}</p>	
+		{% if post['banned'] %}
+			<p class="banned">User has been banned for this post.</p>
+		{% end %}		
+		{% if post['replies'] %}
+			<li class=replies>
+				<p class='replies-p'>Replies: </p>
+				{% for reply in post['replies'] %}
+					<ul class='reply'><a href='#{{ reply }}' class='reply'>>>{{reply}}</a></ul>
+				{% end %}
+			</li>
+		{% end %}
+	</div>
+</div>

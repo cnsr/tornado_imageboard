@@ -87,8 +87,12 @@ class BoardHandler(LoggedInHandler):
         db = self.application.database
         db_board = await db.boards.find_one({'short': board})
         if db_board:
-            threads = await db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
+            threads = await db.posts.find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
             boards_list = await db.boards.find({}).to_list(None)
+            for thread in threads:
+                posts = await db.posts.find({'thread': int(thread['count'])}).sort([('date', -1)]).limit(3).to_list(None)
+                posts.reverse()
+                thread['latest'] = posts
             admin = False
             if self.current_user:
                 admin = True

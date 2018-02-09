@@ -64,6 +64,10 @@ $(document).ready(function(){
 			 background: 'white'
 		});
 		$('body').append(display);
+		if ($('.to_die').is(':offscreen')) {
+			 $(this).css('bottom', 0);
+			 console.log('off');
+		}
 	});
 	$('.report').on('click', function() {
 		$('.report-popup').remove();
@@ -148,4 +152,13 @@ function getCookie(c_name)
 		}
 	}
 	return "";
+};
+
+jQuery.expr.filters.offscreen = function(el) {
+  var rect = el.getBoundingClientRect();
+  return (
+           (rect.x + rect.width) < 0 
+             || (rect.y + rect.height) < 0
+             || (rect.x > window.innerWidth || rect.y > window.innerHeight)
+         );
 };

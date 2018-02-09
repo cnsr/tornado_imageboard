@@ -19,6 +19,11 @@ class Post(tornado.web.UIModule):
         return self.render_string('modules/post.html', post=post, admin=admin)
 
 
+class Preview(tornado.web.UIModule):
+    def render(self, post):
+        return self.render_string('modules/post_preview.html', post=post)
+
+
 class OpPost(tornado.web.UIModule):
     def render(self, op, admin):
         return self.render_string('modules/oppost.html', op=op, admin=admin)

@@ -184,3 +184,23 @@ header {
 	font-size: 0.9rem;
 	margin: 0;
 }
+
+.preview-header * {
+	display: inline-block;
+}
+
+.preview-header {
+	border: none;
+}
+
+.preview-outer {
+	margin-left: 25px;
+}
+
+.preview-post {
+	display: inline-block;
+	padding: 3px 6px;
+	background: #f2f2f257;
+	margin-bottom: 3px;
+	margin-top: 3px;
+}
