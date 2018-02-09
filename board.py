@@ -132,7 +132,7 @@ class ThreadHandler(LoggedInHandler):
         db_board = await db.boards.find_one({'short': board})
         posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
         op = await db['posts'].find_one({"count": thread_count})
-        if op != None:
+        if op:
             if await check_thread(db, thread_count, db_board['thread_posts']):
                 op['locked'] = True
                 await update_db(db, op['count'], op)
@@ -255,11 +255,22 @@ async def process_file(fn):
 class AjaxDeleteHandler(tornado.web.RequestHandler):
 
     async def post(self):
-        files = []
         db = self.application.database
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
         pid = int(data['post'].decode('utf-8'))
         post = await db.posts.find_one({'count': pid})
+        if not post['oppost']:
+            posts = await db.posts.find({'thread': pid}).to_list(None)
+            await self.delete_post(post, pid)
+            for post in posts:
+                await self.delete_post(post, pid)
+            self.write(json.dumps(response))
+        else:
+            await self.delete_post(post, pid)
+
+    async def delete_post(self, post, pid):
+        files = []
+        db = self.application.database
         if post['image']:
             files.append(post['image'])
         elif post['video']:
@@ -271,14 +282,15 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
             for post in posts:
                 if post['image']:
                     files.append(post['image'])
+                    if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+                        files.append(post['thumb'])
                 elif post['video']:
                     files.append(post['video'])
-                if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                    files.append(post['thumb'])
+                    if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+                        files.append(post['thumb'])
             await db.posts.delete_many({'thread': pid})
         await db.posts.delete_one({'count': pid})
         await self.delete(files)
-        self.write(json.dumps(response))
 
     async def delete(self, files):
         for file in files:

@@ -14,8 +14,10 @@ $(document).ready(function(){
 		if ($('textarea').val() != '') {addition = '\n>>'};		
 		var new_val = $('textarea').val() + addition + number.substring(1, number.length) + '\n';
 		$('textarea').val(new_val);
+		setTimeout(function() {
+			$('.add').find('#text-area').get(0).focus();
+		}, 1);
 		if (!$('.add').hasClass('drag')) {
-			 //$('.add').get(0).focus();
 			$('html,body').animate({
 				scrollTop: $('.add').offset().top
 			}, 1000);
@@ -27,7 +29,9 @@ $(document).ready(function(){
     	$(this).find(".post-number").text(i++);
 	});
 	$('.date').each(function() {
-		$(this).text(localTime($(this).text()));
+		var localTime  = moment.utc($(this).text()).toDate();
+	    localTime = moment(localTime).format('DD-MM-YYYY HH:mm:ss');
+		$(this).text(localTime);
 	});
 	$('#sendpost').on('click', function(){
 		if ($('#username').length != 0) localStorage.name = $('#username').val();
@@ -113,15 +117,6 @@ $(document).ready(function(){
 
 function die() {
 	 
-}
-
-function localTime(utc) {
-	//utc = utc + ' UTC';
-	var month = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-	var d = new Date(utc);
-	var date = d.getDate() + '-' + month[d.getMonth()] + '-' + d.getFullYear();
-	var time = d.toLocaleTimeString(navigator.languages[0]);
-	return date + ' ' + time
 }
 
 $.ajaxSettings.traditional = true;

@@ -209,15 +209,15 @@ function aspectRatio(element) {
 }
 
 $.fn.draggable = function(){
-    var $this = this;
-	if (!$this.is('textarea') && !$this.is('input:text') && !$this.is('button')) {
-		var ns = 'draggable_'+(Math.random()+'').replace('.',''),
-		mm = 'mousemove.'+ns,
-		mu = 'mouseup.'+ns,
-		$w = $(window),
-		isFixed = ($this.css('position') === 'fixed'),
-		adjX = 0, adjY = 0;		
-		$this.mousedown(function(ev){
+    var $this = this,
+	ns = 'draggable_'+(Math.random()+'').replace('.',''),
+	mm = 'mousemove.'+ns,
+	mu = 'mouseup.'+ns,
+	$w = $(window),
+	isFixed = ($this.css('position') === 'fixed'),
+	adjX = 0, adjY = 0;		
+	$this.mousedown(function(ev){
+		if (!$(ev.target).is('textarea') && !$(ev.target).is('input') && !$(ev.target).is('button')) {
 			var pos = $this.offset();
 			if (isFixed) {
 				adjX = $w.scrollLeft(); adjY = $w.scrollTop();
@@ -236,8 +236,8 @@ $.fn.draggable = function(){
 			$w.on(mu, function(){
 				$w.off(mm + ' ' + mu).removeData(ns);
 			});
-		});
+		};
 
 		return this;
-	}
+	})
 };
