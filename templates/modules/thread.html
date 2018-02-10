@@ -11,6 +11,7 @@
 			<p class='date'>{{ thread['date']}}</p>
 			{% if thread['country'] %}<img class='flag' src='/flags/{{thread["country"]}}.png'/>{% end %}			
 			<a href='/{{thread["board"]}}/thread/{{thread["count"]}}' class='thread-href'>>>{{thread['count']}}</a>
+			{% if thread['sage'] %}<span class='sage'>&#11015;</span>{% end %}			
 			{% if thread['locked'] %}
 				<p class='locked' title='Thread is locked.'>&#x1f512;</p>
 			{% end %}

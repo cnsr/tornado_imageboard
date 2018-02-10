@@ -19,7 +19,8 @@
 				<button class='ban' data-id='{{op["count"]}}'>BAN</button>			
 				<button class='del' data-id='{{op["count"]}}'>&#x2716;</button>
 			{% end %}
-			<span class='report' data-id='{{op["count"]}}'>&#33;</span>			
+			<span class='report' data-id='{{op["count"]}}'>&#33;</span>
+			{% if op['sage'] %}<span class='sage'>&#11015;</span>{% end %}
 		</div>
 		<div class='oppost-media'>
 			{% if op['video'] %}

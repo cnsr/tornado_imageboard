@@ -12,7 +12,7 @@
 			{% if post['country'] %}<img class='flag' src='/flags/{{post["country"]}}.png'/>{% end %}
 			<a href='/{{post["board"]}}/thread/{{post["thread"]}}#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
 			<p class='post-number'></p>
-			<span class='report' data-id='{{post["count"]}}'>&#33;</span>
+			{% if post['sage'] %}<span class='sage'>&#11015;</span>{% end %}
 		</div>
 		<div class='post-media-div'>
 			{% if post['video'] %}

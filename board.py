@@ -119,9 +119,10 @@ class BoardHandler(LoggedInHandler):
             oppost = True
             thread = None
             admin = False
+            sage = 'saging' in self.request.arguments
             if self.current_user: admin = True
             data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata,
-                username, spoiler=spoiler, admin=admin)
+                username, spoiler=spoiler, admin=admin, sage=sage)
             await db.posts.insert(data)
             self.redirect('/' + board + '/thread/' + str(data['count']))
         else:
@@ -170,19 +171,21 @@ class ThreadHandler(LoggedInHandler):
             thread = thread_count
             ip = await get_ip(self.request)
             spoiler = 'spoilerimage' in self.request.arguments
+            sage = 'saging' in self.request.arguments
             admin = False
             if self.current_user: admin = True
             data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
-                username, spoiler=spoiler, admin=admin)
+                username, spoiler=spoiler, admin=admin, sage=sage)
             await db.posts.insert(data)
             op = await db['posts'].find_one({'count': thread_count})
             if op:
                 db_board = await db.boards.find_one({'short': board})
                 if not op['locked']:
                     if not await check_thread(db, thread_count, db_board['thread_bump']):
-                        if not data['subject'] == 'sage':
-                            op['lastpost'] = datetime.datetime.utcnow()
-                            await update_db(db, op['count'], op)
+                        if not data['sage']:
+                            if not data['subject'].lower() == 'sage':
+                                op['lastpost'] = datetime.datetime.utcnow()
+                                await update_db(db, op['count'], op)
                     for number in replies:
                         p = await db.posts.find_one({'count': int(number)})
                         old_replies = p['replies']
@@ -506,7 +509,7 @@ class AdminReportsHandler(LoggedInHandler):
 
 # constructs dictionary to insert into mongodb
 async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, fo=None, f=None, filetype=None,
-filedata=False, username=False, spoiler=False, admin=False):
+filedata=False, username=False, spoiler=False, admin=False, sage=False):
     data = {}
     data['ip'] = ip
     data['subject'] = subject
@@ -525,6 +528,9 @@ filedata=False, username=False, spoiler=False, admin=False):
     data['audio'] = None
     data['admin'] = admin
     data['thumb'] = None
+    data['sage'] = sage
+    if data['subject'].lower() == 'sage':
+        data['sage'] = True
     b = await db.boards.find_one({'short': board})
     if b['country']:
         # workaround for localhost, replaces localhost with google ip (US)
