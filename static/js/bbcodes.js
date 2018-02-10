@@ -5,7 +5,7 @@ $format_search =  [
     /\[s\](.*?)\[\/s\]/ig,
     /\[spoiler\](.*?)\[\/spoiler\]/ig,
 	/([^\w>]|^)(>(?!>\d)(.+))/ig,
-	/( |^|\s)>>(\d+)( |\s|$)/ig
+	/( |^|\s)>>(\d+)( |\s|$|>|<)/ig
 ];
 $format_replace = [
     '<strong>$1</strong>',
@@ -14,7 +14,7 @@ $format_replace = [
 	'<strike>$1</strike>',
 	'<spoiler>$1</spoiler>',
 	'<citation>&gt;$3</citation><br>',
-	'<a href="#$2" class="reply">&gt;&gt;$2</a><br>',
+	'<a href="#$2" class="reply">&gt;&gt;$2</a><br>$3',
 ];
 $(document).ready(function() {
 	$('.text').each(function(){
