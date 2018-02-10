@@ -666,12 +666,16 @@ def schedule_check(app):
                                 if os.path.isfile(post['video']):
                                     os.remove(post['video'])
                             if post['image']:
+                                print(post['image'])
                                 if os.path.isfile(post['image']):
                                     os.remove(post['image'])
                             if post['thumb']:
-                                if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                                    if os.path.isfile(post['thumb']):
-                                        os.remove(post['thumb'])
+                                try:
+                                    if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+                                        if os.path.isfile(post['thumb']):
+                                            os.remove(post['thumb'])
+                                except FileNotFoundError:
+                                    pass
                         yield db.posts.delete_many({'thread': thread['count']})
                         yield db.posts.remove({'count': thread['count']})
         except Exception as e:
@@ -761,3 +765,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
