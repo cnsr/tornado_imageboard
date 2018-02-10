@@ -214,7 +214,7 @@ class JsonThreadHandler(LoggedInHandler):
         op = await db.posts.find_one({'count': thread_count})
         res = [op]
         del op['_id']
-        del op['id']
+        del op['ip']
         op['date'] = op['date'].strftime("%Y-%m-%d %H:%M:%S")
         op['lastpost'] = op['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
         posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
