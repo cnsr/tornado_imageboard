@@ -5,7 +5,8 @@ $format_search =  [
     /\[s\](.*?)\[\/s\]/ig,
     /\[spoiler\](.*?)\[\/spoiler\]/ig,
 	/([^\w>]|^)(>(?!>\d)(.+))/ig,
-	/( |^|\s)>>(\d+)( |\s|$|>|<)/ig
+	/( |^|\s)>>(\d+)( |\s|$|>|<)/ig,
+	/(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])?/ig
 ];
 $format_replace = [
     '<strong>$1</strong>',
@@ -15,6 +16,7 @@ $format_replace = [
 	'<spoiler>$1</spoiler>',
 	'<citation>&gt;$3</citation><br>',
 	'<a href="#$2" class="reply">&gt;&gt;$2</a><br>$3',
+	'<a href="$1://$2$3" class="outlink" target="_blank">$1://$2$3</a>',
 ];
 $(document).ready(function() {
 	$('.text').each(function(){

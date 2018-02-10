@@ -206,7 +206,6 @@ function refreshThread() {
 	$('#getnew').trigger('click');
 	let changer = setInterval(function(){
 		let i = parseInt($('#newremain').text()) - 1;
-		console.log(i)
 		$('#newremain').text(i);
 	}, 1000);
 	setTimeout(function(){
