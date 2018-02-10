@@ -670,7 +670,8 @@ def schedule_check(app):
                                     os.remove(post['image'])
                             if post['thumb']:
                                 if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                                    os.remove(post['thumb'])
+                                    if os.path.isfile(post['thumb']):
+                                        os.remove(post['thumb'])
                         yield db.posts.delete_many({'thread': thread['count']})
                         yield db.posts.remove({'count': thread['count']})
         except Exception as e:

@@ -62,7 +62,7 @@ async def get_image_size(path):
 async def make_thumbnail(path):
     duration = None
     ex = 'jpg'
-    if path.split('.')[-1].lower() == 'png':
+    if path.split('.')[-1].lower() == 'png' or path.split('.')[-1].lower() == 'gif':
         ex = 'png'
     tname = "uploads/{0}_thumb.{1}".format(get_basename(path), ex)
     if get_extension(path) in image_extensions:
