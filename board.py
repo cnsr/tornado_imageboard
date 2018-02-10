@@ -350,7 +350,8 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
 
     async def delete(self, files):
         for file in files:
-            os.remove(file)
+            if os.path.isfile(file):
+                os.remove(file)
 
 
 # reporting users using ajax; same stuff as with previous one
