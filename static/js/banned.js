@@ -12,7 +12,7 @@ $(document).ready(function() {
 	$('#ban-never').change(function(){
 		 $('.ban-expires-div').toggle();
 	})
-	$('.ban').on('click', function(){
+	$(document).on('click', '.ban', function(){
 		$('.banform').css({'display':'inline-block', 'top': '25px', 'left': '60%'});
 		$('#ban-post').val($(this).attr('data-id'));
 		/* sets all box values to default */

@@ -16,6 +16,7 @@
 			{% if admin %}
 				<button class='ban' data-id='{{post["count"]}}'>BAN</button>
 				<button class='del' data-id='{{post["count"]}}'>&#x2716;</button>
+				<button class='post-info' data-id='{{post["count"]}}'>?</button>
 			{% end %}
 			<span class='report' data-id='{{post["count"]}}'>&#33;</span>
 			{% if post['sage'] %}<span class='sage'>&#11015;</span>{% end %}			

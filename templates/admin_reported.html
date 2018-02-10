@@ -6,6 +6,11 @@
 {% end %}
 
 {% block content %}
+	<form method='POST' action=''>
+		{% module xsrf_form_html() %}
+		<input type='text' value='all' name='ip' hidden/>
+		<input type='submit' value='Remove All'/>
+	</form>
 	<table class='bans reports'>
 	<tr>
 		<th>IP</th>

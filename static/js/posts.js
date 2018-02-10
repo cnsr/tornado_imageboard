@@ -8,7 +8,7 @@ if ($(window).width() > 768) {
 			});
 		}
 	}
-	$('.post-href').click(function() {
+	$(document).on('click', '.post-href', function() {
 		var number = $(this).attr('href');
 		var addition = '>>';
 		if ($('textarea').val() != '') {addition = '\n>>'};		
@@ -76,7 +76,7 @@ if ($(window).width() > 768) {
 			 $(this).css('bottom', 0);
 		}
 	});
-	$('.report').on('click', function() {
+	$('body').on('click', '.report', function() {
 		$('.report-popup').remove();
 		var id = $(this).attr('data-id');		
 		var popup = "<div class='report-popup' data-id="+id+"><select>"+

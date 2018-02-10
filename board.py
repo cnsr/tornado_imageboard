@@ -377,6 +377,21 @@ class AjaxReportHandler(tornado.web.RequestHandler):
         self.write(json.dumps(response))
 
 
+class AjaxInfoHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        for k, v in data.items(): data[k] = v.decode('utf-8')
+        p = await db.posts.find_one({'count': int(data['post'])})
+        del p['_id']
+        p['date'] = p['date'].strftime("%Y-%m-%d %H:%M:%S")
+        if p.get('lastpost', ''):
+            p['lastpost'] = p['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
+        self.write(json.dumps(p))
+
+
+
 # banning users using ajax; same stuff as with previous one
 class AjaxBanHandler(tornado.web.RequestHandler):
 
@@ -519,7 +534,10 @@ class AdminReportsHandler(LoggedInHandler):
     async def post(self):
         db = self.application.database
         ip = self.get_argument('ip')
-        await db.reports.delete_one({'ip': ip})
+        if ip != 'all':
+            await db.reports.delete_one({'ip': ip})
+        else:
+            await db.reports.remove({})
         self.redirect('/admin/reports')
 
 # constructs dictionary to insert into mongodb
@@ -739,6 +757,7 @@ class Application(tornado.web.Application):
             (r'/ajax/remove/?', AjaxDeleteHandler),
             (r'/ajax/ban/?', AjaxBanHandler),
             (r'/ajax/report/?', AjaxReportHandler),
+            (r'/ajax/info/?', AjaxInfoHandler),
         ]
 
         settings = {

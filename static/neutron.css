@@ -162,8 +162,8 @@ spoiler:hover {
 	border: none;
 }
 
-.citation {
-	color: #789922;
+citation {
+	color: #789922 !important;
 }
 
 input[type="submit"], input[type="reset"], input[type="button"], button {

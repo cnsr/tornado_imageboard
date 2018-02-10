@@ -1,9 +1,13 @@
 $(document).ready(function() {
-	$('.del').on('click', function(){
+	$(document).on('click', '.del', function(){
 		var id = $(this).attr('data-id');
 		sendAjaxRemove(id);
 		popUp('Post has been deleted.');
 	});
+	$(document).on('click', '.post-info', function(){
+		var id = $(this).attr('data-id');
+		askInfoAjax(id);		 
+	})
 });
 $.ajaxSettings.traditional = true;
 function sendAjaxRemove(id) {
@@ -25,6 +29,21 @@ function sendAjaxRemove(id) {
             }
         });
     };
+
+function askInfoAjax(id) {
+        $.ajax({
+            url : "/ajax/info/",
+            type : "POST",
+            data : {post: id, _xsrf: getCookie("_xsrf")},
+            success : function(json) {
+				popUp(json);
+            },
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText);
+            }
+        });
+    };
+
 
 function getCookie(c_name)
 {
