@@ -4,6 +4,7 @@
 			{% if post['subject'] %}<h3>{{post['subject']}}</h3>{% end %}
 			{% if post['admin'] %}
 				<p class='username adminpost'>## Admin ##</p>
+				<p class='username adminpost-small'>&#x21AF;&#x21AF;</p>
 			{% else %}
 				{% if post['username'] %}<p class='username'>{{post['username']}}</p>{% end %}
 			{% end %}

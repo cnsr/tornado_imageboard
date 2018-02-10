@@ -131,15 +131,15 @@ citation {
 	border: none;
 }
 
-.preview-outer {
-	margin-left: 25px;
+.post-number {
+	 color: #4f7942;
 }
 
 .preview-post {
 	background: #aaaacc;
 }
 
-.adminpost {
+.adminpost, .adminpost-small {
 	font-weight: bold;
 	color: red;
 }

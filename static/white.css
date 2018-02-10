@@ -1,3 +1,7 @@
+a:visited {
+	color: blue;
+}
+
 a {
 	color: blue;	
 }
@@ -78,14 +82,16 @@ citation {
 .preview-header {
 	border: none;
 }
-.preview-outer {
-	margin-left: 25px;
-}
 .preview-post {
 	background: #f2f2f257;
 }
 
-.adminpost {
+.adminpost, .adminpost-small {
 	font-weight: bold;
 	color: red;
 }
+
+.post-number {
+	 color: #4f7942;
+}
+

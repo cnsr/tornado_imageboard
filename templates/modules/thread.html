@@ -4,6 +4,7 @@
 			{% if thread['subject'] %}<h3>{{thread['subject']}}</h3>{% end %}
 			{% if thread['admin'] %}
 				<p class='username adminpost'>## Admin ##</p>
+				<p class='username adminpost-small'>&#x21AF;&#x21AF;</p>
 			{% else %}
 				{% if thread['username'] %}<p class='username'>{{thread['username']}}</p>{% end %}
 			{% end %}

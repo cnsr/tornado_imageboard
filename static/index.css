@@ -175,16 +175,44 @@ header {
 	margin-top: 3px;
 }
 
+.adminpost-small {
+	display: none;
+}
+
+
 @media screen and (max-width: 800px) {
 }
 
 @media screen and (max-width: 724px) {
 	.add {
 		border: none;
+		display: block;
 	}
 	.body {
 		margin-left: 0px;
 		margin-right: 0px;
+	}
+	#toggle {
+		display: none;
+
+	}
+	.adminpost {
+		display: none;
+	}
+	.adminpost-small {
+		display: inline-block;	 
+	}
+	.tripcode {
+		font-size: 0.7rem;
+	}
+	.preview-outer{
+		margin-left: 10px;
+	}
+	.flag {
+		max-height: 20px;
+	}
+	.text {
+		 margin: 8px 0px;
 	}
 }
 
