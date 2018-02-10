@@ -80,7 +80,7 @@ class IndexHandler(tornado.web.RequestHandler):
         self.render('index.html', boards=boards, boards_list=boards_list)
 
 
-# list of threads, more like catalog
+# list of threads
 class BoardHandler(LoggedInHandler):
 
     async def get(self, board):
@@ -127,6 +127,20 @@ class BoardHandler(LoggedInHandler):
             self.redirect('/' + board + '/thread/' + str(data['count']))
         else:
             self.redirect('/banned')
+
+
+# catalog of threads
+class CatalogHandler(tornado.web.RequestHandler):
+
+    async def get(self, board):
+        db = self.application.database
+        db_board = await db.boards.find_one({'short': board})
+        if db_board:
+            threads = await db.posts.find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
+            boards_list = await db.boards.find({}).to_list(None)
+            self.render('catalog.html', threads=threads, board=db_board, boards_list=boards_list)
+        else:
+            self.redirect('/')
 
 
 # posts in thread
@@ -706,6 +720,7 @@ class Application(tornado.web.Application):
             (r'/banned/?', BannedHandler),
             (r'/flags/(.*)/?', tornado.web.StaticFileHandler, {'path': 'flags'}),
             (r'/(\w+)/?', BoardHandler),
+            (r'/(\w+)/catalog/?', CatalogHandler),
             (r'/(\w+)/thread/(\d+)/?', ThreadHandler),
             (r'/(\w+)/thread/(\d+)/new/?', AjaxNewHandler),
             (r'/(\w+)/thread/(\d+)/json/?', JsonThreadHandler),

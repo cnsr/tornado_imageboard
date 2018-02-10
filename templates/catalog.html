@@ -1,27 +1,17 @@
 {% extends 'index.html' %}
 {% block css %}
-	<link rel='stylesheet' href="{{ static_url('css/modules/thread.css') }}">
-	<link rel='stylesheet' href="{{ static_url('css/modules/newpost_nodrag.css') }}">
+	<link rel='stylesheet' href="{{ static_url('css/modules/catalog.css') }}">
 	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.13.1/jquery.validate.js"></script>
 	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.13.1/additional-methods.js"></script>
 	<script src='{{static_url("js/posts.js")}}'></script>	
 {% end %}
 {% block title %}/{{board['short']}}/ - {{board['name']}}{% end %}
-{% block catalog %}<a href="/{{board['short']}}/catalog/" class='catalogbtn'>Catalog</a>{% end %}
+{% block catalog %}<a href="/{{board['short']}}/" class='catalogbtn'>Board</a>{% end %}
 {% block content %}
-	{% block add %}
-		{% if board['custom'] %}
-			{% module NewPost(name=True) %}
-		{% else %}
-			{% module NewPost(name=False) %}
-		{% end %}
-		<script>var nodrag=true;</script>
-	{% end %}
 	<div class='threads'>
 		<hr>
 		{% for thread in threads %}
-			{% module Thread(thread) %}
-			<hr>
+			{% module CatalogThread(thread) %}
 		{% end %}
 	</div>
 {% end %}

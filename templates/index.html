@@ -20,6 +20,7 @@
 	<header>
 		{% block header %}
 			<a href='/' class='homebtn'>[HOME]</a>
+			{% block catalog %}{% end %}
 			<ul class='boards-list'>
 				{% if boards_list %}
 					{% for b in boards_list %}

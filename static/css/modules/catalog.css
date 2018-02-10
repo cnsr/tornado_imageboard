@@ -1,0 +1,27 @@
+.thread {
+  border: 1px dashed black;
+  padding: 3px;
+  display: inline-block;
+}
+
+
+h3, .thread-href, .date {
+  display: inline-block;
+  margin: 0px;
+}
+
+.thread-outer {
+	display: inline-block;
+	margin: 3px;
+	vertical-align: top;
+}
+
+.ommited {
+	color: #666666;
+}
+
+.username {
+	color: #3333cc;
+	font-weight: bold;
+	display: inline-block;	
+}

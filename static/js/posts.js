@@ -1,6 +1,6 @@
 $(document).ready(function(){
 	if (localStorage.name != '' && localStorage.name != null) $('#username').val(localStorage.name);
-	if ($(window).width() > 768) {
+if ($(window).width() > 768) {
 		$('.add').addClass('drag');
 		if (typeof nodrag === 'undefined') {
 			$(".drag").draggable({

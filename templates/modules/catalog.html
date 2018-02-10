@@ -1,0 +1,47 @@
+<div class='thread-outer' id='{{thread["count"]}}'>
+	<div class='thread'>
+		<div class='thread-header'>
+			<div class='thread-header-1'>
+				{% if thread['subject'] %}<h3>{{thread['subject']}}</h3>{% end %}
+				{% if thread['admin'] %}
+					<p class='username adminpost'>## Admin ##</p>
+				{% else %}
+					{% if thread['username'] %}<p class='username'>{{thread['username']}}</p>{% end %}
+				{% end %}
+				{% if thread['trip'] %}<p class='tripcode'>{{thread['trip']}}</p>{% end %}
+			</div>
+			<div class='thread-header-2'>
+				<p class='date'>{{ thread['date']}}</p>
+				{% if thread['country'] %}<img class='flag' src='/flags/{{thread["country"]}}.png'/>{% end %}			
+				<a href='/{{thread["board"]}}/thread/{{thread["count"]}}' class='thread-href'>>>{{thread['count']}}</a>
+				{% if thread['sage'] %}<span class='sage'>&#11015;</span>{% end %}			
+				{% if thread['locked'] %}
+					<p class='locked' title='Thread is locked.'>&#x1f512;</p>
+				{% end %}
+			</div>
+		</div>
+		<div class='thread-media'>
+			{% if thread['video'] %}
+				<a href='{{thread["video"]}}' class='filedata-a'>{{thread['original']}}</a>
+				<p class='filedata-p'>{{thread['filedata']}}</p>			
+				{% module Video(thread['video'], thread['count'], thread['thumb']) %}
+			{% end %}
+			{% if thread['image'] %}
+				<a href='{{thread["video"]}}' class='filedata-a'>{{thread['original']}}</a>
+				<p class='filedata-p'>{{thread['filedata']}}</p>			
+				{% module Image(thread['image'], thread['count'], thread['thumb']) %}
+			{% end %}
+			{% if thread['audio'] %}
+				<p class='filedata-p'>{{thread['original']}} {{thread['filedata']}}</p>
+				{% module Audio(thread['audio'], thread['count']) %}
+			{% end %}						
+		</div>
+		<p class='text'>{% raw thread['text'] %}</p>
+		{% if thread['banned'] %}
+			<p class="banned">User has been banned for this post.</p>
+		{% end %}		
+		{% if thread['postcount']%}{% if thread['postcount'] > 0 %}
+			<p class='ommited'>Posts ommited: {{thread['postcount']}}{% if thread['filecount'] != 0 %}, files: {{thread['filecount']}}{% end %}</p>
+		{% end %}{% end %}
+	</div>
+</div>

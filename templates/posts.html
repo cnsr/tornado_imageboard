@@ -11,7 +11,7 @@
 {% end %}
 
 {% block title %}/{{board['short']}}/ - #{{ op['count'] }} - {{ op['subject'] }}{% end %}
-
+{% block catalog %}<a href="/{{board['short']}}/catalog/" class='catalogbtn'>Catalog</a>{% end %}
 {% block content %}
 	<script type="text/javascript">
 		var board="{{board['short']}}";

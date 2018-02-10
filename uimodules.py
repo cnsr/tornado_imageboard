@@ -7,6 +7,11 @@ class Thread(tornado.web.UIModule):
             'modules/thread.html', thread=thread)
 
 
+class CatalogThread(tornado.web.UIModule):
+    def render(self, thread):
+        return self.render_string('modules/catalog.html', thread=thread)
+
+
 class NewPost(tornado.web.UIModule):
     def javascript_files(self):
         return('js/validate_file.js')

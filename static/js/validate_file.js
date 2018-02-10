@@ -3,10 +3,14 @@ $(document).ready( function() {
 		if (this.files[0] != null) {
 			var fileSize = this.files[0].size;
 			if (fileSize > 5242880) {
-				popUp("File too large!");
-				$('input[type="file"]').val(null);
+				$('.fileinput').val(null);
 				$('#text-area').prop('required',true);
-			} else { $('#text-area').prop('required',false);}
+				$('.spoiler-div').hide();
+				popUp("File too large!");				
+			} else {
+				$('#text-area').prop('required',false);
+				$('.spoiler-div').show();				
+			}
 		}
 	});
 });
