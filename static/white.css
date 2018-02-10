@@ -1,0 +1,91 @@
+a {
+	color: blue;	
+}
+.boards-list-board {
+	color: black;
+}
+
+.file-about {
+	font-size: 0.8rem;
+	font-style: italic;
+}
+
+.post-image {
+	border: 1px solid black;
+}
+
+.filedata-a {
+	font-family: sans-serif;
+	font-size: 0.75rem;
+}
+
+.filedata-p {
+	font-size: 0.8rem;
+	font-style: italic;
+}
+
+.post-header {
+	 border-bottom: black 1px solid;
+}
+
+.banned {
+	 color: red;
+	 font-weight: bold;
+}
+
+strong {
+	 font-weight: bold;
+}
+
+em {
+	 font-style: italic;
+}
+
+underline {
+	 text-decoration: underline;
+}
+
+strike {
+	 text-decoration: line-through;
+}
+
+spoiler {
+  color:black;
+  background-color: black;
+	padding-bottom: 1px;
+}
+
+spoiler:hover {
+  color:black;
+  background-color: transparent;
+}
+
+citation {
+	color: #007777;
+}
+
+.popup {
+  border: 1px solid black;
+	background: white;
+}
+
+.tripcode {
+	color: green;
+}
+.preview-header * {
+	display: inline-block;
+}
+.preview-header {
+	border: none;
+}
+.preview-outer {
+	margin-left: 25px;
+}
+.preview-post {
+	background: #f2f2f257;
+}
+
+.adminpost {
+	font-weight: bold;
+	color: red;
+}

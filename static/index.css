@@ -1,5 +1,4 @@
 a {
-	color: blue;	
 }
 
 p {
@@ -27,7 +26,6 @@ p {
 .boards-list-board {
 	list-style-type: none;
 	display: inline;
-	color: black;
 }
 
 .boards-list {
@@ -35,35 +33,17 @@ p {
 	 padding: 0px;
 }
 
-
-.file-about {
-	font-size: 0.8rem;
-	font-style: italic;
-}
-
 .file-file {
 	display: inline-block;
 }
 
 .post-image {
-	border: 1px solid black;
 	max-height: 240px;
 	max-width: 320px;
 }
 
-.filedata-a {
-	font-family: sans-serif;
-	font-size: 0.75rem;
-}
-
 .filedata-p {
-	font-size: 0.8rem;
-	font-style: italic;
 	margin: 1px;
-}
-
-.post-header {
-	 border-bottom: black 1px solid;
 }
 
 .post-header * {
@@ -72,11 +52,6 @@ p {
 
 .locked {
 	 display: inline;
-}
-
-.banned {
-	 color: red;
-	 font-weight: bold;
 }
 
 strong {
@@ -111,7 +86,6 @@ spoiler:hover {
 }
 
 citation {
-	color: #007777;
 	display: inline-block;
 }
 
@@ -155,10 +129,8 @@ citation {
   max-width:400px;
   position: fixed;
   z-index: 100000;
-  border: 1px solid black;
   top: 25px;
   right: 25px;
-	background: white;
 }
 
 #popup-inner {
@@ -180,7 +152,6 @@ header {
 .tripcode {
 	display: inline-block;
 	vertical-align: middle;
-	color: green;
 	font-size: 0.9rem;
 	margin: 0;
 }
@@ -200,12 +171,19 @@ header {
 .preview-post {
 	display: inline-block;
 	padding: 3px 6px;
-	background: #f2f2f257;
 	margin-bottom: 3px;
 	margin-top: 3px;
 }
 
-.adminpost {
-	font-weight: bold;
-	color: red;
+@media screen and (max-width: 800px) {
+}
+
+@media screen and (max-width: 724px) {
+	.add {
+		border: none;
+	}
+	.body {
+		margin-left: 0px;
+		margin-right: 0px;
+	}
 }

@@ -17,8 +17,10 @@
 		<script>var nodrag=true;</script>
 	{% end %}
 	<div class='threads'>
+		<hr>
 		{% for thread in threads %}
 			{% module Thread(thread) %}
+			<hr>
 		{% end %}
 	</div>
 {% end %}

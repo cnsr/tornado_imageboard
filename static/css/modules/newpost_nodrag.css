@@ -1,24 +1,14 @@
 .add {
-	background-color: white;
-	display: inline-block;
-}
-
-.add:after {
-	content: '';
-	border-top: 1px solid #8c8b8b;
+	margin-left: auto;
+	margin-right: auto;
 	display: block;
-	unicode-bidi: isolate;
-	-webkit-margin-before: 0.5em;
-	-webkit-margin-after: 0.5em;
-	-webkit-margin-start: auto;
-	-webkit-margin-end: auto;
-	overflow: hidden;
-	border-width: 1px;
+	margin: 0 auto;
+	width: fit-content;
 }
 
 textarea {
-	 width: auto;
-	 max-width: 300px;
+	width: auto;
+	max-width: 300px;
 }
 
 .file-about {
