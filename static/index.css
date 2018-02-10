@@ -156,10 +156,6 @@ header {
 	margin: 0;
 }
 
-.preview-header * {
-	display: inline-block;
-}
-
 .preview-header {
 	border: none;
 }
@@ -175,8 +171,12 @@ header {
 	margin-top: 3px;
 }
 
+.preview-header * {
+	display: inline-block;
+}
+
 .adminpost-small {
-	display: none;
+	display: none !important;
 }
 
 
@@ -200,7 +200,7 @@ header {
 		display: none;
 	}
 	.adminpost-small {
-		display: inline-block;	 
+		display: inline-block !important;
 	}
 	.tripcode {
 		font-size: 0.7rem;

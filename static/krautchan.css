@@ -23,7 +23,7 @@ a:link {
 	border-color: grey;
 }
 
-.post {
+.post, .to_die {
 	border-collapse: separate;
 	border-spacing: 2px;
 	border: none;

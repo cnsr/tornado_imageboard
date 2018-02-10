@@ -38,8 +38,10 @@ $(document).ready(function() {
 		};
 	});
 	$('#toggle').on('click', function(e){
-		 e.preventDefault();
-		 $('form').toggle();
+		if ($(this).attr('display') != 'none') {
+			e.preventDefault();
+			$('form').toggle();
+		}
 	})
 });
 

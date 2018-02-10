@@ -57,6 +57,7 @@ if ($(window).width() > 768) {
 		var latest = $($('.post').slice(-1)[0]).attr('id');
 		var url = '/' + board + '/thread/' + thread + '/new/';
 		getNewAjax(latest, url);
+		$('#newremain').text('20');		
 	});
 	$('body').on('mouseover', 'a.reply', function() {
 		var display = $($(this).attr('href')).clone();
@@ -68,7 +69,7 @@ if ($(window).width() > 768) {
 			 left: $(this).offset().left + $(this).width(),
 			 border: '1px black solid',
 			 zIndex: 1000,
-			 background: 'white'
+			 //background: 'white'
 		});
 		$('body').append(display);
 		if ($('.to_die').is(':offscreen')) {
@@ -203,10 +204,9 @@ function switchDate(date){
 function refreshThread() {
 	$('#newremain').text('20');
 	$('#getnew').trigger('click');
-	//switchDate();
-	var i = 20;
 	let changer = setInterval(function(){
-		i--;
+		let i = parseInt($('#newremain').text()) - 1;
+		console.log(i)
 		$('#newremain').text(i);
 	}, 1000);
 	setTimeout(function(){

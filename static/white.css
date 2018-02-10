@@ -68,16 +68,13 @@ citation {
 	color: #007777;
 }
 
-.popup {
+.popup, .to_die {
   border: 1px solid black;
 	background: white;
 }
 
 .tripcode {
 	color: green;
-}
-.preview-header * {
-	display: inline-block;
 }
 .preview-header {
 	border: none;
