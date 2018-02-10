@@ -13,7 +13,7 @@ $format_replace = [
 	'<underline>$1</underline>',
 	'<strike>$1</strike>',
 	'<spoiler>$1</spoiler>',
-	'<citation>&gt;$3</citation>',
+	'<citation>&gt;$3</citation><br>',
 	'<a href="#$2" class="reply">&gt;&gt;$2</a><br>',
 ];
 $(document).ready(function() {
