@@ -68,9 +68,16 @@ citation {
 	color: #007777;
 }
 
-.popup, .to_die {
+.popup {
   border: 1px solid black;
-	background-color: white;
+	background: white;
+}
+
+.to_die {
+	 background: white;
+	 background-color: white !important;
+	 border: 1px solid black;
+	 opacity: 1;
 }
 
 .tripcode {
@@ -80,7 +87,7 @@ citation {
 	border: none;
 }
 .preview-post {
-	background: #f2f2f257;
+	background: #f2f2f257;	
 }
 
 .adminpost, .adminpost-small {
