@@ -70,7 +70,7 @@ citation {
 
 .popup, .to_die {
   border: 1px solid black;
-	background: white;
+	background-color: white;
 }
 
 .tripcode {
