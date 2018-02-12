@@ -1,0 +1,38 @@
+{% extends 'index.html' %}
+{% block title %}Edit {{i['short']}}{% end %}
+{% block css %}
+	<script src='{{static_url("js/validate_numbersonly.js")}}'></script>
+{% end %}
+{% block content %}
+<div class='add_board'>
+	<form method='POST' action=''>
+		{% module xsrf_form_html() %}
+		<div class='name'>
+			<label for='name'>Name</label><input type='text' name='name' maxlength=50 value="{{i['name']}}" required/>
+		</div>
+		<div class='short'>
+			<label for='short'>Short</label><input type='text' name='short' maxlength=5 value="{{i['short']}}" required/>
+		</div>
+		<div class='username'>
+			<label for='username'>Username</label><input type='text' name='username' maxlength=20 /><br />
+			<input type='checkbox' id='custom' name='custom' {% if i['custom'] %}checked{% end %}/><label for='custom'>Allow custom usernames</label>
+		</div>		
+		<div class='description'>
+			<label for'description'>Description</label><textarea rows=4 cols=55 name='description' maxlength=500>{{i['description']}}</textarea>
+		</div>
+		<div class='thread_posts'>
+			<label for='thread_posts'>Max amount of posts in thread</label><input type='text' name='thread_posts' maxlength=4 onkeypress='validate(event)' value="{{i['thread_posts']}}" required/>
+		</div>
+		<div class='thread_bump'>
+			<label for='thread_bump'>Bumplimit</label><input type='text' name='thread_bump' onkeypress='validate(event)' value="{{i['thread_bump']}}" maxlength=4 required/>
+		</div>
+		<div class='thread_bump'>
+			<label for='country'>Country flags?</label><input id='country' type='checkbox' name='country' {% if i['country']%}checled{%end%}/>
+		</div>		
+		<div class='thread_catalog'>
+			<label for='thread_catalog'>Max amount of threads in catalog</label><input type='text' name='thread_catalog' onkeypress='validate(event)' maxlength=2 value="{{i['thread_catalog']}}" required/>
+		</div>
+		<input type='submit'>
+	</form>
+</div>
+{% end %}

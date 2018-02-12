@@ -126,10 +126,6 @@ if ($(window).width() > 768) {
 	});*/
 });
 
-function die() {
-	 
-}
-
 function loadPost(dict) {
 	var template = $('#template').html();
 	Mustache.parse(template);

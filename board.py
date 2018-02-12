@@ -465,6 +465,37 @@ class AdminBoardCreationHandler(LoggedInHandler):
         self.redirect('/' + data['short'])
 
 
+# editing existing boards
+class AdminBoardEditHandler(LoggedInHandler):
+    @ifadmin
+    async def get(self, board):
+        instance = await self.application.database.boards.find_one({'short': board})
+        if instance:
+            to_remove = ['postcount', 'mediacount', 'created']
+            for key in to_remove:
+                if key in instance:
+                    del instance[key]
+            boards_list = await self.application.database.boards.find({}).to_list(None)
+            self.render('admin_edit.html', boards_list=boards_list, i=instance)
+        else:
+            self.redirect('/admin/stats')
+
+    @ifadmin
+    async def post(self, board):
+        instance = await self.application.database.boards.find_one({'short': board})
+        instance['name'] = self.get_argument('name', '')
+        instance['short']= self.get_argument('short', '')
+        instance['username'] = self.get_argument('username', '')
+        instance['description'] = self.get_argument('description', '')
+        instance['thread_posts'] = int(self.get_argument('thread_posts', ''))
+        instance['thread_bump'] = int(self.get_argument('thread_bump', ''))
+        instance['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
+        instance['country'] = 'country' in self.request.arguments
+        instance['custom'] = 'custom' in self.request.arguments
+        await self.application.database.boards.update_one({'short':board},{'$set':instance})
+        self.redirect('/admin/stats/')
+
+
 # login for admin; it's fucking awful since pass is in plaintext and that's only one of shitty things
 # also cant use decorator here thus it's ugly as fuck
 class AdminLoginHandler(LoggedInHandler):
@@ -542,7 +573,7 @@ class AdminReportsHandler(LoggedInHandler):
 
 # constructs dictionary to insert into mongodb
 async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, fo=None, f=None, filetype=None,
-filedata=False, username=False, spoiler=False, admin=False, sage=False):
+                    filedata=False, username=False, spoiler=False, admin=False, sage=False):
     data = {}
     data['ip'] = ip
     data['subject'] = subject
@@ -750,6 +781,7 @@ class Application(tornado.web.Application):
             (r'/(\w+)/thread/(\d+)/json/?', JsonThreadHandler),
             (r'/admin/login/?', AdminLoginHandler),
             (r'/admin/create/?', AdminBoardCreationHandler),
+            (r'/admin/edit/(\w+)/?', AdminBoardEditHandler),
             (r'/admin/stats/?', AdminStatsHandler),
             (r'/admin/bans/?', AdminBannedHandler),
             (r'/admin/reports/?', AdminReportsHandler),
