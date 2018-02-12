@@ -179,6 +179,26 @@ header {
 	display: none !important;
 }
 
+#saging {
+	 display:none
+}
+
+#saging + label {
+	 display: inline-block;
+	 background: url('/static/icons/sage-off.jpg') no-repeat;
+	 height:15px;
+	 width:15px;
+	 vertical-align: text-bottom;
+}
+
+#saging:checked + label {
+	 display: inline-block;
+	 background: url('/static/icons/sage-on.jpg') no-repeat;
+	 height:15px;
+	 width:15px;
+	 vertical-align: text-bottom;
+}
+
 
 @media screen and (max-width: 800px) {
 }
