@@ -99,3 +99,7 @@ citation {
 	 color: #4f7942;
 }
 
+.board *:visited {
+	color: black !important;
+}
+
