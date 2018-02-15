@@ -120,11 +120,14 @@ $(document).ready(function(){
 				}
 			}
 		} else {
+			// horrible mess of if's
 			if (!$(target).hasClass('modal-c')) {
 				if (!$(target).parents().hasClass('add')) {
-					$('.modal').empty();
-					$('.modal-image').css('width', '0px').attr('top', 0).attr('left', 0);
-					$('.modal-controls').hide();
+					if (!$(target).hasClass('modal-controls')){
+						$('.modal').empty();
+						$('.modal-image').css('width', '0px').attr('top', 0).attr('left', 0);
+						$('.modal-controls').hide();
+					}
 				}
 			}
 		}

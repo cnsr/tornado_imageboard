@@ -12,12 +12,12 @@
 		</div>
 		{% end %}
 		<div class='bb'>
-			<button id='bb-b' onclick="return wrapText('b')"><b>b</b></button>
-			<button id='bb-i' onclick="return wrapText('i')"><i>i</i></button>
-			<button id='bb-u' onclick="return wrapText('u')"><u>u</u></button>
-			<button id='bb-s' onclick="return wrapText('s')"><s>s</s></button>
-			<button id='bb-sp' onclick="return wrapText('spoiler')">spoiler</button>
-			<button id='bb-c'><citation>&gt;</citation></button>
+			<button id='bb-b' onclick="return wrapText('b')" title='bold' ><b>b</b></button>
+			<button id='bb-i' onclick="return wrapText('i')" title='italic' ><i>i</i></button>
+			<button id='bb-u' onclick="return wrapText('u')" title='underline' ><u>u</u></button>
+			<button id='bb-s' onclick="return wrapText('s')" title='strike' ><s>s</s></button>
+			<button id='bb-sp' onclick="return wrapText('spoiler')" title='spoiler' >spoiler</button>
+			<button id='bb-c' title='citation'><citation>&gt;</citation></button>
 		</div>
 		<div class='textarea'>
 			<textarea rows=4 cols=55 name='text' maxlength=2000 placeholder='Your post' required
@@ -26,7 +26,7 @@
 		<div class='file'>
 			<pre class='file-about'>Supported filetypes: .jpg .png .gif .webm .mp4
 			Unsupported filetypes will not be uploaded
-			Maximal size: 5mb</pre>
+			Max filesize: 5mb</pre>
 			<input type='file' name='file' class='fileinput'/>
 		</div>
 		<div class='spoiler-div'>
