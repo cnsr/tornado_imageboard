@@ -246,3 +246,11 @@ header {
 .youtube-frame {
 	display: block;
 }
+
+.modal-c {
+	pointer-events:all;
+}
+
+.modal-controls {
+	pointer-events:none;
+}
