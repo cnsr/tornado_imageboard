@@ -87,7 +87,7 @@ class BoardHandler(LoggedInHandler):
         db = self.application.database
         db_board = await db.boards.find_one({'short': board})
         if db_board:
-            threads = await db.posts.find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
+            threads = await db.posts.find({'board': board,'oppost': True}).sort([('pinned', -1), ('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
             boards_list = await db.boards.find({}).to_list(None)
             for thread in threads:
                 posts = await db.posts.find({'thread': int(thread['count'])}).sort([('date', -1)]).limit(3).to_list(None)
@@ -136,7 +136,7 @@ class CatalogHandler(tornado.web.RequestHandler):
         db = self.application.database
         db_board = await db.boards.find_one({'short': board})
         if db_board:
-            threads = await db.posts.find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
+            threads = await db.posts.find({'board': board,'oppost': True}).sort([('pinned', -1), ('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
             boards_list = await db.boards.find({}).to_list(None)
             self.render('catalog.html', threads=threads, board=db_board, boards_list=boards_list)
         else:
@@ -390,6 +390,20 @@ class AjaxInfoHandler(tornado.web.RequestHandler):
             p['lastpost'] = p['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
         self.write(json.dumps(p))
 
+
+class AjaxPinHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        for k, v in data.items(): data[k] = v.decode('utf-8')
+        thread = await db.posts.find_one({'count': int(data['post'])})
+        if thread['oppost']:
+            thread['pinned'] = True
+            await update_db(db, thread['count'], thread)
+            self.write(json.dumps({'status':'ok'}))
+        else:
+            self.write(json.dumps({'status':'failed'}))
 
 
 # banning users using ajax; same stuff as with previous one
@@ -790,6 +804,7 @@ class Application(tornado.web.Application):
             (r'/ajax/ban/?', AjaxBanHandler),
             (r'/ajax/report/?', AjaxReportHandler),
             (r'/ajax/info/?', AjaxInfoHandler),
+            (r'/ajax/pin/?', AjaxPinHandler),
         ]
 
         settings = {

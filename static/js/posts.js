@@ -112,6 +112,10 @@ if ($(window).width() > 768) {
 		$('.report-popup').remove();
 		popUp('Report has been sent!');
 	});
+	$(document).on('click', '.pin', function(){
+		var id = $(this).attr('data-id');
+		sendAjaxPin(id);
+	})
 	$('body').on('mouseleave', 'a.reply', function(e) {
 		$('.to_die').remove();
 	});
@@ -147,6 +151,23 @@ function sendAjaxReport(post, reason) {
 		}
 	});
 };
+
+function sendAjaxPin(post) {
+	$.ajax({
+		url : "/ajax/pin/",
+		type : "POST",
+		data : {post: post, _xsrf: getCookie("_xsrf")},
+		success : function(json) {
+			var json = jQuery.parseJSON(json);
+			popUp(json['status']);
+		},
+
+		error : function(xhr,errmsg,err) {
+			console.log(xhr.status + ": " + xhr.responseText);
+		}
+	});
+};
+
 
 function getNewAjax(latest, url) {
 	$.ajax({

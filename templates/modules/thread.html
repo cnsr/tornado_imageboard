@@ -16,6 +16,7 @@
 			{% if thread['locked'] %}
 				<p class='locked' title='Thread is locked.'>&#x1f512;</p>
 			{% end %}
+			{% if thread['pinned'] %}<span class='pinned' title='Pinned thread'>📌</span>{% end %}			
 		</div>
 		<div class='thread-media'>
 			{% if thread['video'] %}
@@ -37,7 +38,7 @@
 		{% if thread['banned'] %}
 			<p class="banned">User has been banned for this post.</p>
 		{% end %}		
-		{% if thread['postcount']%}{% if thread['postcount'] > 0 %}
+		{% if thread['postcount']%}{% if thread['postcount'] - 3 > 0 %}
 			<p class='ommited'>Posts ommited: {{thread['postcount']}}{% if thread['filecount'] != 0 %}, files: {{thread['filecount']}}{% end %}</p>
 		{% end %}{% end %}
 	</div>
