@@ -237,3 +237,12 @@ header {
 .catalogbtn {
 	 float: right;
 }
+
+.embed {
+	cursor: pointer;
+	font-size: 10px;
+}
+
+.youtube-frame {
+	display: block;
+}
