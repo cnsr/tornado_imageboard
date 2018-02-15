@@ -1,6 +1,6 @@
 $(document).ready(function(){
 	if (localStorage.name != '' && localStorage.name != null) $('#username').val(localStorage.name);
-if ($(window).width() > 768) {
+	if ($(window).width() > 768) {
 		$('.add').addClass('drag');
 		if (typeof nodrag === 'undefined') {
 			$(".drag").draggable({
@@ -24,10 +24,25 @@ if ($(window).width() > 768) {
 			return false;
 		}
 	});
-	$(".post-header").each(function(i) {
-		++i;
-    	$(this).find(".post-number").text(i++);
-	});
+	if ($('.oppost').length) {
+		$(".post-header").each(function(i) {
+			++i;
+			$(this).find(".post-number").text(i++);
+		});
+	} else {
+		 $('.thread-outer').each(function() {
+			var rgx = /(\d+)(, .+)?/ig;
+			if ($(this).find('.ommited').length) {
+				let str = $(this).find('.ommited').text();
+				var i = parseInt(rgx.exec(str)[0]) + 1;
+			} else {
+				var i = 2;
+			}
+			$(this).find(".post-number").each(function() {
+				$(this).text(i++);
+			})
+		 })
+	}
 	$('.date').each(function() {
 		var localTime  = moment.utc($(this).text()).toDate();
 		localTime = moment(localTime).format('DD-MM-YYYY HH:mm:ss');

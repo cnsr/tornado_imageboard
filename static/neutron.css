@@ -138,7 +138,7 @@ spoiler:hover {
 	border: none;
 }
 
-.post-number {
+.post-number, .oppost-number {
 	 color: #4f7942;
 }
 
