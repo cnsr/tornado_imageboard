@@ -640,6 +640,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
         data['lastpost'] = datetime.datetime.utcnow()
         data['postcount'] = 0
         data['filecount'] = 0
+        data['pinned'] = False
     else:
         postcount = int(await db.posts.find({'thread': t['count']}).count())
         t['postcount'] = postcount + 1
