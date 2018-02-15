@@ -71,13 +71,11 @@ strike {
 }
 
 spoiler {
-  color:black;
   background-color: black;
 	padding-bottom: 1px;
 }
 
 spoiler:hover {
-  color:black;
   background-color: transparent;
 }
 

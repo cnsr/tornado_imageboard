@@ -48,7 +48,7 @@ hr {
 body {
 	background-color: #212121;
 	color: #698CC0;
-font-family: "Trebuchet MS",Trebuchet,tahoma,serif;
+	font-family: "Trebuchet MS",Trebuchet,tahoma,serif;
 }
 
 .boards-list-board {
@@ -122,7 +122,7 @@ spoiler {
 }
 
 spoiler:hover {
-  color:black;
+	color: #698CC0;
   background-color: transparent;
 }
 

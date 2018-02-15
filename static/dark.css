@@ -6,7 +6,7 @@ a:link {
 }
 
 a:hover {
-    colo#ea9ed8c;
+	color: #ea9ed8c;
 }
 
 hr {
@@ -127,7 +127,7 @@ spoiler {
 }
 
 spoiler:hover {
-  color:black;
+  color: #eeeed8;
   background-color: transparent;
 }
 
