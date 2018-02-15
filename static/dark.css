@@ -148,7 +148,6 @@ spoiler:hover {
 }
 
 .preview-post, .post, .to_die, .popup {
-    min-width: 24.4em;
     background-color: #363b41;
     color: #eeeed8;
     border: solid 1px #575757;
@@ -194,4 +193,8 @@ input[type="submit"], input[type="reset"], input[type="button"], button {
 select {
 	background-color: #363b41;
 	color: beige;
+}
+
+.banform {
+	background: #363b41 !important;
 }
