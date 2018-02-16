@@ -45,7 +45,7 @@ $(document).ready(function(){
 				//centering is broken, apparently, for images only, lol
 				var modalMedia = $('.modal').find('.post-media');
 				modalMedia.addClass('modal-image');
-				modalMedia.removeClass('post-image post-video');
+				modalMedia.removeClass('post-image post-video post-media');
 				$('#modalC').trigger('click');				
 				if (!target.is('video')) {
 					// look into this shitcode it might need rewriting
@@ -121,13 +121,11 @@ $(document).ready(function(){
 			}
 		} else {
 			// horrible mess of if's
-			if (!$(target).hasClass('modal-c')) {
-				if (!$(target).parents().hasClass('add')) {
-					if (!$(target).hasClass('modal-controls')){
-						$('.modal').empty();
-						$('.modal-image').css('width', '0px').attr('top', 0).attr('left', 0);
-						$('.modal-controls').hide();
-					}
+			if ($(target).parents().hasClass('modal')){
+				if (!$(target).parents().hasClass('draggable')) {
+					$('.modal').empty();
+					$('.modal-image').css('width', '0px').attr('top', 0).attr('left', 0);
+					$('.modal-controls').hide();
 				}
 			}
 		}
@@ -232,16 +230,21 @@ $.fn.draggable = function(){
 			var ox = (ev.pageX - pos.left), oy = (ev.pageY - pos.top);
 			$this.data(ns,{ x : ox, y: oy });
 			$w.on(mm, function(ev){
+				$this.addClass('draggable');
 				ev.preventDefault();
 				ev.stopPropagation();
 				if (isFixed) {
 					adjX = $w.scrollLeft(); adjY = $w.scrollTop();
 				}
 				var offset = $this.data(ns);
-				$this.css({left: ev.pageX - adjX - offset.x, top: ev.pageY - adjY - offset.y});
+				$this.css({left: ev.pageX - adjX - offset.x, top: ev.pageY - adjY - offset.y, cursor: 'move'});
 			});
 			$w.on(mu, function(){
 				$w.off(mm + ' ' + mu).removeData(ns);
+				setTimeout(function() {
+					$this.removeClass('draggable');
+					$this.css('cursor', 'pointer');
+				}, 250);
 			});
 		};
 
