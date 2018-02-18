@@ -718,31 +718,31 @@ def schedule_check(app):
                 if not len(threads) <= board['thread_catalog']:
                     threads = threads[:(threads.count(None) - board['thread_catalog'])]
                     for thread in threads:
-                        if thread['thumb']:
-                            if thread['thumb'] != thumb_def and thread['thumb'] != spoilered:
-                                os.remove(thread['thumb'])
-                        if thread['video']:
-                            os.remove(thread['video'])
-                        if thread['image']:
-                            os.remove(thread['image'])
-                        posts = yield db.posts.find({'thread': thread['count']}).to_list(None)
-                        for post in posts:
-                            if post['video']:
-                                if os.path.isfile(post['video']):
-                                    os.remove(post['video'])
-                            if post['image']:
-                                print(post['image'])
-                                if os.path.isfile(post['image']):
-                                    os.remove(post['image'])
-                            if post['thumb']:
-                                try:
-                                    if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                                        if os.path.isfile(post['thumb']):
-                                            os.remove(post['thumb'])
-                                except FileNotFoundError:
-                                    pass
-                        yield db.posts.delete_many({'thread': thread['count']})
-                        yield db.posts.remove({'count': thread['count']})
+                        if not thread['pinned']:
+                            if thread['thumb']:
+                                if thread['thumb'] != thumb_def and thread['thumb'] != spoilered:
+                                    os.remove(thread['thumb'])
+                            if thread['video']:
+                                os.remove(thread['video'])
+                            if thread['image']:
+                                os.remove(thread['image'])
+                            posts = yield db.posts.find({'thread': thread['count']}).to_list(None)
+                            for post in posts:
+                                if post['video']:
+                                    if os.path.isfile(post['video']):
+                                        os.remove(post['video'])
+                                if post['image']:
+                                    if os.path.isfile(post['image']):
+                                        os.remove(post['image'])
+                                if post['thumb']:
+                                    try:
+                                        if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+                                            if os.path.isfile(post['thumb']):
+                                                os.remove(post['thumb'])
+                                    except FileNotFoundError:
+                                        pass
+                            yield db.posts.delete_many({'thread': thread['count']})
+                            yield db.posts.remove({'count': thread['count']})
         except Exception as e:
             print(repr(e))
             pass
