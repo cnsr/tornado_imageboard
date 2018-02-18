@@ -2,7 +2,11 @@
 	<div class='thread'>
 		<div class='thread-header'>
 			<div class='thread-header-1'>
-				{% if thread['subject'] %}<h3>{{thread['subject']}}</h3>{% end %}
+				{% if thread['country'] %}<img class='flag' src='/flags/{{thread["country"]}}.png'/>{% end %}			
+				<a href='/{{thread["board"]}}/thread/{{thread["count"]}}' class='thread-href'>>>{{thread['count']}}</a>
+				{% if thread['subject'] %}<h3 class='thread-subject'>{{thread['subject']}}</h3>{% end %}
+			</div>
+			<div class='thread-header-2'>
 				{% if thread['admin'] %}
 					<p class='username adminpost'>## Admin ##</p>
 				{% else %}
@@ -10,14 +14,7 @@
 				{% end %}
 				{% if thread['trip'] %}<p class='tripcode'>{{thread['trip']}}</p>{% end %}
 			</div>
-			<div class='thread-header-2'>
-				<p class='date'>{{ thread['date']}}</p>
-				{% if thread['country'] %}<img class='flag' src='/flags/{{thread["country"]}}.png'/>{% end %}			
-				<a href='/{{thread["board"]}}/thread/{{thread["count"]}}' class='thread-href'>>>{{thread['count']}}</a>
-				{% if thread['sage'] %}<span class='sage'>&#11015;</span>{% end %}			
-				{% if thread['locked'] %}
-					<p class='locked' title='Thread is locked.'>&#x1f512;</p>
-				{% end %}
+			<div class='thread-header-3'>
 				{% if thread['pinned'] %}<span class='pinned' title='Pinned thread'>📌</span>{% end %}				
 			</div>
 		</div>

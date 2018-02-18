@@ -1,11 +1,29 @@
 .thread {
-  border: 1px dashed black;
+  border: 1px dashed black !important;
+	border-radius: 3px;
   padding: 3px;
   display: inline-block;
+	max-width: 200px;
+	min-width: 200px;
+	max-height: 300px;
+	overflow: hidden;
+	position: relative;
+}
+
+.thread:hover{
+	overflow: visible;
+	z-index: 1;
+	border-bottom: 0px solid transparent !important;
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+}
+
+.thread:hover text{
+	z-index: 1;
 }
 
 
-h3, .thread-href, .date {
+.thread-subject, .thread-href, .date {
   display: inline-block;
   margin: 0px;
 }
@@ -25,3 +43,22 @@ h3, .thread-href, .date {
 	font-weight: bold;
 	display: inline-block;	
 }
+
+.thread-header-1, .thread-header-2, .thread-header-3{
+	display: block;
+}
+
+.thread-href {
+	float:right;
+}
+
+.thread-header-3 * {
+	float:right
+}
+
+.thread-subject {
+	max-width: 180px;
+	word-wrap: break-word;
+	text-align: left;
+}
+

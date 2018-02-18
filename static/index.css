@@ -250,3 +250,7 @@ header {
 .modal-controls {
 	pointer-events:none;
 }
+
+.post-media {
+	cursor: pointer;
+}
