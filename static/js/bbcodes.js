@@ -42,14 +42,8 @@ $(document).ready(function() {
 		};
 	});
 	$('#toggle').on('click', function(e){
-		if ($(this).attr('display') != 'none') {
-			var windowWidth = window.screen.width < window.outerWidth ?
-			window.screen.width : window.outerWidth;
-			var mobile = windowWidth < 728;
-			if (!mobile) {
-				e.preventDefault();
-				$('form').toggle();
-			}
+			e.preventDefault();
+			$('form').toggle();
 		}
 	})
 	$('body').on('click', '.embed', function(e){
