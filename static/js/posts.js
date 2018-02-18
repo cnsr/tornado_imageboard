@@ -63,9 +63,6 @@ $(document).ready(function(){
 		if (win.width() <= 768) {
 			$('.add').removeClass('drag')
 		}
-		if (win.width() <= 480) {
-			 $('form').hide();
-		}
 	});
 	$('#getnew').on('click', function(e) {
 		e.preventDefault();
