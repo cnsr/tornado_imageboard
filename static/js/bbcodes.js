@@ -41,11 +41,6 @@ $(document).ready(function() {
 			ta.text('>' + sel + '\n');
 		};
 	});
-	$('#toggle').on('click', function(e){
-			e.preventDefault();
-			$('form').toggle();
-		}
-	})
 	$('body').on('click', '.embed', function(e){
 		e.stopPropagation();
 		if ($(this).next().is('iframe')) {
