@@ -1,3 +1,7 @@
+var window_focus = true;
+var unread = 0;
+var title;
+var title_orig;
 $(document).ready(function(){
 	if (localStorage.name != '' && localStorage.name != null) $('#username').val(localStorage.name);
 	if ($(window).width() > 768) {
@@ -8,6 +12,18 @@ $(document).ready(function(){
 			});
 		}
 	}
+	title = window.document.title;
+	title_orig = window.document.title;
+	$(window).focus(function () {
+		unread = 0;
+		title = title_orig;
+		changeFavicon("/static/favicon.png");
+		window.document.title = title;		
+		clearInterval(window_alert);
+		window_focus = true;
+	}).blur(function () {
+		window_focus = false;
+	});
 	$(document).on('click', '.post-href', function() {
 		var number = $(this).attr('href');
 		var addition = '>>';
@@ -192,6 +208,11 @@ function getNewAjax(latest, url) {
 				obj['date'] = switchDate(obj['date']);
 				obj['text'] = replaceText(obj['text']);
 				loadPost(obj);
+				if (window_focus === false) {
+					unread++;
+					title = "(" + unread + ") " + title_orig;
+					changeFavicon("/static/favicon-unread.png");
+    			}
 			})
 		},
 		error : function(xhr,errmsg,err) {
@@ -242,3 +263,16 @@ function refreshThread() {
 		refreshThread();
 	}, 20000);
 };
+
+function changeFavicon(src) {
+	var link = document.createElement('link'),
+	oldLink = document.getElementById('dynamic-favicon');
+	link.id = 'dynamic-favicon';
+	link.rel = 'shortcut icon';
+	link.href = src;
+	if (oldLink) {
+		document.head.removeChild(oldLink);
+	}
+	document.head.appendChild(link);
+	window.document.title = title
+}
