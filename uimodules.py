@@ -15,8 +15,8 @@ class CatalogThread(tornado.web.UIModule):
 class NewPost(tornado.web.UIModule):
     def javascript_files(self):
         return('js/validate_file.js')
-    def render(self, name):
-        return self.render_string('modules/newpost.html', name=name)
+    def render(self, name, admin):
+        return self.render_string('modules/newpost.html', name=name, admin=admin)
 
 
 class Post(tornado.web.UIModule):

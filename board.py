@@ -120,7 +120,7 @@ class BoardHandler(LoggedInHandler):
             thread = None
             admin = False
             sage = 'saging' in self.request.arguments
-            if self.current_user: admin = True
+            if self.current_user and 'admin' in self.request.arguments: admin = True
             data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata,
                 username, spoiler=spoiler, admin=admin, sage=sage)
             await db.posts.insert(data)
@@ -187,7 +187,7 @@ class ThreadHandler(LoggedInHandler):
             spoiler = 'spoilerimage' in self.request.arguments
             sage = 'saging' in self.request.arguments
             admin = False
-            if self.current_user: admin = True
+            if self.current_user and 'admin' in self.request.arguments: admin = True
             data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
                 username, spoiler=spoiler, admin=admin, sage=sage)
             await db.posts.insert(data)
@@ -399,7 +399,7 @@ class AjaxPinHandler(tornado.web.RequestHandler):
         for k, v in data.items(): data[k] = v.decode('utf-8')
         thread = await db.posts.find_one({'count': int(data['post'])})
         if thread['oppost']:
-            thread['pinned'] = True
+            thread['pinned'] = not thread['pinned']
             await update_db(db, thread['count'], thread)
             self.write(json.dumps({'status':'ok'}))
         else:

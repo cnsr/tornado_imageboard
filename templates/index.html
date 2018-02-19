@@ -3,16 +3,15 @@
 	<head>
 		<link rel="icon" href="{{ static_url('favicon.png') }}" type="image/x-icon" id='dynamic-favicon'/>
 		<meta charset="utf-8">
-		<script src="{{static_url('js/jquery.min.js')}}"></script>		
+		<script src="{{static_url('js/jquery.min.js')}}"></script>
+		<script src='{{static_url("js/theme.js")}}'></script>		
 		<script src="{{static_url('js/moment.min.js')}}"></script>
-		<link rel='stylesheet' href='/static/white.css' id='_css' type='text/css'>
 		{% block css %}
 			<link rel='stylesheet' href="{{ static_url('css/modules/board.css') }}">
 		{% end %}
 		<link rel='stylesheet' href="{{ static_url('index.css') }}">
 		<link rel='stylesheet' href="{{ static_url('css/modules/board.css') }}">		
 		<script src='{{static_url("js/bbcodes.js")}}'></script>
-		<script src='{{static_url("js/theme.js")}}'></script>
 		<script src='{{static_url("js/popup.js")}}'></script>		
 		<title>{% block title %}Index{% end %}</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">		

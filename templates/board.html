@@ -11,9 +11,17 @@
 {% block content %}
 	{% block add %}
 		{% if board['custom'] %}
-			{% module NewPost(name=True) %}
+			{% if admin %}
+				{% module NewPost(name=True, admin=True) %}
+			{% else %}
+				{% module NewPost(name=True, admin=False) %}
+			{% end %}
 		{% else %}
-			{% module NewPost(name=False) %}
+			{% if admin %}
+				{% module NewPost(name=False, admin=True) %}
+			{% else %}
+				{% module NewPost(name=False, admin=False) %}
+			{% end %}
 		{% end %}
 		<script>var nodrag=true;</script>
 	{% end %}

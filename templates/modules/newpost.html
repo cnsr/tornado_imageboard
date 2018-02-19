@@ -10,6 +10,10 @@
 			<input type='text' maxlength=25 id='username' name='username'/>
 		</div>
 		{% end %}
+		{% if admin %}
+			<label for='admin'>Post as admin</label>
+			<input id='admin' type='checkbox' name='admin' />
+		{% end %}
 		<div class='bb'>
 			<button id='bb-b' onclick="return wrapText('b')" title='bold' ><b>b</b></button>
 			<button id='bb-i' onclick="return wrapText('i')" title='italic' ><i>i</i></button>

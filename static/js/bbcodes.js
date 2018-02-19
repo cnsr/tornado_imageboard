@@ -22,12 +22,14 @@ $format_replace = [
 ];
 $(document).ready(function() {
 	$('.text').each(function(){
-		var txt = $(this).text();
-		for (var i =0;i<$format_search.length;i++) {
-			txt = txt.replace($format_search[i], $format_replace[i]);
+		if (!$(this).hasClass('rendered')) {
+			var txt = $(this).text();
+			for (var i =0;i<$format_search.length;i++) {
+				txt = txt.replace($format_search[i], $format_replace[i]);
+			}
+			$(this).html(txt);
+			$(this).addClass('rendered');
 		}
-		$(this).html(txt);
-		$(this).addClass('rendered');
 	});
 	$('#bb-b, #bb-i, #bb-u, #bb-s, #bb-sp, #bb-c').on('click', function(e) {
 		e.preventDefault();
@@ -78,12 +80,5 @@ function wrapText(openTag) {
     } else {
 	}
     return false;
-}
-
-function replaceText(txt) {
-	for (var i =0;i<$format_search.length;i++) {
-		txt = txt.replace($format_search[i], $format_replace[i]);
-	}
-	return txt
 }
 
