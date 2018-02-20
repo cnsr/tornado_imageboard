@@ -10,3 +10,4 @@ uploads/*.psd
 uploads/*.tif
 uploads/*.ogg
 uploads/*.mp3
+.python-version

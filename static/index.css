@@ -47,27 +47,27 @@ p {
 }
 
 .post-header * {
-	 margin: 0px;
+	margin: 0px;
 }
 
 .locked {
-	 display: inline;
+	display: inline;
 }
 
 strong {
-	 font-weight: bold;
+	font-weight: bold;
 }
 
 em {
-	 font-style: italic;
+	font-style: italic;
 }
 
 underline {
-	 text-decoration: underline;
+	text-decoration: underline;
 }
 
 strike {
-	 text-decoration: line-through;
+	text-decoration: line-through;
 }
 
 spoiler {
@@ -80,7 +80,8 @@ spoiler:hover {
 }
 
 .text {
-	white-space: pre-line
+	white-space: pre-line;
+	word-break: break-all;
 }
 
 citation {
@@ -253,4 +254,8 @@ header {
 
 .post-media {
 	cursor: pointer;
+}
+
+.post-spoiler {
+	display:inline-block;
 }

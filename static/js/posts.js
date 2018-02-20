@@ -19,11 +19,21 @@ $(document).ready(function(){
 		title = title_orig;
 		changeFavicon("/static/favicon.png");
 		window.document.title = title;		
-		clearInterval(window_alert);
 		window_focus = true;
 	}).blur(function () {
 		window_focus = false;
 	});
+	$(document).on('change', '#spoiler_images', function(){
+		let spoiler = $(this).is(':checked');
+		console.log(spoiler);
+		$('.post-media').each(function() {
+			if (!spoiler) {
+				$(this).css('opacity', '');
+			} else {
+				$(this).css('opacity', '0.1');
+			}
+		})
+	});	
 	$(document).on('click', '.post-href', function() {
 		var number = $(this).attr('href');
 		var addition = '>>';
@@ -276,3 +286,4 @@ function changeFavicon(src) {
 	document.head.appendChild(link);
 	window.document.title = title
 }
+
