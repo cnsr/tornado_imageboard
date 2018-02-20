@@ -25,15 +25,26 @@ $(document).ready(function(){
 	});
 	$(document).on('change', '#spoiler_images', function(){
 		let spoiler = $(this).is(':checked');
-		console.log(spoiler);
-		$('.post-media').each(function() {
-			if (!spoiler) {
-				$(this).css('opacity', '');
-			} else {
-				$(this).css('opacity', '0.1');
+		toggleSpoiler(spoiler);
+	});
+	$(document).on('keydown', function(e) {
+		let key = e.which;
+		let t = $(e.target);
+		let spoiler = $('#spoiler_images').is(':checked');
+		switch (key) {
+			case 66:
+			case 98:
+			{
+				if (!t.is('input') && !t.is('textarea')) {
+					toggleSpoiler(!spoiler);
+					$('#spoiler_images').prop('checked', !spoiler);
+				}
+				break;
 			}
-		})
-	});	
+			default:
+				return;
+		}
+	});
 	$(document).on('click', '.post-href', function() {
 		var number = $(this).attr('href');
 		var addition = '>>';
@@ -71,7 +82,7 @@ $(document).ready(function(){
 	}
 	$('.date').each(function() {
 		var localTime  = moment.utc($(this).text()).toDate();
-		localTime = moment(localTime).format('DD-MM-YYYY HH:mm:ss');
+		localTime = moment(localTime).format('DD-MM-YYYY HH:mm:ss');;
 		$(this).text(localTime);
 	});	
 	refreshThread();
@@ -287,3 +298,13 @@ function changeFavicon(src) {
 	window.document.title = title
 }
 
+
+function toggleSpoiler(spoiler) {
+	$('.post-media').each(function() {
+		if (!spoiler) {
+			$(this).css('opacity', '');
+		} else {
+			$(this).css('opacity', '0.1');
+		}
+	})
+}
