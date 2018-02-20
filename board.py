@@ -30,6 +30,9 @@ uploads = 'uploads/'
 thumb_def = 'static/missing_thumbnail.jpg'
 spoilered = 'static/spoiler.jpg'
 
+with open('static/regioncodes.json') as f:
+    regioncodes = json.loads(f.read())
+
 def check_uploads():
     if not os.path.exists(uploads):
         os.makedirs(uploads)
@@ -600,6 +603,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
     data['banned'] = False
     data['replies'] = []
     data['country'] = ''
+    data['countryname'] = ''
     data['trip'] = None
     data['image'] = None
     data['video'] = None
@@ -615,6 +619,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
         if ip == '127.0.0.1':
             ip = '172.217.20.206'
         data['country'] = gdbr.country(ip).country.iso_code
+        data['countryname'] = regioncodes[data['country']]
     if not b['custom']:
         if b['username'] != '':
             data['username'] = b['username']

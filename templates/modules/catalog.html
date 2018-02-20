@@ -2,7 +2,7 @@
 	<div class='thread'>
 		<div class='thread-header'>
 			<div class='thread-header-1'>
-				{% if thread['country'] %}<img class='flag' src='/flags/{{thread["country"]}}.png'/>{% end %}			
+				{% if thread['country'] %}<img class='flag' src='/flags/{{thread["country"]}}.png' title='{{thread["countryname"]}}' />{% end %}
 				<a href='/{{thread["board"]}}/thread/{{thread["count"]}}' class='thread-href'>>>{{thread['count']}}</a>
 				{% if thread['subject'] %}<h3 class='thread-subject'>{{thread['subject']}}</h3>{% end %}
 			</div>

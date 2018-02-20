@@ -10,7 +10,7 @@
 			{% end %}
 			{% if post['trip'] %}<p class='tripcode'>{{post['trip']}}</p>{% end %}
 			<p class='date'>{{ post['date']}}</p>
-			{% if post['country'] %}<img class='flag' src='/flags/{{post["country"]}}.png'/>{% end %}
+			{% if post['country'] %}<img class='flag' src='/flags/{{post["country"]}}.png' title='{{post["countryname"]}}' />{% end %}
 			<a href='/{{post["board"]}}/thread/{{post["thread"]}}#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
 			<p class='post-number'></p>
 			{% if post['sage'] %}<span class='sage'>&#11015;</span>{% end %}

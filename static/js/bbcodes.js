@@ -82,3 +82,9 @@ function wrapText(openTag) {
     return false;
 }
 
+function replaceText(txt) {	
+	for (var i =0;i<$format_search.length;i++) {	
+		txt = txt.replace($format_search[i], $format_replace[i]);	
+	}	
+	return txt	
+}
