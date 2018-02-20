@@ -301,10 +301,12 @@ function changeFavicon(src) {
 
 function toggleSpoiler(spoiler) {
 	$('.post-media').each(function() {
-		if (!spoiler) {
-			$(this).css('opacity', '');
-		} else {
-			$(this).css('opacity', '0.1');
+		if (!$(this).parents().hasClass('.modal')) {
+			if (!spoiler) {
+				$(this).css('opacity', '');
+			} else {
+				$(this).css('opacity', '0.1');
+			}
 		}
 	})
 }
