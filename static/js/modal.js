@@ -23,7 +23,14 @@ $(document).ready(function(){
 			}
 			if (next > files.length - 1) next = 0;
 			if (next < 0) next = files.length - 1;
+			let fnext = files[next];			
 			next = $('[data-oid=' + files[next] + ']');
+			let post = $('#' + fnext);
+			$('.focused').removeClass('focused');
+			$('html,body').animate({
+				scrollTop: post.offset().top
+			}, 1);
+			post.addClass('focused');
 			next.trigger('click');
 		} else {
 			var wH = $(window).height();
@@ -45,6 +52,7 @@ $(document).ready(function(){
 				//centering is broken, apparently, for images only, lol
 				var modalMedia = $('.modal').find('.post-media');
 				modalMedia.addClass('modal-image');
+				modalMedia.css('opacity', '');
 				modalMedia.removeClass('post-image post-video post-media');
 				$('#modalC').trigger('click');				
 				if (!target.is('video')) {
