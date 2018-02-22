@@ -89,7 +89,7 @@ $(document).ready(function(){
 			var rgx = /(\d+)(, .+)?/ig;
 			if ($(this).find('.ommited').length) {
 				let str = $(this).find('.ommited').text();
-				var i = parseInt(rgx.exec(str)[0]) + 1;
+				var i = parseInt(rgx.exec(str)[0]) + 2;
 			} else {
 				var i = 2;
 			}

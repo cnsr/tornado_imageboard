@@ -57,10 +57,15 @@ $(document).ready(function(){
 				$('#modalC').trigger('click');				
 				if (!target.is('video')) {
 					// look into this shitcode it might need rewriting
-					var aspect = aspectRatio($('.modal-image'));					
-					var w = $('.modal-image').width() * aspect * 0.2;
-					var h = $('.modal-image').height() * aspect * 0.2;
+					var aspect = aspectRatio($('.modal-image'));
+					let coef = 0.5;
+					// done to avoid image getting fucked up while scrolling
+					if ($('.modal-image').hasClass('fucked')) coef = coef * 0.15;
+					var w = $('.modal-image').width() * aspect * coef;
+					var h = $('.modal-image').height() * aspect * coef;
+					console.log(coef);
 					centerModal();
+					target.addClass('fucked');					
 					$('.modal-image').on('wheel', function(e){
 						var win = $(window);
 						formX = intify('left');
@@ -69,7 +74,7 @@ $(document).ready(function(){
 						lastCursorY = e.pageY - win.scrollTop();
 						cursorInBoxPosX = lastCursorX-formX;
 						cursorInBoxPosY = lastCursorY-formY;
-						var nwu = ($(this).width() + w).toString();
+						var nwu = ($(this).width() + w ).toString();
 						var nhu = ($(this).height() + h).toString();
 						var nwd = ($(this).width() - w).toString();
 						var nhd = ($(this).height() - h).toString();
@@ -159,13 +164,18 @@ $(document).ready(function(){
 				$form.css('left', x + 'px');
 				if ($('.modal-image')[0].naturalHeight >= window.innerHeight) {
 					$('.modal').css('top', '0px');
-					$('.modal-image').css('height', window.innerHeight + 'px');						
-					$('.modal-image').css('width',$('.modal-image').width());
+					$('.modal-image').css('height', window.innerHeight + 'px');
+					$('.modal-image').css('width',$('.modal-image').width()); // wtf is this lol					
+					if ($('.modal-image').css('width') < window.innerWidth) {
+					} else {
+						let centerW = Math.round((window.innerWidth - parseInt($('.modal-image').css('width')))/2);
+						$('.modal').css('left',centerW);
+					}
 				}
 				else if ($('.modal-image').width() >= window.innerWidth) {
 					$('.modal').css('left', '0px');
 					$('.modal-image').css('width', $('.modal-image').width() + 'px');
-					$('.modal-image').css('height',$('.modal-image').height());						
+					$('.modal-image').css('height',$('.modal-image').height());
 				}
 			});
 		} else {
@@ -202,11 +212,11 @@ $(document).ready(function(){
 		//if(y<0) y = 0;
 		if (typeof up !== undefined) {
 			if (up) {
-				x +=  Math.round(formWidth*0.02);
-				y += Math.round(formHeight*0.02);
+				x +=  Math.round(formWidth*0.01);
+				y += Math.round(formHeight*0.01);
 			} else {
-				x -=  Math.round(formWidth*0.02);
-				y -= Math.round(formHeight*0.02);			 
+				x -=  Math.round(formWidth*0.01);
+				y -= Math.round(formHeight*0.01);			 
 			}
 		}
 		$form.css('top', y + 'px');
