@@ -63,7 +63,6 @@ $(document).ready(function(){
 					if ($('.modal-image').hasClass('fucked')) coef = coef * 0.15;
 					var w = $('.modal-image').width() * aspect * coef;
 					var h = $('.modal-image').height() * aspect * coef;
-					console.log(coef);
 					centerModal();
 					target.addClass('fucked');					
 					$('.modal-image').on('wheel', function(e){

@@ -54,7 +54,13 @@ $(document).ready(function(){
 					$('#modalR').trigger('click');
 				 }
 				 break;
-			}			
+			}
+			case 27:
+			{
+				$('.modal').empty();
+				$('.modal-image').css('width', '0px').attr('top', 0).attr('left', 0);
+				$('.modal-controls').hide();
+			}
 			default:
 				return;
 		}
