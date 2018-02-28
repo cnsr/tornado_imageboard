@@ -1,7 +1,7 @@
 var default_theme = 'white.css';
 
-$(document).ready(function(){
-	if (localStorage.theme != '') {
+function get_theme() {
+	if (typeof localStorage.theme != undefined) {
 		get_css(localStorage.theme);
 		$('[value="' + localStorage.theme + '"]').attr('selected', true);
 	} else {
@@ -12,7 +12,7 @@ $(document).ready(function(){
 		get_css($(this).val());
 		localStorage.theme = $(this).val().replace("null", default_theme);
 	});
-});
+}
 
 function get_css(file) {
     "use strict";
