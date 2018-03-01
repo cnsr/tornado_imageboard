@@ -135,9 +135,11 @@ $(document).ready(function(){
 			// horrible mess of if's
 			if ($(target).parents().hasClass('modal')){
 				if (!$(target).parents().hasClass('draggable')) {
-					$('.modal').empty();
-					$('.modal-image').css('width', '0px').attr('top', 0).attr('left', 0);
-					$('.modal-controls').hide();
+					if ($(target).is(":visible") && $(target).is(":hover")) {
+						$('.modal').empty();
+						$('.modal-image').css('width', '0px').attr('top', 0).attr('left', 0);
+						$('.modal-controls').hide();
+					}
 				}
 			}
 		}
@@ -161,6 +163,7 @@ $(document).ready(function(){
 				if (y<0) y=0;
 				$form.css('top', y + 'px');
 				$form.css('left', x + 'px');
+				// error here becasue of naturalheight
 				if ($('.modal-image')[0].naturalHeight >= window.innerHeight) {
 					$('.modal').css('top', '0px');
 					$('.modal-image').css('height', window.innerHeight + 'px');

@@ -1,0 +1,20 @@
+<div id='settings-btn' class='settings'>
+	<img src='/static/settings.png' title='settings' />
+</div>
+<div class='settings' id='settings-menu'>
+	<span id='settings_title'>Settings</span>
+	<button id='settings-hide'>X</button>
+	<br />
+	<div id='spoiler_block'>
+		<input id='spoiler_images' type='checkbox' />
+		<label for='spoiler_images' id='spoiler_images_l'>Hide images</label>
+	</div>
+	{% block theme %}
+		<select id='themes'>
+			<option value='white.css'>White</option>
+			<option value='krautchan.css'>Krautchan</option>
+			<option value='neutron.css'>Neutron</option>
+			<option value='dark.css'>Dark</option>
+		</select>
+	{% end %}	
+</div>

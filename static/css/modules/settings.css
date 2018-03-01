@@ -1,0 +1,58 @@
+#settings-menu {
+	display:none;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	background: #2c3338 !important;
+	border: 2px solid #eeeed8 !important;
+	padding: 5px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	font-family: "Trebuchet MS",Trebuchet,tahoma,serif !important;
+	color: beige !important;	 
+	font-size: 16px !important;
+	transform: translate(-50%, -50%);
+}
+
+#settings-hide {
+	 display: block;
+	 height: 21px;
+	 float: right;
+	 background: #363b41 !important;
+	 border: 2px solid #eeeed8 !important;
+	 color: #eeeed8 !important;
+	 -webkit-border: none !important;
+	 -webkit-border-radius: none !important;
+	 border-radius: 0 !important;
+}
+
+#settings-btn {
+	 position: fixed;
+	 z-index: 99999999;
+	 bottom: 0px;
+	 right: 0px;
+	 height: 25px;
+	 width: 25px;
+	 border-left: 2px solid beige;
+	 border-top: 2px solid beige;
+}
+
+#spoiler_block {
+	 display: inline-block;
+}
+
+#spoiler_block * {
+	 display: inline-block;
+}
+
+#spoiler_images_l {
+	 display: inline-block;
+	 width: auto !important;
+}
+
+#themes {
+	background-color: #363b41 !important;
+	color: beige !important;
+}

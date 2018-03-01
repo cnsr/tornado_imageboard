@@ -395,7 +395,7 @@ class AjaxInfoHandler(tornado.web.RequestHandler):
         p['date'] = p['date'].strftime("%Y-%m-%d %H:%M:%S")
         if p.get('lastpost', ''):
             p['lastpost'] = p['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
-        self.write(json.dumps(p))
+        self.write(json.dumps(p, indent=4, ensure_ascii=False))
 
 
 class AjaxPinHandler(tornado.web.RequestHandler):

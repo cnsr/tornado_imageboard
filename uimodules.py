@@ -75,3 +75,10 @@ class Ban(tornado.web.UIModule):
         return 'css/modules/banned.css'
     def render(self, ban):
         return self.render_string('modules/banned.html', b=ban)
+
+
+class Settings(tornado.web.UIModule):
+    def css_files(self):
+        return 'css/modules/settings.css'
+    def render(self):
+        return self.render_string('modules/settings.html')

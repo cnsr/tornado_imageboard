@@ -6,6 +6,12 @@ $(document).ready(function(){
 		get_css($(this).val());
 		localStorage.theme = $(this).val().replace("null", default_theme);
 	});
+	$('#settings-btn').on('click', function() {
+		$('#settings-menu').toggle();
+	});
+	$('#settings-hide').on('click', function() {
+		$('#settings-menu').hide();
+	})
 });
 
 function get_theme() {

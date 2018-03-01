@@ -55,16 +55,8 @@
 			<a href="http://www.maxmind.com">http://www.maxmind.com</a>.
 		</div>
 	{% end %}
-	{% block theme %}
-		<select id='themes'>
-			<option value='white.css'>White</option>
-			<option value='krautchan.css'>Krautchan</option>
-			<option value='neutron.css'>Neutron</option>
-			<option value='dark.css'>Dark</option>
-		</select>
-	{% end %}
 	{% block settings %}
-		<input id='spoiler_images' type='checkbox'>Hide images</input>
+		{% module Settings() %}
 	{% end %}
 	</body>
 </html>
