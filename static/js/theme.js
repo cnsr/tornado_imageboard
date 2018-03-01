@@ -15,13 +15,13 @@ $(document).ready(function(){
 });
 
 function get_theme() {
-	if (typeof localStorage.theme != undefined) {
+	if (typeof localStorage.theme != 'undefined') {
 		get_css(localStorage.theme);
 		$('[value="' + localStorage.theme + '"]').attr('selected', true);
 	} else {
 		get_css(default_theme);
-		$('[value=' + default_theme + ']').attr('selected', true);
-		localStorage.theme = default_theme;
+		localStorage.theme = default_theme;		
+		$('[value="' + default_theme + '"]').attr('selected', true);
 	};
 }
 
