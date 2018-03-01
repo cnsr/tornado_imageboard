@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import tornado.options
 import tornado.httpserver
 import tornado.web
@@ -229,18 +231,20 @@ class JsonThreadHandler(LoggedInHandler):
         db = self.application.database
         db_board = await db.boards.find_one({'short': board})
         op = await db.posts.find_one({'count': thread_count})
-        res = [op]
         del op['_id']
         del op['ip']
         op['date'] = op['date'].strftime("%Y-%m-%d %H:%M:%S")
         op['lastpost'] = op['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
+        op = {k:v for k,v in op.items() if v != None}
+        res = [op]
         posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
         for post in posts:
             del post['_id']
             del post['ip']
             post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
+            post = {k:v for k,v in post.items() if v != None}
             res.append(post)
-        self.write(json.dumps(res, indent=4))
+        self.write(json.dumps(res, indent=4, ensure_ascii=False))
 
 
 async def upload_file(f):
