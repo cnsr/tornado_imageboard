@@ -93,7 +93,9 @@ citation {
 }
 
 #text-area {
-	 resize: none;
+	resize: vertical;
+	max-height: 400px;
+	min-height: 65px;
 }
 
 .license {
