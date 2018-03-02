@@ -30,6 +30,9 @@
 		<div class='thread_bump'>
 			<label for='country'>Country flags?</label><input id='country' type='checkbox' name='country' {% if i['country']%}checked{%end%}/>
 		</div>		
+		<div class='roll'>
+			<label for='roll'>Dice roll?</label><input id='roll' type='checkbox' name='roll' {% if i['roll']%}checked{%end%}/>
+		</div>		
 		<div class='thread_catalog'>
 			<label for='thread_catalog'>Max amount of threads in catalog</label><input type='text' name='thread_catalog' onkeypress='validate(event)' maxlength=2 value="{{i['thread_catalog']}}" required/>
 		</div>
