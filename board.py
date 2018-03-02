@@ -9,6 +9,7 @@ import uimodules
 import datetime
 import ib_settings as _ib
 from tornado import concurrent
+import random
 import re
 from uuid import uuid4
 import os
@@ -59,6 +60,17 @@ def strip_tags(html):
     s.feed(html)
     return s.get_data()
 
+match_roll = re.compile(r'roll ([1-9])d([0-9]{1,2})')
+def roll(subject, text):
+    matches = match_roll.match(subject)
+    if not matches:
+        return text
+    count = int(matches.group(1))
+    sides = int(matches.group(2))
+    if sides == 0:
+        return text
+    text += '\n<div class=\"roll\">Rolled: {}</div>'.format(','.join(str(random.randint(0, sides)) for i in range(count)))
+    return text
 
 # decorator that checks if user is admin
 def ifadmin(f):
@@ -178,6 +190,9 @@ class ThreadHandler(LoggedInHandler):
             subject = self.get_argument('subject', '')
             text = self.get_argument('text', 'empty post')
             text = strip_tags(text)
+            db_board = await db.boards.find_one({'short': board})
+            if db_board['roll']:
+                text = roll(subject, text)
             text = text.replace("\n","<br />")
             username = self.get_argument('username', '') or False
             if self.request.files:
@@ -198,7 +213,6 @@ class ThreadHandler(LoggedInHandler):
             await db.posts.insert(data)
             op = await db['posts'].find_one({'count': thread_count})
             if op:
-                db_board = await db.boards.find_one({'short': board})
                 if not op['locked']:
                     if not await check_thread(db, thread_count, db_board['thread_bump']):
                         if not data['sage']:
@@ -478,6 +492,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
         data['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
         data['country'] = 'country' in self.request.arguments
         data['custom'] = 'custom' in self.request.arguments
+        data['roll'] = 'roll' in self.request.arguments
         data['postcount'] = 0
         data['mediacount'] = 0
         data['created'] = datetime.datetime.utcnow()
@@ -513,6 +528,7 @@ class AdminBoardEditHandler(LoggedInHandler):
         instance['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
         instance['country'] = 'country' in self.request.arguments
         instance['custom'] = 'custom' in self.request.arguments
+        instance['roll'] = 'roll' in self.request.arguments
         await self.application.database.boards.update_one({'short':board},{'$set':instance})
         self.redirect('/admin/stats/')
 
