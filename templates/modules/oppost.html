@@ -43,6 +43,9 @@
 			{% end %}			
 		</div>
 		<p class='text'>{% raw  op['text'] %}</p>
+		{% if op['roll'] %}
+			<span class='roll-result'>{{op['roll']}}</span>
+		{% end %}		
 		{% if op['banned'] %}
 			<p class="banned">User has been banned for this post.</p>
 		{% end %}

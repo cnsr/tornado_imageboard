@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import tornado.options
 import tornado.httpserver
 import tornado.web
@@ -21,6 +20,7 @@ from PIL import Image
 import geoip2.database as gdb
 from thumbnail import make_thumbnail
 from tripcode import tripcode
+import random
 
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
@@ -67,6 +67,15 @@ def ifadmin(f):
             self.redirect('/admin/login')
         return f(self, *args, *kwargs)
     return wrapper
+
+
+async def roll(subject):
+    matches = re.compile(r'r(oll)? ([1-9])d([1-9]$|[1-9][0-9]$)').match(subject)
+    if not matches:
+        return None
+    count = int(matches.group(2))
+    sides = int(matches.group(3))
+    return 'Rolled {}'.format(','.join(str(random.randint(0, sides)) for i in range(count)))
 
 
 # crappy handler that checks if user is admin
@@ -478,6 +487,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
         data['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
         data['country'] = 'country' in self.request.arguments
         data['custom'] = 'custom' in self.request.arguments
+        data['roll'] = 'roll' in self.request.arguments
         data['postcount'] = 0
         data['mediacount'] = 0
         data['created'] = datetime.datetime.utcnow()
@@ -513,6 +523,7 @@ class AdminBoardEditHandler(LoggedInHandler):
         instance['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
         instance['country'] = 'country' in self.request.arguments
         instance['custom'] = 'custom' in self.request.arguments
+        instance['roll'] = 'roll' in self.request.arguments
         await self.application.database.boards.update_one({'short':board},{'$set':instance})
         self.redirect('/admin/stats/')
 
@@ -615,6 +626,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
     data['admin'] = admin
     data['thumb'] = None
     data['sage'] = sage
+    data['roll'] = None
     if data['subject'].lower() == 'sage':
         data['sage'] = True
     b = await db.boards.find_one({'short': board})
@@ -624,6 +636,8 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
             ip = '172.217.20.206'
         data['country'] = gdbr.country(ip).country.iso_code
         data['countryname'] = regioncodes[data['country']]
+    if b['roll']:
+        data['roll'] = await roll(data['subject'])
     if not b['custom']:
         if b['username'] != '':
             data['username'] = b['username']

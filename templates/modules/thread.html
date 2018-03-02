@@ -35,6 +35,9 @@
 			{% end %}						
 		</div>
 		<p class='text'>{% raw thread['text'] %}</p>
+		{% if thread['roll'] %}
+			<span class='roll-result'>{{thread['roll']}}</span>
+		{% end %}		
 		{% if thread['banned'] %}
 			<p class="banned">User has been banned for this post.</p>
 		{% end %}

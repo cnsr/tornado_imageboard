@@ -31,7 +31,10 @@
 				{% module Audio(post['audio'], post['count']) %}
 			{% end %}
 		</div>
-		<p class='text'>{% raw post['text'] %}</p>	
+		<p class='text'>{% raw post['text'] %}</p>
+		{% if post['roll'] %}
+			<span class='roll-result'>{{post['roll']}}</span>
+		{% end %}		
 		{% if post['banned'] %}
 			<p class="banned">User has been banned for this post.</p>
 		{% end %}		

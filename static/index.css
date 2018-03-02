@@ -269,3 +269,7 @@ header {
 	-webkit-border-radius: 5px !important;
 	border-radius: 5px !important;
 }
+
+.roll-result {
+	color: red;
+}

@@ -33,6 +33,9 @@
 		<div class='thread_catalog'>
 			<label for='thread_catalog'>Max amount of threads in catalog</label><input type='text' name='thread_catalog' onkeypress='validate(event)' maxlength=2 value="{{i['thread_catalog']}}" required/>
 		</div>
+		<div class='thread_roll'>
+			<label for='roll'>Allow dice rolling</label><input id='roll' type='checkbox' name='roll' {% if i['roll']%}checked{%end%}/>
+		</div>
 		<input type='submit'>
 	</form>
 </div>
