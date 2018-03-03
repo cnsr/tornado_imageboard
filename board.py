@@ -324,6 +324,7 @@ class AjaxNewHandler(tornado.web.RequestHandler):
                     del post['ip']
                     post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
                     post['text'] = ('').join(post['text'].split('<br />'))
+                    post['isop'] = post.pop('op')
                     response.append(post)
             self.write(json.dumps(response))
         except KeyError:

@@ -5,7 +5,7 @@ $format_search =  [
     /\[s\](.*?)\[\/s\]/ig,
     /\[spoiler\](.*?)\[\/spoiler\]/ig,
 	/([^\w>]|^)(>(?!>\d)(.+))/ig,
-	/( |^|\s)>>(\d+)( |\s|$|>|<)/ig,
+	/( |^|\s)>>(\d+)( |\s|$|>|<)/mg,
 	/(http|ftp|https):\/\/(?!\S+youtube\.com)([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])?/ig,
 	/(http|ftp|https):\/\/(www\.)?(m\.)?(youtube\.com)\/(watch\?v=)(\S+)?/ig
 ];
@@ -16,7 +16,7 @@ $format_replace = [
 	'<strike>$1</strike>',
 	'<spoiler>$1</spoiler>',
 	'<citation>&gt;$3</citation><br>',
-	'<a href="#$2" class="reply">&gt;&gt;$2</a><br>$3',
+	'<a href="#$2" class="reply">&gt;&gt;$2</a> <br>$3',
 	'<a href="$1://$2$3" class="outlink" target="_blank">$1://$2$3</a>',
 	'<a class="youtube" href="$1://$2$3$4/$5$6">$1://$2$3$4/$5$6</a><span class="embed" data-url="$6">(embed)</span>',
 ];
