@@ -14,6 +14,10 @@
 			<label for='admin'>Post as admin</label>
 			<input id='admin' type='checkbox' name='admin' />
 		{% end %}
+		{% if show %}
+			<label for='showop'>Show OP</label>
+			<input id='showop' type='checkbox' name='showop' />
+		{% end %}		
 		<div class='bb'>
 			<button id='bb-b' onclick="return wrapText('b')" title='bold' ><b>b</b></button>
 			<button id='bb-i' onclick="return wrapText('i')" title='italic' ><i>i</i></button>

@@ -9,6 +9,7 @@
 				{% if thread['username'] %}<p class='username'>{{thread['username']}}</p>{% end %}
 			{% end %}
 			{% if thread['trip'] %}<p class='tripcode'>{{thread['trip']}}</p>{% end %}
+			{% if thread['op'] %}<span class='isop'>#OP</span>{% end %}			
 			<p class='date'>{{ thread['date']}}</p>
 			{% if thread['country'] %}<img class='flag' src='/flags/{{thread["country"]}}.png' title='{{thread["countryname"]}}' />{% end %}
 			<a href='/{{thread["board"]}}/thread/{{thread["count"]}}' class='thread-href'>>>{{thread['count']}}</a>

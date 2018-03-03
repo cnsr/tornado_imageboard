@@ -109,7 +109,7 @@ class BoardHandler(LoggedInHandler):
                 thread['latest'] = posts
             admin = False
             if self.current_user: admin = True
-            self.render('board.html', threads=threads, board=db_board, boards_list=boards_list, admin=admin)
+            self.render('board.html', threads=threads, board=db_board, boards_list=boards_list, admin=admin, show=True)
         else:
             self.redirect('/')
 
@@ -125,6 +125,7 @@ class BoardHandler(LoggedInHandler):
             text = strip_tags(text)
             text = text.replace("\n","<br />")
             spoiler = 'spoilerimage' in self.request.arguments
+            showop = 'showop' in self.request.arguments
             if self.request.files:
                 fo, ff, filetype, filedata = await upload_file(self.request.files['file'][0])
             else:
@@ -136,7 +137,7 @@ class BoardHandler(LoggedInHandler):
             sage = 'saging' in self.request.arguments
             if self.current_user and 'admin' in self.request.arguments: admin = True
             data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata,
-                username, spoiler=spoiler, admin=admin, sage=sage)
+                username, spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop)
             await db.posts.insert(data)
             self.redirect('/' + board + '/thread/' + str(data['count']))
         else:
@@ -174,7 +175,10 @@ class ThreadHandler(LoggedInHandler):
             boards_list = await db.boards.find({}).to_list(None)
             admin = False
             if self.current_user: admin = True
-            self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list, admin=admin)
+            op = await db.posts.find_one({'count': int(count)})
+            ip = await get_ip(self.request)
+            self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list, admin=admin,
+                        show=op['ip']==ip)
 
         else:
             self.redirect('/' + board)
@@ -196,14 +200,16 @@ class ThreadHandler(LoggedInHandler):
             replies = get_replies(text)
             count = await latest(db) + 1
             oppost = False
-            thread = thread_count
+            thread = thread_count #wtf why
+            op = await db.posts.find_one({'count': int(thread)})
             ip = await get_ip(self.request)
             spoiler = 'spoilerimage' in self.request.arguments
             sage = 'saging' in self.request.arguments
+            showop = 'showop' in self.request.arguments
             admin = False
             if self.current_user and 'admin' in self.request.arguments: admin = True
             data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
-                username, spoiler=spoiler, admin=admin, sage=sage)
+                username, spoiler=spoiler, admin=admin, sage=sage, opip=op['ip'], showop=showop)
             await db.posts.insert(data)
             op = await db['posts'].find_one({'count': thread_count})
             if op:
@@ -620,7 +626,7 @@ class AdminReportsHandler(LoggedInHandler):
 
 # constructs dictionary to insert into mongodb
 async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, fo=None, f=None, filetype=None,
-                    filedata=False, username=False, spoiler=False, admin=False, sage=False):
+                    filedata=False, username=False, spoiler=False, admin=False, sage=False, opip='', showop=False):
     data = {}
     data['ip'] = ip
     data['subject'] = subject
@@ -642,6 +648,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
     data['thumb'] = None
     data['sage'] = sage
     data['roll'] = None
+    data['op'] = ip == opip and showop
     if data['subject'].lower() == 'sage':
         data['sage'] = True
     b = await db.boards.find_one({'short': board})

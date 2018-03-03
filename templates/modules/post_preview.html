@@ -9,6 +9,7 @@
 				{% if post['username'] %}<p class='username'>{{post['username']}}</p>{% end %}
 			{% end %}
 			{% if post['trip'] %}<p class='tripcode'>{{post['trip']}}</p>{% end %}
+			{% if post['op'] %}<span class='isop'>#OP</span>{% end %}			
 			<p class='date'>{{ post['date']}}</p>
 			{% if post['country'] %}<img class='flag' src='/flags/{{post["country"]}}.png' title='{{post["countryname"]}}' />{% end %}
 			<a href='/{{post["board"]}}/thread/{{post["thread"]}}#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>

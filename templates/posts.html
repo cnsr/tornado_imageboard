@@ -17,19 +17,7 @@
 	</script>
 	{% if not op['locked'] %}
 		{% block add %}
-			{% if board['custom'] %}
-				{% if admin %}
-					{% module NewPost(name=True, admin=True) %}
-				{% else %}
-					{% module NewPost(name=True, admin=False) %}
-				{% end %}
-			{% else %}
-				{% if admin %}
-					{% module NewPost(name=False, admin=True) %}
-				{% else %}
-					{% module NewPost(name=False, admin=False) %}
-				{% end %}
-			{% end %}
+			{% module NewPost(name=board['custom'], admin=admin, show=show) %}
 		{% end %}
 	{% end %}
 	<div class='op'>
@@ -79,6 +67,7 @@
 						{{! #username}}<p class='username'>{{!username}}</p>{{! /username}}
 					{{! /admin}}
 					{{! #trip}}<p class='tripcode'>{{! trip}}</p>{{! /trip}}
+					{{! #op }}<span class='isop'>#OP</span>{{! /op }
 					<p class='date'>{{! date}}</p>
 					{{! #country}}<img class='flag' src='/flags/{{! country }}.png' title='{{! countryname }}' />{{! /country}}
 					<a href='#{{! count}}' class='post-href'>>>{{! count}}</a>

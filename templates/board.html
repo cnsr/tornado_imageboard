@@ -10,19 +10,7 @@
 {% block catalog %}<a href="/{{board['short']}}/catalog/" class='catalogbtn'>Catalog</a>{% end %}
 {% block content %}
 	{% block add %}
-		{% if board['custom'] %}
-			{% if admin %}
-				{% module NewPost(name=True, admin=True) %}
-			{% else %}
-				{% module NewPost(name=True, admin=False) %}
-			{% end %}
-		{% else %}
-			{% if admin %}
-				{% module NewPost(name=False, admin=True) %}
-			{% else %}
-				{% module NewPost(name=False, admin=False) %}
-			{% end %}
-		{% end %}
+		{% module NewPost(name=board['custom'], admin=admin, show=show) %}
 		<script>var nodrag=true;</script>
 	{% end %}
 	<div class='threads'>

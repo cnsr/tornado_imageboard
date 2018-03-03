@@ -9,6 +9,7 @@
 				{% if op['username'] %}<p class='username'>{{op['username']}}</p>{% end %}
 			{% end %}
 			{% if op['trip'] %}<p class='tripcode'>{{op['trip']}}</p>{% end %}
+			{% if op['op'] %}<span class='isop'>#OP</span>{% end %}			
 			<p class='date'>{{ op['date']}}</p>
 			{% if op['country'] %}<img class='flag' src='/flags/{{op["country"]}}.png' title='{{op["countryname"]}}' />{% end %}
 			<a href='#{{op["count"]}}' class='post-href'>>>{{op['count']}}</a>
