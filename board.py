@@ -70,7 +70,7 @@ def ifadmin(f):
 
 
 async def roll(subject):
-    matches = re.compile(r'r(oll)? ([1-9])d([1-9]$|[1-9][0-9]$)').match(subject)
+    matches = re.compile(r'r(oll)? ([1-9])d([1-9]$|[1-9][0-9]{0,3}$)').match(subject)
     if not matches:
         return None
     count = int(matches.group(2))
