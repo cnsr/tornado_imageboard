@@ -189,6 +189,10 @@ $(document).ready(function(){
 		var id = $(this).attr('data-id');
 		sendAjaxPin(id);
 	})
+	$(document).on('click', '.admin-lock', function(){
+		var id = $(this).attr('data-id');
+		sendAjaxLock(id);
+	})	
 	$('body').on('mouseleave', 'a.reply', function(e) {
 		$('.to_die').remove();
 	});
@@ -241,6 +245,21 @@ function sendAjaxPin(post) {
 	});
 };
 
+function sendAjaxLock(post) {
+	$.ajax({
+		url : "/ajax/lock/",
+		type : "POST",
+		data : {post: post, _xsrf: getCookie("_xsrf")},
+		success : function(json) {
+			var json = jQuery.parseJSON(json);
+			popUp(json['status']);
+		},
+
+		error : function(xhr,errmsg,err) {
+			console.log(xhr.status + ": " + xhr.responseText);
+		}
+	});
+};
 
 function getNewAjax(latest, url) {
 	$.ajax({

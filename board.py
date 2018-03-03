@@ -422,6 +422,21 @@ class AjaxPinHandler(tornado.web.RequestHandler):
             self.write(json.dumps({'status':'failed'}))
 
 
+class AjaxLockHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        for k, v in data.items(): data[k] = v.decode('utf-8')
+        thread = await db.posts.find_one({'count': int(data['post'])})
+        if thread['oppost']:
+            thread['locked'] = not thread['locked']
+            await update_db(db, thread['count'], thread)
+            self.write(json.dumps({'status':'ok'}))
+        else:
+            self.write(json.dumps({'status':'failed'}))
+
+
 # banning users using ajax; same stuff as with previous one
 class AjaxBanHandler(tornado.web.RequestHandler):
 
@@ -829,6 +844,7 @@ class Application(tornado.web.Application):
             (r'/ajax/report/?', AjaxReportHandler),
             (r'/ajax/info/?', AjaxInfoHandler),
             (r'/ajax/pin/?', AjaxPinHandler),
+            (r'/ajax/lock/?', AjaxLockHandler),
         ]
 
         settings = {
