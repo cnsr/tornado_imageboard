@@ -1,4 +1,4 @@
-var default_theme = 'white.css';
+var default_theme = 'purple.css';
 
 $(document).ready(function(){
 	$('[value="' + localStorage.theme + '"]').attr('selected', true);	

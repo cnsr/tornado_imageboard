@@ -1,0 +1,78 @@
+body {
+	background: #F6F4FA;
+	color: #281D31;
+}
+
+.thread, .to_die, .post, .popup {
+	background: #E9E5F3;
+	border: 1px solid #EDD7E3 !important;
+	border-radius: 5px;
+	padding: 3px 6px;
+}
+
+.post {
+	box-shadow: none;
+	padding: 4px 8px;
+}
+
+button, .report {
+	 background: #BFB4DC;
+	 color: #281D31;
+	 border: 2px solid #B4A7D6;
+	 border-radius: 1px;
+}
+
+.to_die .thread {
+	border: none;
+}
+
+a, a:visited {
+	color: #8C7CBC;
+}
+a:hover {
+	color: #9C8CC6;
+}
+
+.username {
+	color: #E06666;
+}
+
+.tripcode {
+	color: #543D96;
+}
+
+.isop {
+	color: #AC5E84;
+}
+
+.add {
+	background: #8674BD;
+	box-shadow: none;
+	border: 1px solid ;
+	border-radius: 5px;
+}
+
+.roll-result {
+	color: #b48ead
+}
+
+.psubject {
+	color: #9F4B73;
+}
+
+citation {
+	color: #7B2549;
+}
+
+.ommited {
+	color: #d08770;
+}
+
+.reply, .thread-href, .reply:visited, .thread-href:visited, .post-href, .post-href:visited {
+	color: #D56217;
+}
+
+.banned {
+	color: #490000;
+	font-weight: bold;
+}
