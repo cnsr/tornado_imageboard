@@ -1,0 +1,77 @@
+body {
+	background: #2e3440;
+	color: #eceff4;
+}
+
+.thread, .to_die, .post, .popup {
+	background: #3b4252;
+	border: 1px solid #2e3440;
+	border-radius: 5px;
+	padding: 3px 6px;
+}
+
+.post {
+	box-shadow: none;
+	padding: 4px 8px;
+}
+
+button, .report {
+	 background: #eceff4;
+	 color: #2e3440;
+	 border: 2px solid #434c5e;
+	 border-radius: 1px;
+}
+
+.to_die .thread {
+	border: none;
+}
+
+.to_die .thread:after {
+	border-bottom: 1px solid black;
+}
+
+a, a:visited {
+	color: #F4EDF6;
+}
+a:hover {
+	color: #FDE1F7;
+}
+
+.username {
+	color: #bf616a;
+}
+
+.tripcode {
+	color: #ebcb8b;
+}
+
+.isop {
+	color: #d08770;
+}
+
+.add {
+	background: #4c566a;
+	box-shadow: none;
+	border: 1px solid ;
+	border-radius: 5px;
+}
+
+.roll-result {
+	color: #b48ead
+}
+
+.psubject {
+	color: #8fbcbb;
+}
+
+citation {
+	color: #a3be8c;
+}
+
+.ommited {
+	color: #d08770;
+}
+
+.reply, .thread-href, .reply:visited, .thread-href:visited, .post-href, .post-href:visited {
+	color: #5e81ac;
+}

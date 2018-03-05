@@ -1,15 +1,15 @@
 <div class='post-outer preview-outer'>
 	<div class='preview-post' id='{{post["count"]}}'>
 		<div class='post-header preview-header'>
-			{% if post['subject'] %}<h3>{{post['subject']}}</h3>{% end %}
+			{% if post['subject'] %}<h3 class='psubject' title='subject'>{{post['subject']}}</h3>{% end %}
 			{% if post['admin'] %}
-				<p class='username adminpost'>## Admin ##</p>
-				<p class='username adminpost-small'>&#x21AF;&#x21AF;</p>
+				<p class='username adminpost' title='admin'>## Admin ##</p>
+				<p class='username adminpost-small' title='admin'>&#x21AF;&#x21AF;</p>
 			{% else %}
 				{% if post['username'] %}<p class='username'>{{post['username']}}</p>{% end %}
 			{% end %}
-			{% if post['trip'] %}<p class='tripcode'>{{post['trip']}}</p>{% end %}
-			{% if post['op'] %}<span class='isop'>#OP</span>{% end %}			
+			{% if post['trip'] %}<p class='tripcode' title='tripcode'>{{post['trip']}}</p>{% end %}
+			{% if post['op'] %}<span class='isop' title='original poster'>#OP</span>{% end %}			
 			<p class='date'>{{ post['date']}}</p>
 			{% if post['country'] %}<img class='flag' src='/flags/{{post["country"]}}.png' title='{{post["countryname"]}}' />{% end %}
 			<a href='/{{post["board"]}}/thread/{{post["thread"]}}#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>

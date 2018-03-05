@@ -1,15 +1,15 @@
 <div class='oppost-outer'>
 	<div class='oppost' id='{{op["count"]}}'>
 		<div class='post-header'>
-			{% if op['subject'] %}<h3>{{op['subject']}}</h3>{% end %}
+			{% if op['subject'] %}<h3 class='psubject' title='subject'>{{op['subject']}}</h3>{% end %}
 			{% if op['admin'] %}
-				<p class='username adminpost'>## Admin ##</p>
-				<p class='username adminpost-small'>&#x21AF;&#x21AF;</p>				
+				<p class='username adminpost' title='admin'>## Admin ##</p>
+				<p class='username adminpost-small' title='admin'>&#x21AF;&#x21AF;</p>				
 			{% else %}
 				{% if op['username'] %}<p class='username'>{{op['username']}}</p>{% end %}
 			{% end %}
-			{% if op['trip'] %}<p class='tripcode'>{{op['trip']}}</p>{% end %}
-			{% if op['op'] %}<span class='isop'>#OP</span>{% end %}			
+			{% if op['trip'] %}<p class='tripcode' title='tripcode'>{{op['trip']}}</p>{% end %}
+			{% if op['op'] %}<span class='isop' title='original poster'>#OP</span>{% end %}			
 			<p class='date'>{{ op['date']}}</p>
 			{% if op['country'] %}<img class='flag' src='/flags/{{op["country"]}}.png' title='{{op["countryname"]}}' />{% end %}
 			<a href='#{{op["count"]}}' class='post-href'>>>{{op['count']}}</a>
@@ -25,7 +25,7 @@
 				<button class='admin-lock' data-id="{{op['count']}}">🔒</button>
 			{% end %}
 			<span class='report' data-id='{{op["count"]}}'>&#33;</span>
-			{% if op['sage'] %}<span class='sage'>&#11015;</span>{% end %}
+			{% if op['sage'] %}<span class='sage' title='sage'>&#11015;</span>{% end %}
 			{% if op['pinned'] %}<span class='pinned' title='Pinned thread'>📌</span>{% end %}
 		</div>
 		<div class='oppost-media'>

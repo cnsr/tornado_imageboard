@@ -37,8 +37,8 @@ textarea {
 
 label {
 	display: inline-block;
-	width: 60px;
 	margin-right: 2px;
+	padding-right: 6px;
 }
 
 .spoiler-div {

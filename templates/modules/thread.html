@@ -1,19 +1,19 @@
 <div class='thread-outer' id='{{thread["count"]}}'>
 	<div class='thread'>
 		<div class='thread-header'>
-			{% if thread['subject'] %}<h3>{{thread['subject']}}</h3>{% end %}
+			{% if thread['subject'] %}<h3 class='psubject' title='subject'>{{thread['subject']}}</h3>{% end %}
 			{% if thread['admin'] %}
-				<p class='username adminpost'>## Admin ##</p>
-				<p class='username adminpost-small'>&#x21AF;&#x21AF;</p>
+				<p class='username adminpost' title='admin'>## Admin ##</p>
+				<p class='username adminpost-small' title='admin'>&#x21AF;&#x21AF;</p>
 			{% else %}
 				{% if thread['username'] %}<p class='username'>{{thread['username']}}</p>{% end %}
 			{% end %}
-			{% if thread['trip'] %}<p class='tripcode'>{{thread['trip']}}</p>{% end %}
-			{% if thread['op'] %}<span class='isop'>#OP</span>{% end %}			
+			{% if thread['trip'] %}<p class='tripcode' title='tripcode'>{{thread['trip']}}</p>{% end %}
+			{% if thread['op'] %}<span class='isop' title='original poster'>#OP</span>{% end %}			
 			<p class='date'>{{ thread['date']}}</p>
 			{% if thread['country'] %}<img class='flag' src='/flags/{{thread["country"]}}.png' title='{{thread["countryname"]}}' />{% end %}
 			<a href='/{{thread["board"]}}/thread/{{thread["count"]}}' class='thread-href'>>>{{thread['count']}}</a>
-			{% if thread['sage'] %}<span class='sage'>&#11015;</span>{% end %}			
+			{% if thread['sage'] %}<span class='sage' title='sage'>&#11015;</span>{% end %}			
 			{% if thread['locked'] %}
 				<p class='locked' title='Thread is locked.'>&#x1f512;</p>
 			{% end %}
