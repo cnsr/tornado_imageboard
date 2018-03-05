@@ -75,3 +75,8 @@ citation {
 .reply, .thread-href, .reply:visited, .thread-href:visited, .post-href, .post-href:visited {
 	color: #5e81ac;
 }
+
+.banned {
+	color: #bf616a;
+	font-weight: bold;
+}
