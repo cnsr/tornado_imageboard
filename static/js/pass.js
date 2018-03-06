@@ -12,6 +12,14 @@ $(document).ready(function() {
 	}, function () {
 		$('#setpass').attr('type', 'password');
 	});
+	$('#setpass').on('focus', function() {
+		$(this).attr('type','text');
+		$(this).attr('readonly',false);
+	})
+	$('#setpass').on('blur', function() {
+		$(this).attr('type','password');
+		$(this).attr('readonly',true);
+	})
 	$(document).on('click', '.del-post', function(){
 		var id = $(this).attr('data-id');
 		sendAjaxDel(id);
