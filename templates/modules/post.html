@@ -14,6 +14,7 @@
 			{% if post['country'] %}<img class='flag' src='/flags/{{post["country"]}}.png' title='{{post["countryname"]}}' />{% end %}
 			<a href='#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
 			<p class='post-number'></p>
+			<button class='del-post' data-id='{{post["count"]}}'>&#9746;</button>
 			{% if admin %}
 				<button class='ban' data-id='{{post["count"]}}'>BAN</button>
 				<button class='del' data-id='{{post["count"]}}'>&#x2716;</button>

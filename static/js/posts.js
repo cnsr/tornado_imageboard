@@ -2,6 +2,7 @@ var window_focus = true;
 var unread = 0;
 var title;
 var title_orig;
+
 $(document).ready(function(){
 	if (localStorage.name != '' && localStorage.name != null) $('#username').val(localStorage.name);
 	if ($(window).width() > 768) {

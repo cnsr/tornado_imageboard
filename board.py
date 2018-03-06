@@ -120,6 +120,7 @@ class BoardHandler(LoggedInHandler):
             db_board = await db.boards.find_one({'short': board})
             threads = await db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
             subject = self.get_argument('subject', '')
+            password = self.get_argument('pass', '')
             text = self.get_argument('text', '')
             username = self.get_argument('username', '') or False
             text = strip_tags(text)
@@ -137,7 +138,7 @@ class BoardHandler(LoggedInHandler):
             sage = 'saging' in self.request.arguments
             if self.current_user and 'admin' in self.request.arguments: admin = True
             data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata,
-                username, spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop)
+                username, spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop, password=password)
             await db.posts.insert(data)
             self.redirect('/' + board + '/thread/' + str(data['count']))
         else:
@@ -189,6 +190,7 @@ class ThreadHandler(LoggedInHandler):
         if not await is_banned(db, ip):
             thread_count = int(thread_count)
             subject = self.get_argument('subject', '')
+            password = self.get_argument('pass', '')
             text = self.get_argument('text', 'empty post')
             text = strip_tags(text)
             text = text.replace("\n","<br />")
@@ -209,7 +211,7 @@ class ThreadHandler(LoggedInHandler):
             admin = False
             if self.current_user and 'admin' in self.request.arguments: admin = True
             data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
-                username, spoiler=spoiler, admin=admin, sage=sage, opip=op['ip'], showop=showop)
+                username, spoiler=spoiler, admin=admin, sage=sage, opip=op['ip'], showop=showop, password=password)
             await db.posts.insert(data)
             op = await db['posts'].find_one({'count': thread_count})
             if op:
@@ -248,6 +250,7 @@ class JsonThreadHandler(LoggedInHandler):
         op = await db.posts.find_one({'count': thread_count})
         del op['_id']
         del op['ip']
+        del op['pass']
         op['date'] = op['date'].strftime("%Y-%m-%d %H:%M:%S")
         op['lastpost'] = op['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
         op = {k:v for k,v in op.items() if v != None}
@@ -256,6 +259,7 @@ class JsonThreadHandler(LoggedInHandler):
         for post in posts:
             del post['_id']
             del post['ip']
+            del post['pass']
             post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
             post = {k:v for k,v in post.items() if v != None}
             res.append(post)
@@ -334,6 +338,51 @@ class AjaxNewHandler(tornado.web.RequestHandler):
                 del post['ip']
                 post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
             self.write(json.dumps(posts))
+
+
+# delete posts using ajax if password is correct
+class AjaxDeletePassHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        pid = int(data['post'].decode('utf-8'))
+        password = data['password'].decode('utf-8')
+        post = await db.posts.find_one({'count': pid})
+        if post['pass'] == password:
+            if not post['oppost']:
+                posts = await db.posts.find({'thread': pid}).to_list(None)
+                await self.delete_post(post, pid)
+                for post in posts:
+                    await self.delete_post(post, pid)
+                response = {'status':'deleted'}
+            else:
+                await self.delete_post(post, pid)
+                response = {'status':'deleted'}
+                response['op'] = 'true'
+            self.write(json.dumps(response))
+        else:
+            self.write(json.dumps({'status': 'passwords do not match'}))
+
+    async def delete_post(self, post, pid):
+        files = []
+        db = self.application.database
+        if post['image']:
+            files.append(post['image'])
+            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+                files.append(post['thumb'])
+        elif post['video']:
+            files.append(post['video'])
+            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+                files.append(post['thumb'])
+            await db.posts.delete_many({'thread': pid})
+        await db.posts.delete_one({'count': pid})
+        await self.delete(files)
+
+    async def delete(self, files):
+        for file in files:
+            if os.path.isfile(file):
+                os.remove(file)
 
 
 # delete posts using ajax; doesnt have admin rights check and idk how to make it
@@ -627,7 +676,8 @@ class AdminReportsHandler(LoggedInHandler):
 
 # constructs dictionary to insert into mongodb
 async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, fo=None, f=None, filetype=None,
-                    filedata=False, username=False, spoiler=False, admin=False, sage=False, opip='', showop=False):
+                    filedata=False, username=False, spoiler=False, admin=False, sage=False, opip='', showop=False,
+                    password='abcde'):
     data = {}
     data['ip'] = ip
     data['subject'] = subject
@@ -650,6 +700,9 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
     data['sage'] = sage
     data['roll'] = None
     data['op'] = ip == opip and showop
+    if password == '':
+        password = 'abcde'
+    data['pass'] = password
     if data['subject'].lower() == 'sage':
         data['sage'] = True
     b = await db.boards.find_one({'short': board})
@@ -848,6 +901,7 @@ class Application(tornado.web.Application):
             (r'/admin/reports/?', AdminReportsHandler),
             (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': 'uploads'}),
             (r'/ajax/remove/?', AjaxDeleteHandler),
+            (r'/ajax/delete/?', AjaxDeletePassHandler),
             (r'/ajax/ban/?', AjaxBanHandler),
             (r'/ajax/report/?', AjaxReportHandler),
             (r'/ajax/info/?', AjaxInfoHandler),
