@@ -134,6 +134,7 @@ $(document).ready(function(){
 		$('#newremain').text('20');		
 	});
 	$('body').on('mouseover', 'a.reply', function() {
+		$('.to_die').removeClass('latest');
 		var display = $($(this).attr('href')).clone();
 		display.toggleClass('to_die', true);
 		display.css({
@@ -145,6 +146,7 @@ $(document).ready(function(){
 			 zIndex: 1000,
 			 //background: 'white'
 		});
+		display.addClass('latest');
 		$('body').append(display);
 		if ($('.to_die').is(':offscreen')) {
 			 $(this).css('bottom', 0);
@@ -193,19 +195,26 @@ $(document).ready(function(){
 	$(document).on('click', '.admin-lock', function(){
 		var id = $(this).attr('data-id');
 		sendAjaxLock(id);
-	})	
-	$('body').on('mouseleave', 'a.reply', function(e) {
-		$('.to_die').remove();
-	});
-	/*
-	$('body').on('mouseleave', 'a.reply', function(e) {
+	})
+	$('body').on('mouseover', '.to_die', function(e) {
+        $(this).addClass('is-hover');
+    });
+	$('body').on('mouseleave', '.to_die', function(e) {
+        $(this).removeClass('is-hover');
 		setTimeout(function() {
-			if (!$(e.relatedTarget).parents('.to_die').length) {
-				console.log($(e.relatedTarget).parents('.to_die').length);
+			if (!$('.to_die:hover').length && !$('a.reply:hover').length) {
 				$('.to_die').remove();
 			}
-		}, 1000);
-	});*/
+		}, 1250);		
+    });	
+	$('body').on('mouseleave', 'a.reply', function(e) {
+		var to_rm = '#' + $(this).text().slice(2,) + '.to_die';
+		setTimeout(function() {
+			if (!$(to_rm).hasClass('is-hover')) {
+				$(to_rm + '.latest').remove();
+			}
+		}, 250);
+	});
 });
 
 function loadPost(dict) {
@@ -272,12 +281,14 @@ function getNewAjax(latest, url) {
 			$.each(json, function(index, obj) {
 				obj['date'] = switchDate(obj['date']);
 				obj['text'] = replaceText(obj['text']);
-				loadPost(obj);
-				if (window_focus === false) {
-					unread++;
-					title = "(" + unread + ") " + title_orig;
-					changeFavicon("/static/favicon-unread.png");
-    			}
+				if (!$('#' + obj['count']).length) {
+					loadPost(obj);
+					if (window_focus === false) {
+						unread++;
+						title = "(" + unread + ") " + title_orig;
+						changeFavicon("/static/favicon-unread.png");
+					}
+				}
 			})
 		},
 		error : function(xhr,errmsg,err) {
