@@ -2,10 +2,11 @@
 {% block title %}Edit {{i['short']}}{% end %}
 {% block css %}
 	<script src='{{static_url("js/validate_numbersonly.js")}}'></script>
+	<script src='{{static_url("js/validate_image.js")}}'></script>	
 {% end %}
 {% block content %}
 <div class='add_board'>
-	<form method='POST' action=''>
+	<form method='POST' action='' enctype="multipart/form-data">
 		{% module xsrf_form_html() %}
 		<div class='name'>
 			<label for='name'>Name</label><input type='text' name='name' maxlength=50 value="{{i['name']}}" required/>
@@ -36,6 +37,23 @@
 		<div class='thread_roll'>
 			<label for='roll'>Allow dice rolling</label><input id='roll' type='checkbox' name='roll' {% if i['roll']%}checked{%end%}/>
 		</div>
+		{% if i['banners'] %}
+			<div class='banners-preview'>
+				<ul id='banners-list'>
+				{% for banner in i['banners'] %}
+					<li class='banner-preview'>
+						<img src='/{{banner}}' title='banner' class='banner-img'/>
+						<button class='banner-btn' data-board="{{i['short']}}" data-banner="{{banner}}">Delete</button>
+					</li>
+				{% end %}
+				</ul>
+			</div>
+		{% else %}
+			<p style='color:red;'>No banners</p>
+		{% end %}
+		<pre>Banners need to be 300x100</pre>
+		<label for='banner'>Add banner</label>
+		<input type='file' name='banner' id='banner' class='fileinput' />
 		<input type='submit'>
 	</form>
 </div>

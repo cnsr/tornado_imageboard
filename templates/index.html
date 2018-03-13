@@ -39,6 +39,8 @@
 		{% module Modal() %}
 	{% end %}
 	{% block content %}
+		{% block banner %}
+		{% end %}
 		{% if boards %}
 			<div class='boards'>
 				{% for board in boards %}

@@ -9,6 +9,16 @@
 {% block title %}/{{board['short']}}/ - {{board['name']}}{% end %}
 {% block catalog %}<a href="/{{board['short']}}/catalog/" class='catalogbtn'>Catalog</a>{% end %}
 {% block content %}
+	{% block banner %}
+		<div id='actual-header'>
+			{% if banner %}
+				<img src='/{{banner}}' title='banner'/>
+				<br />
+			{% end %}
+			<h2 id='board-title'>/{{board['short']}}/ - {{board['name']}}</h2>
+			<hr>
+		</div>
+	{% end %}
 	{% block add %}
 		{% module NewPost(name=board['custom'], admin=admin, show=show) %}
 		<script>var nodrag=true;</script>

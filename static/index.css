@@ -207,7 +207,7 @@ header {
 @media screen and (max-width: 724px) {
 	.add {
 		border: none;
-		display: block;
+		display: contents;
 	}
 	.body {
 		margin-left: 0px;

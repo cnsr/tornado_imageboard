@@ -10,11 +10,31 @@
 
 {% block title %}/{{board['short']}}/ - #{{ op['count'] }} - {{ op['subject'] }}{% end %}
 {% block catalog %}<a href="/{{board['short']}}/catalog/" class='catalogbtn'>Catalog</a>{% end %}
+{% block banner %}
+	<div id='actual-header'>
+		{% if banner %}
+			<img src='/{{banner}}' title='banner'/>
+			<br />
+		{% end %}
+		<h2 id='board-title'>/{{board['short']}}/ - {{board['name']}}</h2>
+		<hr>
+	</div>
+{% end %}
 {% block content %}
 	<script type="text/javascript">
 		var board="{{board['short']}}";
 		var thread="{{op['count']}}";
 	</script>
+	{% block banner %}
+		<div id='actual-header'>
+			{% if banner %}
+				<img src='/{{banner}}' title='banner'/>
+				<br />
+			{% end %}
+			<h2 id='board-title'>/{{board['short']}}/ - {{board['name']}}</h2>
+			<hr>
+		</div>
+	{% end %}
 	{% if not op['locked'] %}
 		{% block add %}
 			{% module NewPost(name=board['custom'], admin=admin, show=show) %}

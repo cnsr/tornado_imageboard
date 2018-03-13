@@ -2,10 +2,11 @@
 {% block title %}Add Board{% end %}
 {% block css %}
 	<script src='{{static_url("js/validate_numbersonly.js")}}'></script>
+	<script src='{{static_url("js/validate_image.js")}}'></script>
 {% end %}
 {% block content %}
 <div class='add_board'>
-	<form method='POST' action=''>
+	<form method='POST' action='' enctype="multipart/form-data">
 		{% module xsrf_form_html() %}
 		<div class='name'>
 			<label for='name'>Name</label><input type='text' name='name' maxlength=50 required/>
@@ -35,6 +36,9 @@
 		<div class='thread_roll'>
 			<label for='roll'>Allow dice rolls</label><input id='roll' type='checkbox' name='roll'/>
 		</div>
+		<pre>Banners need to be 300x100</pre>
+		<label for='banner'>Banner</label>
+		<input type='file' name='banner' id='banner' class='fileinput' />
 		<input type='submit'>
 	</form>
 </div>

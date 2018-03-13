@@ -35,9 +35,9 @@ spoilered = 'static/spoiler.jpg'
 with open('static/regioncodes.json') as f:
     regioncodes = json.loads(f.read())
 
-def check_uploads():
-    if not os.path.exists(uploads):
-        os.makedirs(uploads)
+def check_path(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 gdbr = gdb.Reader('GeoLite2-Country.mmdb')
 
@@ -101,6 +101,9 @@ class BoardHandler(LoggedInHandler):
         db = self.application.database
         db_board = await db.boards.find_one({'short': board})
         if db_board:
+            if db_board['banners']:
+                banner = random.choice(db_board['banners'])
+            else: banner = None
             threads = await db.posts.find({'board': board,'oppost': True}).sort([('pinned', -1), ('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
             boards_list = await db.boards.find({}).to_list(None)
             for thread in threads:
@@ -109,7 +112,8 @@ class BoardHandler(LoggedInHandler):
                 thread['latest'] = posts
             admin = False
             if self.current_user: admin = True
-            self.render('board.html', threads=threads, board=db_board, boards_list=boards_list, admin=admin, show=True)
+            self.render('board.html', threads=threads, board=db_board, boards_list=boards_list, admin=admin, show=True,
+                banner=banner)
         else:
             self.redirect('/')
 
@@ -167,22 +171,28 @@ class ThreadHandler(LoggedInHandler):
         thread_count = int(count)
         db = self.application.database
         db_board = await db.boards.find_one({'short': board})
-        posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
-        op = await db['posts'].find_one({"count": thread_count})
-        if op:
-            if await check_thread(db, thread_count, db_board['thread_posts']):
-                op['locked'] = True
-                await update_db(db, op['count'], op)
-            boards_list = await db.boards.find({}).to_list(None)
-            admin = False
-            if self.current_user: admin = True
-            op = await db.posts.find_one({'count': int(count)})
-            ip = await get_ip(self.request)
-            self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list, admin=admin,
-                        show=op['ip']==ip)
+        if db_board:
+            if db_board['banners']:
+                banner = random.choice(db_board['banners'])
+            else: banner = None
+            posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
+            op = await db['posts'].find_one({"count": thread_count})
+            if op:
+                if await check_thread(db, thread_count, db_board['thread_posts']):
+                    op['locked'] = True
+                    await update_db(db, op['count'], op)
+                boards_list = await db.boards.find({}).to_list(None)
+                admin = False
+                if self.current_user: admin = True
+                op = await db.posts.find_one({'count': int(count)})
+                ip = await get_ip(self.request)
+                self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list, admin=admin,
+                            show=op['ip']==ip, banner=banner)
 
+            else:
+                self.redirect('/' + board)
         else:
-            self.redirect('/' + board)
+            self.redirect('/')
 
     async def post(self, board, thread_count):
         db = self.application.database
@@ -493,6 +503,24 @@ class AjaxLockHandler(tornado.web.RequestHandler):
             self.write(json.dumps({'status':'failed'}))
 
 
+# banner deleting handler
+class AjaxBannerDelHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        for k, v in data.items(): data[k] = v.decode('utf-8')
+        brd = await db.boards.find_one({'short': data['brd']})
+        banner = data['banner']
+        if banner in brd['banners']:
+            brd['banners'].remove(banner)
+            await update_db_b(db, brd['short'], brd)
+            os.remove(banner)
+            self.write(json.dumps({'status':'ok'}))
+        else:
+            self.write(json.dumps({'status':'failed'}))
+
+
 # banning users using ajax; same stuff as with previous one
 class AjaxBanHandler(tornado.web.RequestHandler):
 
@@ -562,6 +590,14 @@ class AdminBoardCreationHandler(LoggedInHandler):
         data['postcount'] = 0
         data['mediacount'] = 0
         data['created'] = datetime.datetime.utcnow()
+        data['banners'] = []
+        if self.request.files:
+            f = self.request.files['banner'][0]
+            ext = f['filename'].split('.')[-1]
+            newname = 'banners/' + data['short'] + '-' + str(uuid4()).split('-')[-1] + '.' + ext
+            with open(newname, 'wb') as nf:
+                nf.write(bytes(f['body']))
+        data['banners'].append(newname)
         db = self.application.database.boards
         await db.insert(data)
         self.redirect('/' + data['short'])
@@ -595,6 +631,13 @@ class AdminBoardEditHandler(LoggedInHandler):
         instance['country'] = 'country' in self.request.arguments
         instance['custom'] = 'custom' in self.request.arguments
         instance['roll'] = 'roll' in self.request.arguments
+        if self.request.files:
+            f = self.request.files['banner'][0]
+            ext = f['filename'].split('.')[-1]
+            newname = 'banners/' + instance['short'] + '-' + str(uuid4()).split('-')[-1] + '.' + ext
+            with open(newname, 'wb') as nf:
+                nf.write(bytes(f['body']))
+        instance['banners'].append(newname)
         await self.application.database.boards.update_one({'short':board},{'$set':instance})
         self.redirect('/admin/stats/')
 
@@ -888,6 +931,7 @@ class Application(tornado.web.Application):
             (r'/admin/?', AdminHandler),
             (r'/banned/?', BannedHandler),
             (r'/flags/(.*)/?', tornado.web.StaticFileHandler, {'path': 'flags'}),
+            (r'/banners/(.*)/?', tornado.web.StaticFileHandler, {'path': 'banners'}),
             (r'/(\w+)/?', BoardHandler),
             (r'/(\w+)/catalog/?', CatalogHandler),
             (r'/(\w+)/thread/(\d+)/?', ThreadHandler),
@@ -907,6 +951,7 @@ class Application(tornado.web.Application):
             (r'/ajax/info/?', AjaxInfoHandler),
             (r'/ajax/pin/?', AjaxPinHandler),
             (r'/ajax/lock/?', AjaxLockHandler),
+            (r'/ajax/banner-del/?', AjaxBannerDelHandler),
         ]
 
         settings = {
@@ -923,7 +968,8 @@ class Application(tornado.web.Application):
 
 
 def main():
-    check_uploads()
+    check_path(uploads)
+    check_path('banners/')
     tornado.options.parse_command_line()
     application = Application()
     http_server = tornado.httpserver.HTTPServer(application, max_buffer_size=_ib.MAX_FILESIZE)
