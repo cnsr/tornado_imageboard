@@ -1,5 +1,5 @@
 <div class='add'>
-	<form method='POST' action='' enctype="multipart/form-data" id='newpost'>
+	<form method='POST' action='' enctype="multipart/form-data" id='newpost' autocomplete="off">
 		{% module xsrf_form_html() %}
 		<div class='subject'>
 			<label for='subject' class='subj'>Subject</label><input id='subject' type='text' name='subject' maxlength=40 />
