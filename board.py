@@ -637,7 +637,7 @@ class AdminBoardEditHandler(LoggedInHandler):
             newname = 'banners/' + instance['short'] + '-' + str(uuid4()).split('-')[-1] + '.' + ext
             with open(newname, 'wb') as nf:
                 nf.write(bytes(f['body']))
-        instance['banners'].append(newname)
+            instance['banners'].append(newname)
         await self.application.database.boards.update_one({'short':board},{'$set':instance})
         self.redirect('/admin/stats/')
 
