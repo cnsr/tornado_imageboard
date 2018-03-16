@@ -663,6 +663,14 @@ class AdminLoginHandler(LoggedInHandler):
             self.redirect('/')
 
 
+class AdminLogoutHandler(LoggedInHandler):
+    @ifadmin
+    async def get(self):
+        self.clear_cookie('adminlogin')
+        self.redirect('/')
+
+
+
 # ban status for your ip
 class BannedHandler(tornado.web.RequestHandler):
     async def get(self):
@@ -938,6 +946,7 @@ class Application(tornado.web.Application):
             (r'/(\w+)/thread/(\d+)/new/?', AjaxNewHandler),
             (r'/(\w+)/thread/(\d+)/json/?', JsonThreadHandler),
             (r'/admin/login/?', AdminLoginHandler),
+            (r'/admin/logout/?', AdminLogoutHandler),
             (r'/admin/create/?', AdminBoardCreationHandler),
             (r'/admin/edit/(\w+)/?', AdminBoardEditHandler),
             (r'/admin/stats/?', AdminStatsHandler),
