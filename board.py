@@ -597,7 +597,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
             newname = 'banners/' + data['short'] + '-' + str(uuid4()).split('-')[-1] + '.' + ext
             with open(newname, 'wb') as nf:
                 nf.write(bytes(f['body']))
-        data['banners'].append(newname)
+            data['banners'].append(newname)
         db = self.application.database.boards
         await db.insert(data)
         self.redirect('/' + data['short'])
