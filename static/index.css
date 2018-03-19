@@ -291,6 +291,6 @@ header {
 #actual-header * {
 	display: block;
 	text-align: center;
-	padding-left: auto;
-	padding-right: auto;
+	margin-left: auto;
+	margin-right: auto;
 }
