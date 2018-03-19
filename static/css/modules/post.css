@@ -19,12 +19,6 @@ h3, .post-href, .date {
   margin: 3px;
 }
 
-.post-number {
-	display: inline-block;
-	margin: 1px;
-	color: green;
-}
-
 .username {
 	color: #3333cc;
 	font-weight: bold;

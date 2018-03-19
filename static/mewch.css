@@ -1,0 +1,95 @@
+body {
+	background: #FFE4E6;
+	color: #000000;
+	font-family: arial, helvetica, sans-serif;
+	font-size: 0.8rem;
+}
+
+.preview-post, .to_die, .post, .popup {
+	box-shadow: 0px 3px 14px -5px #000000;
+	background-color: #FFCCCB;
+	padding: 3px 6px;
+	border: none;
+}
+
+.thread {
+	border: none;
+}
+
+.post {
+	box-shadow: 0px 3px 14px -5px #000000;
+	padding: 4px 8px;
+	background-color: #FFCCCB;
+}
+
+button, .report {
+	 background: #FFCCCB;
+	 border: 2px solid gray;
+	 border-radius: 1px;
+}
+
+.to_die .thread {
+	border: none;
+}
+
+a, a:visited, a:hover {
+	color: #34345C;
+}
+
+.username {
+	color: #117743;
+}
+
+.tripcode {
+	color: #117743;
+	font-style: italic;
+}
+
+.isop {
+	color: #117743;
+}
+
+.add {
+	background-color: #FFCCCB;
+	border: 1px solid #FFCCCB;
+	box-shadow: 0px 3px 14px -5px #000000;
+}
+
+.roll-result {
+	color: #0F0C5D;
+}
+
+.psubject {
+	color: #0F0C5D;
+	font-weight: bold;
+}
+
+citation {
+	color: #789922;
+}
+
+.ommited {
+	color: black;
+}
+
+.reply, .thread-href, .reply:visited, .thread-href:visited, .post-href, .post-href:visited {
+	color: #D00D00;
+	text-decoration: underline;
+}
+
+.post-href, .thread-href {
+	color: black !important;
+}
+
+.post-href:hover, .thread-href:hover {
+	color:#DD0000 !important;
+}
+
+.banned {
+	font-weight: bold;
+}
+
+#board-title, .banned {
+	color: #AF0A0F;
+	font-family: Tahoma, sans-serif;
+}
