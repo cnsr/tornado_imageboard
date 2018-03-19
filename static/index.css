@@ -276,3 +276,21 @@ header {
 .roll-result {
 	color: red;
 }
+
+.post-number {
+	display: inline-block;
+	margin: 1px;
+	color: green;
+}
+
+#actual-header {
+	padding-left: auto;
+	padding-right: auto;
+}
+
+#actual-header * {
+	display: block;
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+}
