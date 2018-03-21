@@ -39,7 +39,7 @@ def check_path(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
-gdbr = gdb.Reader('GeoLite2-Country.mmdb')
+gdbr = gdb.Reader('GeoLite2-City.mmdb')
 
 class MLStripper(HTMLParser):
     def __init__(self):
@@ -761,8 +761,13 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
         # workaround for localhost, replaces localhost with google ip (US)
         if ip == '127.0.0.1':
             ip = '172.217.20.206'
-        data['country'] = gdbr.country(ip).country.iso_code
-        data['countryname'] = regioncodes[data['country']]
+        data['country'] = gdbr.city(ip).country.iso_code
+        extraflags = ['Bavaria', 'Scotland', 'Wales']
+        if gdbr.country(ip).subdivisions.most_specific.name in extraflags:
+            data['country'] = gdbr.country(ip).subdivisions.most_specific.name
+            data['countryname'] = data['country']
+        else:
+            data['countryname'] = regioncodes[data['country']]
     if b['roll']:
         data['roll'] = await roll(data['subject'])
     if not b['custom']:
