@@ -208,7 +208,7 @@ $(document).ready(function(){
 		}, 1250);		
     });	
 	$('body').on('mouseleave', 'a.reply', function(e) {
-		var to_rm = '#' + $(this).text().slice(2,) + '.to_die';
+		var to_rm = '#' + $(this).text().slice(2) + '.to_die';
 		setTimeout(function() {
 			if (!$(to_rm).hasClass('is-hover')) {
 				$(to_rm + '.latest').remove();
