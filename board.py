@@ -763,8 +763,8 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
             ip = '172.217.20.206'
         data['country'] = gdbr.city(ip).country.iso_code
         extraflags = ['Bavaria', 'Scotland', 'Wales']
-        if gdbr.country(ip).subdivisions.most_specific.name in extraflags:
-            data['country'] = gdbr.country(ip).subdivisions.most_specific.name
+        if gdbr.city(ip).subdivisions.most_specific.name in extraflags:
+            data['country'] = gdbr.city(ip).subdivisions.most_specific.name
             data['countryname'] = data['country']
         else:
             data['countryname'] = regioncodes[data['country']]
