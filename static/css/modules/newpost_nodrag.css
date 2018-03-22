@@ -3,6 +3,7 @@
 	margin-right: auto;
 	display: block;
 	margin: 0 auto;
+	padding: 3px;
 	width: fit-content;
 	width: -moz-fit-content;
 }
