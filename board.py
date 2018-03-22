@@ -22,6 +22,10 @@ from thumbnail import make_thumbnail
 from tripcode import tripcode
 import random
 
+from admin import *
+from ajax import *
+from utils import *
+
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
 
@@ -60,15 +64,6 @@ def strip_tags(html):
     return s.get_data()
 
 
-# decorator that checks if user is admin
-def ifadmin(f):
-    def wrapper(self, *args, **kwargs):
-        if not self.current_user:
-            self.redirect('/admin/login')
-        return f(self, *args, **kwargs)
-    return wrapper
-
-
 async def roll(subject):
     matches = re.compile(r'r(oll)? ([1-9])d([1-9]$|[1-9][0-9]{0,3}$)').match(subject)
     if not matches:
@@ -76,12 +71,6 @@ async def roll(subject):
     count = int(matches.group(2))
     sides = int(matches.group(3))
     return 'Rolled {}'.format(','.join(str(random.randint(0, sides)) for i in range(count)))
-
-
-# crappy handler that checks if user is admin
-class LoggedInHandler(tornado.web.RequestHandler):
-    def get_current_user(self):
-        return self.get_secure_cookie('adminlogin')
 
 
 # list of boards
@@ -320,357 +309,6 @@ async def process_file(fn):
         return False
 
 
-class AjaxNewHandler(tornado.web.RequestHandler):
-
-    async def post(self, board, thread):
-        db = self.application.database
-        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
-        try:
-            pid = int(data['latest'].decode('utf-8'))
-            post = await db.posts.find_one({'count': pid})
-            posts = await db.posts.find({'thread': int(thread)}).to_list(None)
-            response = []
-            for post in posts:
-                if int(post['count']) <= pid:
-                    del post
-                else:
-                    del post['_id']
-                    del post['ip']
-                    post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
-                    post['text'] = ('').join(post['text'].split('<br />'))
-                    post['isop'] = post.pop('op')
-                    response.append(post)
-            self.write(json.dumps(response))
-        except KeyError:
-            posts = await db.posts.find({'thread': int(thread)}).to_list(None)
-            for post in posts:
-                del post['_id']
-                del post['ip']
-                post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
-            self.write(json.dumps(posts))
-
-
-# delete posts using ajax if password is correct
-class AjaxDeletePassHandler(tornado.web.RequestHandler):
-
-    async def post(self):
-        db = self.application.database
-        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
-        pid = int(data['post'].decode('utf-8'))
-        password = data['password'].decode('utf-8')
-        post = await db.posts.find_one({'count': pid})
-        if post['pass'] == password:
-            if not post['oppost']:
-                posts = await db.posts.find({'thread': pid}).to_list(None)
-                await self.delete_post(post, pid)
-                for post in posts:
-                    await self.delete_post(post, pid)
-                response = {'status':'deleted'}
-            else:
-                await self.delete_post(post, pid)
-                response = {'status':'deleted'}
-                response['op'] = 'true'
-            self.write(json.dumps(response))
-        else:
-            self.write(json.dumps({'status': 'passwords do not match'}))
-
-    async def delete_post(self, post, pid):
-        files = []
-        db = self.application.database
-        if post['image']:
-            files.append(post['image'])
-            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                files.append(post['thumb'])
-        elif post['video']:
-            files.append(post['video'])
-            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                files.append(post['thumb'])
-            await db.posts.delete_many({'thread': pid})
-        await db.posts.delete_one({'count': pid})
-        await self.delete(files)
-
-    async def delete(self, files):
-        for file in files:
-            if os.path.isfile(file):
-                os.remove(file)
-
-
-# delete posts using ajax; doesnt have admin rights check and idk how to make it
-class AjaxDeleteHandler(tornado.web.RequestHandler):
-
-    async def post(self):
-        db = self.application.database
-        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
-        pid = int(data['post'].decode('utf-8'))
-        post = await db.posts.find_one({'count': pid})
-        if not post['oppost']:
-            posts = await db.posts.find({'thread': pid}).to_list(None)
-            await self.delete_post(post, pid)
-            for post in posts:
-                await self.delete_post(post, pid)
-            response = {'succ':'ess'}
-        else:
-            await self.delete_post(post, pid)
-            response = {'succ':'ess'}
-            response['op'] = 'true'
-        self.write(json.dumps(response))
-
-    async def delete_post(self, post, pid):
-        files = []
-        db = self.application.database
-        if post['image']:
-            files.append(post['image'])
-            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                files.append(post['thumb'])
-        elif post['video']:
-            files.append(post['video'])
-            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                files.append(post['thumb'])
-            await db.posts.delete_many({'thread': pid})
-        await db.posts.delete_one({'count': pid})
-        await self.delete(files)
-
-    async def delete(self, files):
-        for file in files:
-            if os.path.isfile(file):
-                os.remove(file)
-
-
-# reporting users using ajax; same stuff as with previous one
-class AjaxReportHandler(tornado.web.RequestHandler):
-
-    async def post(self):
-        db = self.application.database
-        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
-        for k, v in data.items(): data[k] = v.decode('utf-8')
-        p = await db.posts.find_one({'count': int(data['post'])})
-        report = {
-            'ip': p['ip'],
-            'post': int(data['post']),
-            'reason': data['reason'],
-            'date': datetime.datetime.utcnow(),
-        }
-        if not p['oppost']:
-            report['url'] = '/' + p['board'] + '/thread/' + str(p['thread']) + '#' + str(p['count'])
-        else:
-            report['url'] = '/' + p['board'] + '/thread/' + str(p['count']) + '#' + str(p['count'])
-        await db.reports.insert(report)
-        response = {'ok': 'ok'}
-        self.write(json.dumps(response))
-
-
-class AjaxInfoHandler(tornado.web.RequestHandler):
-
-    async def post(self):
-        db = self.application.database
-        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
-        for k, v in data.items(): data[k] = v.decode('utf-8')
-        p = await db.posts.find_one({'count': int(data['post'])})
-        del p['_id']
-        p['date'] = p['date'].strftime("%Y-%m-%d %H:%M:%S")
-        if p.get('lastpost', ''):
-            p['lastpost'] = p['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
-        self.write(json.dumps(p, indent=4, ensure_ascii=False))
-
-
-class AjaxPinHandler(tornado.web.RequestHandler):
-
-    async def post(self):
-        db = self.application.database
-        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
-        for k, v in data.items(): data[k] = v.decode('utf-8')
-        thread = await db.posts.find_one({'count': int(data['post'])})
-        if thread['oppost']:
-            thread['pinned'] = not thread['pinned']
-            await update_db(db, thread['count'], thread)
-            self.write(json.dumps({'status':'ok'}))
-        else:
-            self.write(json.dumps({'status':'failed'}))
-
-
-class AjaxLockHandler(tornado.web.RequestHandler):
-
-    async def post(self):
-        db = self.application.database
-        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
-        for k, v in data.items(): data[k] = v.decode('utf-8')
-        thread = await db.posts.find_one({'count': int(data['post'])})
-        if thread['oppost']:
-            thread['locked'] = not thread['locked']
-            await update_db(db, thread['count'], thread)
-            self.write(json.dumps({'status':'ok'}))
-        else:
-            self.write(json.dumps({'status':'failed'}))
-
-
-# banner deleting handler
-class AjaxBannerDelHandler(tornado.web.RequestHandler):
-
-    async def post(self):
-        db = self.application.database
-        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
-        for k, v in data.items(): data[k] = v.decode('utf-8')
-        brd = await db.boards.find_one({'short': data['brd']})
-        banner = data['banner']
-        if banner in brd['banners']:
-            brd['banners'].remove(banner)
-            await update_db_b(db, brd['short'], brd)
-            os.remove(banner)
-            self.write(json.dumps({'status':'ok'}))
-        else:
-            self.write(json.dumps({'status':'failed'}))
-
-
-# banning users using ajax; same stuff as with previous one
-class AjaxBanHandler(tornado.web.RequestHandler):
-
-    async def post(self):
-        db = self.application.database
-        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
-        for k, v in data.items(): data[k] = v.decode('utf-8')
-        p = await db.posts.find_one({'count': int(data['post'])})
-        banned = await db.bans.find_one({'ip': p['ip']})
-        if not banned:
-            ban = {
-                'ip': p['ip'],
-                'ban_post': int(data['post']),
-                'reason': data['reason'],
-                'locked': False,
-                'date': None,
-                'date_of': datetime.datetime.utcnow(),
-            }
-            if data['lock'] == 'true':
-                ban['locked'] = True
-            if data['date'] != 'Never':
-                ban['date'] = data['date']
-            if not p['oppost']:
-                ban['url'] = '/' + p['board'] + '/thread/' + str(p['thread']) + '#' + str(p['count'])
-            else:
-                ban['url'] = '/' + p['board'] + '/thread/' + str(p['count']) + '#' + str(p['count'])
-            await db.bans.insert(ban)
-            p['banned'] = True
-            if ban['locked'] and p['oppost']:
-                p['locked'] = True
-            await update_db(db, p['count'], p)
-        response = {'ok': 'ok'}
-        self.write(json.dumps(response))
-
-
-# admin main page
-class AdminHandler(LoggedInHandler):
-
-    async def get(self):
-        if not self.current_user:
-            self.redirect('/admin/login')
-        else:
-            boards_list = await self.application.database.boards.find({}).to_list(None)
-            self.render('admin.html', boards_list=boards_list)
-
-
-# creation of boards
-class AdminBoardCreationHandler(LoggedInHandler):
-    @ifadmin
-    async def get(self):
-        boards_list = await self.application.database.boards.find({}).to_list(None)
-        self.render('admincreate.html', boards_list=boards_list)
-
-    @ifadmin
-    async def post(self):
-        data = {}
-        data['name'] = self.get_argument('name', '')
-        data['short']= self.get_argument('short', '')
-        data['username'] = self.get_argument('username', '')
-        data['description'] = self.get_argument('description', '')
-        data['thread_posts'] = int(self.get_argument('thread_posts', ''))
-        data['thread_bump'] = int(self.get_argument('thread_bump', ''))
-        data['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
-        data['country'] = 'country' in self.request.arguments
-        data['custom'] = 'custom' in self.request.arguments
-        data['roll'] = 'roll' in self.request.arguments
-        data['postcount'] = 0
-        data['mediacount'] = 0
-        data['created'] = datetime.datetime.utcnow()
-        data['banners'] = []
-        if self.request.files:
-            f = self.request.files['banner'][0]
-            ext = f['filename'].split('.')[-1]
-            newname = 'banners/' + data['short'] + '-' + str(uuid4()).split('-')[-1] + '.' + ext
-            with open(newname, 'wb') as nf:
-                nf.write(bytes(f['body']))
-            data['banners'].append(newname)
-        db = self.application.database.boards
-        await db.insert(data)
-        self.redirect('/' + data['short'])
-
-
-# editing existing boards
-class AdminBoardEditHandler(LoggedInHandler):
-    @ifadmin
-    async def get(self, board):
-        instance = await self.application.database.boards.find_one({'short': board})
-        if instance:
-            to_remove = ['postcount', 'mediacount', 'created']
-            for key in to_remove:
-                if key in instance:
-                    del instance[key]
-            boards_list = await self.application.database.boards.find({}).to_list(None)
-            self.render('admin_edit.html', boards_list=boards_list, i=instance)
-        else:
-            self.redirect('/admin/stats')
-
-    @ifadmin
-    async def post(self, board):
-        instance = await self.application.database.boards.find_one({'short': board})
-        instance['name'] = self.get_argument('name', '')
-        instance['short']= self.get_argument('short', '')
-        instance['username'] = self.get_argument('username', '')
-        instance['description'] = self.get_argument('description', '')
-        instance['thread_posts'] = int(self.get_argument('thread_posts', ''))
-        instance['thread_bump'] = int(self.get_argument('thread_bump', ''))
-        instance['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
-        instance['country'] = 'country' in self.request.arguments
-        instance['custom'] = 'custom' in self.request.arguments
-        instance['roll'] = 'roll' in self.request.arguments
-        if self.request.files:
-            f = self.request.files['banner'][0]
-            ext = f['filename'].split('.')[-1]
-            newname = 'banners/' + instance['short'] + '-' + str(uuid4()).split('-')[-1] + '.' + ext
-            with open(newname, 'wb') as nf:
-                nf.write(bytes(f['body']))
-            instance['banners'].append(newname)
-        await self.application.database.boards.update_one({'short':board},{'$set':instance})
-        self.redirect('/admin/stats/')
-
-
-# login for admin; it's fucking awful since pass is in plaintext and that's only one of shitty things
-# also cant use decorator here thus it's ugly as fuck
-class AdminLoginHandler(LoggedInHandler):
-
-    async def get(self):
-        if not self.current_user:
-            boards_list = await self.application.database.boards.find({}).to_list(None)
-            self.render('admin_login.html', boards_list=boards_list)
-        else:
-            self.redirect('/admin')
-            return
-
-    async def post(self):
-        password = self.get_argument('password')
-        if password == _ib.ADMIN_PASS:
-            self.set_secure_cookie('adminlogin', 'true')
-            self.redirect('/admin')
-        else:
-            self.redirect('/')
-
-
-class AdminLogoutHandler(LoggedInHandler):
-    @ifadmin
-    async def get(self):
-        self.clear_cookie('adminlogin')
-        self.redirect('/')
-
-
-
 # ban status for your ip
 class BannedHandler(tornado.web.RequestHandler):
     async def get(self):
@@ -679,51 +317,6 @@ class BannedHandler(tornado.web.RequestHandler):
         ban = await db.bans.find_one({'ip':ip}) or None
         self.render('banned.html', ban=ban, boards_list=None)
 
-
-# stats of boards for admins
-class AdminStatsHandler(LoggedInHandler):
-    @ifadmin
-    async def get(self):
-        boards = await self.application.database.boards.find({}).to_list(None)
-        boards_list = await self.application.database.boards.find({}).to_list(None)
-        self.render('admin_stats.html', boards=boards, boards_list=boards_list)
-
-
-# you can view bans here
-class AdminBannedHandler(LoggedInHandler):
-    @ifadmin
-    async def get(self):
-        db = self.application.database
-        bans = await db.bans.find({}).sort([('date', 1)]).to_list(None)
-        boards_list = await db.boards.find({}).to_list(None)
-        self.render('admin_banned.html', bans=bans, boards_list=boards_list)
-
-    @ifadmin
-    async def post(self):
-        db = self.application.database
-        ip = self.get_argument('ip')
-        await db.bans.delete_one({'ip': ip})
-        self.redirect('/admin/bans')
-
-
-# you can view reports here
-class AdminReportsHandler(LoggedInHandler):
-    @ifadmin
-    async def get(self):
-        db = self.application.database
-        reports = await db.reports.find({}).sort([('date', 1)]).to_list(None)
-        boards_list = await db.boards.find({}).to_list(None)
-        self.render('admin_reported.html', reports=reports, boards_list=boards_list)
-
-    @ifadmin
-    async def post(self):
-        db = self.application.database
-        ip = self.get_argument('ip')
-        if ip != 'all':
-            await db.reports.delete_one({'ip': ip})
-        else:
-            await db.reports.remove({})
-        self.redirect('/admin/reports')
 
 # constructs dictionary to insert into mongodb
 async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, fo=None, f=None, filetype=None,
@@ -829,33 +422,12 @@ async def latest(db):
     try:
         return list(await db['posts'].find({}).sort('count', -1).to_list(None))[0]['count']
     except Exception as e:
-        #print(e)
         return 0
 
 
 # checks if number of posts in thread exceeds whatever number you check it against
 async def check_thread(db, thread, subj):
     return await db.posts.find({'thread': thread}).count() >= subj - 1
-
-
-# updates one db entry by set parametres
-async def update_db(db, count, variables):
-    await db.posts.update_one(
-        {'count': count},
-        {
-            '$set': variables
-        }
-    )
-
-
-# for updating board data
-async def update_db_b(db, short, variables):
-    await db.boards.update_one(
-        {'short': short},
-        {
-            '$set': variables
-        }
-    )
 
 
 # deletes the threads that are inactive after there are too much threads
@@ -921,6 +493,7 @@ async def is_banned(db, ip):
                 return True
             else:
                 await db.bans.delete_one({'ip': ip})
+                return False
         else:
             return True
     return False
