@@ -234,6 +234,9 @@ header {
 	.text {
 		 margin: 8px 0px;
 	}
+	.file-about {
+		font-size: 0.8rem !important;
+	}
 }
 
 .catalogbtn {
@@ -294,3 +297,4 @@ header {
 	margin-left: auto;
 	margin-right: auto;
 }
+
