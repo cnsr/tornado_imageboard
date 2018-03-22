@@ -4,6 +4,11 @@ var title;
 var title_orig;
 
 $(document).ready(function(){
+	$(document).on("dragstart", function(e) {
+		if (e.target.nodeName.toUpperCase() == "IMG") {
+			return false;
+		}
+	});
 	if (localStorage.name != '' && localStorage.name != null) $('#username').val(localStorage.name);
 	if ($(window).width() > 768) {
 		$('.add').addClass('drag');
