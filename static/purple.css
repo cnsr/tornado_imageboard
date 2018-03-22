@@ -3,11 +3,15 @@ body {
 	color: #281D31;
 }
 
-.thread, .to_die, .post, .popup {
+.preview-post, .to_die, .post, .popup {
 	background: #E9E5F3;
 	border: 1px solid #EDD7E3 !important;
 	border-radius: 5px;
 	padding: 3px 6px;
+}
+
+.thread {
+	border: none;
 }
 
 .post {
