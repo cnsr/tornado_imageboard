@@ -1,8 +1,9 @@
 $(document).ready( function() {
 	$('.fileinput').on("change", function(e) {
 		if (this.files[0] != null) {
+			let maxfile = 10485760; //change this to desired filesize
 			var fileSize = this.files[0].size;
-			if (fileSize > 5242880) {
+			if (fileSize > maxfile) {
 				$('.fileinput').val(null);
 				$('#text-area').prop('required',true);
 				$('.spoiler-div').hide();
