@@ -12,6 +12,10 @@ $(document).ready(function(){
 	$('#settings-hide').on('click', function() {
 		$('#settings-menu').hide();
 	})
+	$("#top").click(function() {
+		$("html, body").animate({ scrollTop: 0 }, "fast");
+		return false;
+	});
 });
 
 function get_theme() {
