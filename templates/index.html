@@ -35,6 +35,14 @@
 			</ul>
 		{% end %}
 	</header>
+	{% block pop %}
+		{% try %}
+			{% if popup %}
+				<script>popUp("{{popup}}")</script>
+			{% end %}
+		{% except %}
+		{% end %}
+	{% end %}
 	{% block modal %}
 		{% module Modal() %}
 	{% end %}

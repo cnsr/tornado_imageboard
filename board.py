@@ -101,8 +101,15 @@ class BoardHandler(LoggedInHandler):
                 thread['latest'] = posts
             admin = False
             if self.current_user: admin = True
+            popup = None
+            if self.get_arguments('err') != []:
+                error = self.get_argument('err')
+                if error == 'empty':
+                    popup = "Empty posts not allowed."
+                else:
+                    popup = None
             self.render('board.html', threads=threads, board=db_board, boards_list=boards_list, admin=admin, show=True,
-                banner=banner)
+                banner=banner, popup=popup)
         else:
             self.redirect('/')
 
@@ -130,10 +137,13 @@ class BoardHandler(LoggedInHandler):
             admin = False
             sage = 'saging' in self.request.arguments
             if self.current_user and 'admin' in self.request.arguments: admin = True
-            data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata,
-                username, spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop, password=password)
-            await db.posts.insert(data)
-            self.redirect('/' + board + '/thread/' + str(data['count']))
+            if subject or text or fo:
+                data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata,
+                    username, spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop, password=password)
+                await db.posts.insert(data)
+                self.redirect('/' + board + '/thread/' + str(data['count']))
+            else:
+                self.redirect(self.request.uri + '?err=empty')
         else:
             self.redirect('/banned')
 
@@ -175,8 +185,15 @@ class ThreadHandler(LoggedInHandler):
                 if self.current_user: admin = True
                 op = await db.posts.find_one({'count': int(count)})
                 ip = await get_ip(self.request)
+                popup = None
+                if self.get_arguments('err') != []:
+                    error = self.get_argument('err')
+                    if error == 'empty':
+                        popup = "Empty posts not allowed."
+                    else:
+                        popup = None
                 self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list, admin=admin,
-                            show=op['ip']==ip, banner=banner)
+                            show=op['ip']==ip, banner=banner, popup=popup)
 
             else:
                 self.redirect('/' + board)
@@ -209,32 +226,35 @@ class ThreadHandler(LoggedInHandler):
             showop = 'showop' in self.request.arguments
             admin = False
             if self.current_user and 'admin' in self.request.arguments: admin = True
-            data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
-                username, spoiler=spoiler, admin=admin, sage=sage, opip=op['ip'], showop=showop, password=password)
-            await db.posts.insert(data)
-            op = await db['posts'].find_one({'count': thread_count})
-            if op:
-                db_board = await db.boards.find_one({'short': board})
-                if not op['locked']:
-                    if not await check_thread(db, thread_count, db_board['thread_bump']):
-                        if not data['sage']:
-                            if not data['subject'].lower() == 'sage':
-                                op['lastpost'] = datetime.datetime.utcnow()
-                                await update_db(db, op['count'], op)
-                    for number in replies:
-                        p = await db.posts.find_one({'count': int(number)})
-                        old_replies = p['replies']
-                        if int(data['count']) not in old_replies:
-                            old_replies.append(int(data['count']))
-                            p['replies'] = old_replies
-                            await update_db(db, p['count'], p)
-                if op != None:
-                    if await check_thread(db, thread_count, db_board['thread_posts']):
-                        op['locked'] = True
-                        await update_db(db, op['count'], op)
-                self.redirect('/' + str(board) + '/thread/' + str(op['count']))
+            if subject or text or foriginal:
+                data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
+                    username, spoiler=spoiler, admin=admin, sage=sage, opip=op['ip'], showop=showop, password=password)
+                await db.posts.insert(data)
+                op = await db['posts'].find_one({'count': thread_count})
+                if op:
+                    db_board = await db.boards.find_one({'short': board})
+                    if not op['locked']:
+                        if not await check_thread(db, thread_count, db_board['thread_bump']):
+                            if not data['sage']:
+                                if not data['subject'].lower() == 'sage':
+                                    op['lastpost'] = datetime.datetime.utcnow()
+                                    await update_db(db, op['count'], op)
+                        for number in replies:
+                            p = await db.posts.find_one({'count': int(number)})
+                            old_replies = p['replies']
+                            if int(data['count']) not in old_replies:
+                                old_replies.append(int(data['count']))
+                                p['replies'] = old_replies
+                                await update_db(db, p['count'], p)
+                    if op != None:
+                        if await check_thread(db, thread_count, db_board['thread_posts']):
+                            op['locked'] = True
+                            await update_db(db, op['count'], op)
+                    self.redirect('/' + str(board) + '/thread/' + str(op['count']))
+                else:
+                    self.redirect('/' + str(board))
             else:
-                self.redirect('/' + str(board))
+                self.redirect(self.request.uri + '?err=empty')
         else:
             self.redirect('/banned')
 
