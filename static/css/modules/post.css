@@ -1,12 +1,10 @@
 .post {
-  border: 1px dashed black;
   padding: 3px;
   display: inline-block;
 	box-shadow: 0px 1px 14px 1px lightgrey;
 }
 
 .post:target {
-	 border: 1px dashed red;
 }
 
 h3, .post-href, .date {
