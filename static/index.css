@@ -298,3 +298,9 @@ header {
 	margin-right: auto;
 }
 
+#bnr {
+	cursor: pointer;
+}
+#bnr:active {
+  transform: translateY(2px);
+}

@@ -139,9 +139,16 @@ $(document).ready(function(){
 		getNewAjax(latest, url);
 		$('#newremain').text('20');		
 	});
+	$('#bnr').on('click', function() {
+		let to = $(this).attr('data-goto');
+		window.location.replace(to);
+	})
 	$('body').on('mouseover', 'a.reply', function() {
 		$('.to_die').removeClass('latest');
 		var display = $($(this).attr('href')).clone();
+		if (display.is('.thread-outer')) {
+			display = display.find('.thread');
+		}
 		display.toggleClass('to_die', true);
 		display.css({
 			 display:'inline',

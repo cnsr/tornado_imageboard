@@ -12,7 +12,7 @@
 	{% block banner %}
 		<div id='actual-header'>
 			{% if banner %}
-				<img src='/{{banner}}' title='banner'/>
+				<img src='/{{banner}}' title='banner' data-goto='/{{board["short"]}}' id='bnr'/>
 				<br />
 			{% end %}
 			<h2 id='board-title'>/{{board['short']}}/ - {{board['name']}}</h2>
