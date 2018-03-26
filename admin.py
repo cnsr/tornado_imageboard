@@ -51,11 +51,27 @@ class AdminLogoutHandler(LoggedInHandler):
 
 # stats of boards for admins
 class AdminStatsHandler(LoggedInHandler):
+    responses = {'success':'Deletion successful.',
+                'error': 'Board does not exist.'}
     @ifadmin
     async def get(self):
+        popup = None
+        if self.get_arguments('msg') != []:
+            msg = self.get_argument('msg')
+            popup = self.responses.get(msg)
         boards = await self.application.database.boards.find({}).to_list(None)
         boards_list = await self.application.database.boards.find({}).to_list(None)
-        self.render('admin_stats.html', boards=boards, boards_list=boards_list)
+        self.render('admin_stats.html', boards=boards, boards_list=boards_list, popup=popup)
+
+    @ifadmin
+    async def post(self):
+        short = self.get_argument('short')
+        board = await self.application.database.boards.find_one({'short': short})
+        if board:
+            await self.application.database.boards.delete_one({'short':short})
+            self.redirect(self.request.uri + '?msg=success')
+        else:
+            self.redirect(self.request.uri + '?msg=error')
 
 
 # you can view bans here

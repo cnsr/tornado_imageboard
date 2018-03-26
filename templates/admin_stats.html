@@ -1,6 +1,7 @@
 {% extends 'index.html' %}
 {% block title %}Board Stats{% end %}
 {% block content %}
+<a href='/admin'><button>Back to admin</button></a>
 <table class='boards'>
 	<tr class='table-header'>
 		<th>Name</th>
@@ -17,6 +18,7 @@
 		<th>Posts with media</th>
 		<th>Dice</th>
 		<th>Edit</th>
+		<th></th>
 	</tr>
 	{% for board in boards %}
 		{% module Stats(board) %}

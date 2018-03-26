@@ -12,4 +12,11 @@
 	<td>{{b['mediacount']}}</td>
 	<td>{{b['roll']}}</td>
 	<td><a href='/admin/edit/{{b["short"]}}/'><button>Edit</button></a></td>
+	<td>
+		<form action='' method='POST' >
+			{% module xsrf_form_html() %}
+			<input type='hidden' name='short' value='{{b["short"]}}'>
+			<button type='submit' value='Delete'>Delete</button>
+		</form>
+	</td>
 </tr>
