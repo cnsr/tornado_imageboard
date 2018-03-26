@@ -4,6 +4,10 @@ body {
 	font: 0.9rem normal sans-serif;
 }
 
+.post > *:not(:blank), .oppost > *:not(:blank), .preview-post > *:not(:blank) {
+	padding: 3px;
+}
+
 .preview-post, .to_die, .post, .popup {
 	background-color: #D7CFC0;
 	border-right: 1px solid #BFB5A1;
@@ -102,7 +106,8 @@ citation {
 .thread-header, .oppost-header {
 	clear: left;
 	background-color: #BFB5A1;
-	padding: 5px;
+	padding: 0 5px 5px 5px;
+	font-size: 1.1em;
 }
 
 .oppost-header, .oppost {
@@ -120,17 +125,21 @@ citation {
 	margin: 1.2em 0 0 1.2em;
 }
 
-.thread-media, .post-media {
+.post-media {
+	margin: 0 !important;
+}
+
+.thread-media, .post-media-div {
 	background-color: #BFB5A1;
 	margin-top: 0.5rem;
-	margin: 1.2em 0 0 1.2em;	
+	margin: 0.5em 0 1.1em 0.5em;	
 }
 
 .oppost-media {
 	background-color: #D7CFC0;
 }
 
-.oppost-media .post-media {
+.oppost-media .post-media-div {
 	background-color:#D7CFC0;
 	margin: 0;
 }
@@ -158,13 +167,19 @@ citation {
 	color:#4f7942;
 }
 
+.oppost-media {
+	margin-top: 0.5rem;
+	margin: 0.5em 0 1.1em 0.5em;	
+}
+
 @media screen and (min-width: 724px) {
-	.thread-media, .text, .oppost-media {
+	.thread-media, .text, .oppost-media, .post-media-div {
 		display:inline-block;
 		vertical-align: top;
 	}
 	.replies, .roll-result {
 		display:block;
+		padding: 0px 3px;
 	}
 }
 

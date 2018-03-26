@@ -75,7 +75,8 @@ $(document).ready(function(){
 		if (!$(this).hasClass('ignore')) {
 			var number = $(this).attr('href');
 			var addition = '>>';
-			if ($('textarea').val() != '') {addition = '\n>>'};		
+			$('textarea').val($('textarea').val().trim());
+			if ($('textarea').val() != '') {addition = '\n>>'};
 			var new_val = $('textarea').val() + addition + number.substring(1, number.length) + '\n';
 			$('textarea').val(new_val);
 			setTimeout(function() {
@@ -370,3 +371,7 @@ function toggleSpoiler(spoiler) {
 		}
 	})
 }
+
+String.prototype.trim = function() {
+  return this.replace(/^\s+|\s+$/g, "");
+};
