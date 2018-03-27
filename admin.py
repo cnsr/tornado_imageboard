@@ -68,15 +68,19 @@ class AdminStatsHandler(LoggedInHandler):
     async def post(self):
         short = self.get_argument('short')
         board = await self.application.database.boards.find_one({'short': short})
+        url = self.request.uri.split('?')[0]
         if board:
-            await self.application.database.boards.delete_one({'short':short})
             try:
-                await self.application.boards.delete({'board': short})
-                self.redirect(self.request.uri + '?msg=success')
+                posts = await self.application.database.posts.find({'board': board['short']}).to_list(None)
+                for post in posts:
+                    await removeing(post)
+                    await self.application.database.posts.delete_one({'count': post['count']})
+                await self.application.database.boards.delete_one({'short':short})
+                self.redirect(url + '?msg=success')
             except:
-                self.redirect(self.request.uri + '?msg=error')
+                self.redirect(url + '?msg=error1')
         else:
-            self.redirect(self.request.uri + '?msg=error')
+            self.redirect(url + '?msg=error')
 
 
 # you can view bans here
