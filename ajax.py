@@ -13,33 +13,16 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
         pid = int(data['post'].decode('utf-8'))
         post = await db.posts.find_one({'count': pid})
-        if not post['oppost']:
-            posts = await db.posts.find({'thread': pid}).to_list(None)
+        response = {'succ':'ess'}
+        if post['oppost']:
+            posts = await db.posts.find({'thread': post['count']}).to_list(None)
             for post in posts:
                 await removeing(post)
                 await db.posts.delete_one({'count': post['count']})
-            response = {'succ':'ess'}
-        else:
-            await removeing(post)
-            await db.posts.delete_one({'count': pid})
-            response = {'succ':'ess'}
             response['op'] = 'true'
+        await removeing(post)
+        await db.posts.delete_one({'count': pid})
         self.write(json.dumps(response))
-
-    async def delete_post(self, post, pid):
-        files = []
-        db = self.application.database
-        if post['image']:
-            files.append(post['image'])
-            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                files.append(post['thumb'])
-        elif post['video']:
-            files.append(post['video'])
-            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                files.append(post['thumb'])
-            await db.posts.delete_many({'thread': pid})
-
-        await self.delete(files)
 
 
 # reporting users using ajax; same stuff as with previous one
@@ -202,17 +185,15 @@ class AjaxDeletePassHandler(tornado.web.RequestHandler):
         password = data['password'].decode('utf-8')
         post = await db.posts.find_one({'count': pid})
         if post['pass'] == password:
-            if not post['oppost']:
-                posts = await db.posts.find({'thread': pid}).to_list(None)
+            if post['oppost']:
+                posts = await db.posts.find({'thread': post['count']}).to_list(None)
                 for post in posts:
                     await removeing(post)
                     await db.posts.delete_one({'count': post['count']})
                 response = {'status':'deleted'}
-            else:
-                await removeing(post)
-                await db.posts.delete_one({'count': pid})
-                response = {'status':'deleted'}
                 response['op'] = 'true'
+            await removeing(post)
+            await db.posts.delete_one({'count': pid})
             self.write(json.dumps(response))
         else:
             self.write(json.dumps({'status': 'passwords do not match'}))

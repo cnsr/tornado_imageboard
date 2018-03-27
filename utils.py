@@ -26,15 +26,19 @@ async def update_db_b(db, short, variables):
     )
 
 async def removeing(post):
-    os.remove(post['filetype'])
-    if post['thumb']:
-        if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-            os.remove(post['thumb'])
+    if post['filetype']:
+        if os.path.isfile(post[post['filetype']]):
+            os.remove(post[post['filetype']])
+            if post['thumb']:
+                if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+                    os.remove(post['thumb'])
 
 
 def sync_removeing(post):
-    os.remove(post['filetype'])
-    if post['thumb']:
-        if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-            os.remove(post['thumb'])
+    if post['filetype']:
+        if os.path.isfile(post[post['filetype']]):
+            os.remove(post[post['filetype']])
+            if post['thumb']:
+                if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+                    os.remove(post['thumb'])
 

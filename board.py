@@ -360,6 +360,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
     data['thumb'] = None
     data['sage'] = sage
     data['roll'] = None
+    data['filetype'] = None
     data['op'] = ip == opip and showop
     if password == '':
         password = 'abcde'
