@@ -473,6 +473,8 @@ def schedule_check(app):
                                 os.remove(thread['video'])
                             if thread['image']:
                                 os.remove(thread['image'])
+                            if thread['audio']:
+                                os.remove(thread['audio'])
                             posts = yield db.posts.find({'thread': thread['count']}).to_list(None)
                             for post in posts:
                                 if post['video']:

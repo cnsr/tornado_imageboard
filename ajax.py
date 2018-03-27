@@ -15,6 +15,13 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
         post = await db.posts.find_one({'count': pid})
         if not post['oppost']:
             posts = await db.posts.find({'thread': pid}).to_list(None)
+            for post in posts:
+                if post['video']:
+                    os.remove(post['video'])
+                if post['image']:
+                    os.remove(post['image'])
+                if post['audio']:
+                    os.remove(post['audio'])
             await self.delete_post(post, pid)
             for post in posts:
                 await self.delete_post(post, pid)
