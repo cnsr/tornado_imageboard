@@ -1,4 +1,8 @@
 import motor.motor_tornado
+import os
+
+thumb_def = 'static/missing_thumbnail.jpg'
+spoilered = 'static/spoiler.jpg'
 
 # updates one db entry by set parametres
 async def update_db(db, count, variables):
@@ -20,3 +24,17 @@ async def update_db_b(db, short, variables):
         },
         upsert=False,
     )
+
+async def removeing(post):
+    os.remove(post['filetype'])
+    if post['thumb']:
+        if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+            os.remove(post['thumb'])
+
+
+def sync_removeing(post):
+    os.remove(post['filetype'])
+    if post['thumb']:
+        if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+            os.remove(post['thumb'])
+

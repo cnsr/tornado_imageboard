@@ -16,18 +16,12 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
         if not post['oppost']:
             posts = await db.posts.find({'thread': pid}).to_list(None)
             for post in posts:
-                if post['video']:
-                    os.remove(post['video'])
-                if post['image']:
-                    os.remove(post['image'])
-                if post['audio']:
-                    os.remove(post['audio'])
-            await self.delete_post(post, pid)
-            for post in posts:
-                await self.delete_post(post, pid)
+                await removeing(post)
+                await db.posts.delete_one({'count': post['count']})
             response = {'succ':'ess'}
         else:
-            await self.delete_post(post, pid)
+            await removeing(post)
+            await db.posts.delete_one({'count': pid})
             response = {'succ':'ess'}
             response['op'] = 'true'
         self.write(json.dumps(response))
@@ -44,13 +38,8 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
             if post['thumb'] != thumb_def and post['thumb'] != spoilered:
                 files.append(post['thumb'])
             await db.posts.delete_many({'thread': pid})
-        await db.posts.delete_one({'count': pid})
-        await self.delete(files)
 
-    async def delete(self, files):
-        for file in files:
-            if os.path.isfile(file):
-                os.remove(file)
+        await self.delete(files)
 
 
 # reporting users using ajax; same stuff as with previous one
@@ -215,35 +204,16 @@ class AjaxDeletePassHandler(tornado.web.RequestHandler):
         if post['pass'] == password:
             if not post['oppost']:
                 posts = await db.posts.find({'thread': pid}).to_list(None)
-                await self.delete_post(post, pid)
                 for post in posts:
-                    await self.delete_post(post, pid)
+                    await removeing(post)
+                    await db.posts.delete_one({'count': post['count']})
                 response = {'status':'deleted'}
             else:
-                await self.delete_post(post, pid)
+                await removeing(post)
+                await db.posts.delete_one({'count': pid})
                 response = {'status':'deleted'}
                 response['op'] = 'true'
             self.write(json.dumps(response))
         else:
             self.write(json.dumps({'status': 'passwords do not match'}))
-
-    async def delete_post(self, post, pid):
-        files = []
-        db = self.application.database
-        if post['image']:
-            files.append(post['image'])
-            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                files.append(post['thumb'])
-        elif post['video']:
-            files.append(post['video'])
-            if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                files.append(post['thumb'])
-            await db.posts.delete_many({'thread': pid})
-        await db.posts.delete_one({'count': pid})
-        await self.delete(files)
-
-    async def delete(self, files):
-        for file in files:
-            if os.path.isfile(file):
-                os.remove(file)
 
