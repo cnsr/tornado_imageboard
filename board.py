@@ -33,9 +33,6 @@ executor = concurrent.futures.ThreadPoolExecutor(8)
 
 uploads = 'uploads/'
 
-thumb_def = 'static/missing_thumbnail.jpg'
-spoilered = 'static/spoiler.jpg'
-
 with open('static/regioncodes.json') as f:
     regioncodes = json.loads(f.read())
 
@@ -363,6 +360,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
     data['thumb'] = None
     data['sage'] = sage
     data['roll'] = None
+    data['filetype'] = None
     data['op'] = ip == opip and showop
     if password == '':
         password = 'abcde'
@@ -417,6 +415,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
         b['mediacount'] = b['mediacount'] + 1
         data['original'] = fo
         data[filetype] = f
+        data['filetype'] = filetype
         if not spoiler:
             data['thumb'] = await make_thumbnail(f)
         else:
@@ -466,28 +465,10 @@ def schedule_check(app):
                     threads = threads[:(threads.count(None) - board['thread_catalog'])]
                     for thread in threads:
                         if not thread['pinned']:
-                            if thread['thumb']:
-                                if thread['thumb'] != thumb_def and thread['thumb'] != spoilered:
-                                    os.remove(thread['thumb'])
-                            if thread['video']:
-                                os.remove(thread['video'])
-                            if thread['image']:
-                                os.remove(thread['image'])
+                            sync_removeing(thread)
                             posts = yield db.posts.find({'thread': thread['count']}).to_list(None)
                             for post in posts:
-                                if post['video']:
-                                    if os.path.isfile(post['video']):
-                                        os.remove(post['video'])
-                                if post['image']:
-                                    if os.path.isfile(post['image']):
-                                        os.remove(post['image'])
-                                if post['thumb']:
-                                    try:
-                                        if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                                            if os.path.isfile(post['thumb']):
-                                                os.remove(post['thumb'])
-                                    except FileNotFoundError:
-                                        pass
+                                sync_removeing(post)
                             yield db.posts.delete_many({'thread': thread['count']})
                             yield db.posts.remove({'count': thread['count']})
         except Exception as e:

@@ -70,7 +70,11 @@ class AdminStatsHandler(LoggedInHandler):
         board = await self.application.database.boards.find_one({'short': short})
         if board:
             await self.application.database.boards.delete_one({'short':short})
-            self.redirect(self.request.uri + '?msg=success')
+            try:
+                await self.application.boards.delete({'board': short})
+                self.redirect(self.request.uri + '?msg=success')
+            except:
+                self.redirect(self.request.uri + '?msg=error')
         else:
             self.redirect(self.request.uri + '?msg=error')
 
