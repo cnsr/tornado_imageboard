@@ -179,7 +179,7 @@ class BoardHandler(LoggedInHandler):
 
     async def chunkify(self, l, n):
         res = list()
-        n = n['perpage']
+        n = int(n['perpage'])
         for i in range(0, len(l), n):
             res.append(l[i:i + n])
         return res
