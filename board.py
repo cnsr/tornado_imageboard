@@ -116,7 +116,10 @@ class BoardHandler(LoggedInHandler):
             try:
                 threads = threads_list[page]
             except IndexError:
-                threads = threads_list[0]
+                try:
+                    threads = threads_list[0]
+                except IndexError:
+                    pass
             current = 0
             if len(threads_list) > 1:
                 paged = []

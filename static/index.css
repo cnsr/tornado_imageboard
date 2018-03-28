@@ -304,3 +304,34 @@ header {
 #bnr:active {
   transform: translateY(2px);
 }
+
+.paginate-control {
+	display: inline;
+	text-decoration: none;
+}
+
+.paginate-control:hover {
+	color: #702802;
+}
+
+.disabled:hover {
+	color: gray;
+}
+
+.disabled {
+	color: gray;
+}
+
+.current {
+	font-weight: bold;
+	color: black !important;
+}
+
+
+.paginate {
+	padding: 2px 0px;
+}
+
+.paginate a {
+	text-decoration: none;
+}
