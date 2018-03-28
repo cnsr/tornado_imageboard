@@ -30,4 +30,37 @@
 			<hr>
 		{% end %}
 	</div>
+	{% if paged %}
+	<div class='paginate'>
+		<ul>
+			<li>
+				{% if current == paged[0]['numb'] %}
+					<span class='paginate-control disabled'>[PREVIOUS]</span>
+				{% else %}
+					<a href='{{paged[current-1]["url"]}}'/>
+						<span class='paginate-control'>[PREVIOUS]</span>
+					</a>
+				{% end %}
+			</li>
+			{% for page in paged %}
+				<li>
+					{% if page['numb'] == current %}	
+						<span class='paginate-control disabled'>[{{page["numb"]}}]</span>
+					{% else %}
+						<a href='{{page["url"]}}'/>
+							<span class='paginate-control'>[{{page["numb"]}}]</span>
+						</a>
+					{% end %}
+				</li>
+			{% end %}
+			{% if current == paged[-1]['numb'] %}
+				<span class='paginate-control disabled'>[NEXT]</span>
+			{% else %}
+				<a href='{{paged[current+1]["url"]}}'/>
+					<span class='paginate-control'>[NEXT]</span>
+				</a>
+			{% end %}
+		</ul>
+	</div>
+	{% end %}
 {% end %}

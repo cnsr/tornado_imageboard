@@ -105,8 +105,33 @@ class BoardHandler(LoggedInHandler):
                     popup = "Empty posts not allowed."
                 else:
                     popup = None
+            if self.get_arguments('page') != []:
+                try:
+                    page = int(self.get_argument('page'))
+                except ValueError:
+                    page = 0
+            else:
+                page = 0
+            threads_list = await self.chunkify(threads, db_board)
+            try:
+                threads = threads_list[page]
+            except IndexError:
+                threads = threads_list[0]
+            current = 0
+            if len(threads_list) > 1:
+                paged = []
+                url = self.request.uri.split('?')[0]
+                for x in range(len(threads_list)):
+                    paged.append({
+                        'numb': x,
+                        'url': url + '?page=' + str(x),
+                    })
+                    if x == page:
+                        current = x
+            else:
+                paged = None
             self.render('board.html', threads=threads, board=db_board, boards_list=boards_list, admin=admin, show=True,
-                banner=banner, popup=popup)
+                banner=banner, popup=popup, paged=paged, current=current)
         else:
             self.redirect('/')
 
@@ -136,7 +161,7 @@ class BoardHandler(LoggedInHandler):
             if self.current_user and 'admin' in self.request.arguments: admin = True
             if subject or text or fo:
                 data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata,
-                    username, spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop, password=password)
+                username, spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop, password=password)
                 await db.posts.insert(data)
                 self.redirect('/' + board + '/thread/' + str(data['count']))
             else:
@@ -144,6 +169,17 @@ class BoardHandler(LoggedInHandler):
         else:
             self.redirect('/banned')
 
+    async def chunkify(self, a, n):
+        n = n['perpage']
+        k, m = divmod(len(a), n)
+        return list(a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
+
+    async def chunkify(self, l, n):
+        res = list()
+        n = n['perpage']
+        for i in range(0, len(l), n):
+            res.append(l[i:i + n])
+        return res
 
 # catalog of threads
 class CatalogHandler(tornado.web.RequestHandler):
