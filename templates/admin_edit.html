@@ -37,6 +37,10 @@
 		<div class='thread_roll'>
 			<label for='roll'>Allow dice rolling</label><input id='roll' type='checkbox' name='roll' {% if i['roll']%}checked{%end%}/>
 		</div>
+		<div class='perpage'>
+			<label for='perpage'>Posts per page</label><input id='perpage' name='perpage' type='number'
+			value="{{i['perpage']}}" />
+		</div>
 		{% if i['banners'] %}
 			<div class='banners-preview'>
 				<ul id='banners-list'>
