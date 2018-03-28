@@ -42,6 +42,14 @@
 		{% if thread['banned'] %}
 			<p class="banned">User has been banned for this post.</p>
 		{% end %}
+		{% if thread['replies'] %}
+			<li class=replies>
+				<p class='replies-p'>Replies: </p>
+				{% for reply in thread['replies'] %}
+					<ul class='reply'><a href='#{{ reply }}' class='reply'>>>{{reply}}</a></ul>
+				{% end %}
+			</li>
+		{% end %}
 		{% if thread['postcount']%}{% if thread['postcount'] - 3 > 0 %}
 			<p class='ommited'>Posts ommited: {{thread['postcount'] - 3}}{% if thread['filecount'] != 0 %}, files: {{thread['filecount']}}{% end %}</p>
 		{% end %}{% end %}
