@@ -39,7 +39,7 @@
 		</div>
 		<div class='perpage'>
 			<label for='perpage'>Posts per page</label><input id='perpage' name='perpage' type='number'
-			value="{{i['perpage']}}" />
+			value="{{i['perpage']}}" min="0" step="1"/>
 		</div>
 		{% if i['banners'] %}
 			<div class='banners-preview'>
