@@ -208,11 +208,14 @@ class AjaxPostGetter(tornado.web.RequestHandler):
         pid = int(data['post'].decode('utf-8'))
         post = await db.posts.find_one({'count': pid})
         if post:
+            print(post)
             result['status'] = 'success'
             del post['_id']
             del post['ip']
             del post['pass']
             post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
+            if post.get('lastpost'):
+                del post['lastpost']
             result['post'] = post
         else:
             result['status'] = 'no post found'
