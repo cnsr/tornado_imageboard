@@ -578,6 +578,7 @@ class Application(tornado.web.Application):
             (r'/ajax/info/?', AjaxInfoHandler),
             (r'/ajax/pin/?', AjaxPinHandler),
             (r'/ajax/lock/?', AjaxLockHandler),
+            (r'/ajax/get/?', AjaxPostGetter),
             (r'/ajax/banner-del/?', AjaxBannerDelHandler),
         ]
 

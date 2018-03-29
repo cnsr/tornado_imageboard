@@ -145,24 +145,30 @@ $(document).ready(function(){
 	})
 	$('body').on('mouseover', 'a.reply', function() {
 		$('.to_die').removeClass('latest');
-		var display = $($(this).attr('href')).clone();
-		if (display.is('.thread-outer')) {
-			display = display.find('.thread');
-		}
-		display.toggleClass('to_die', true);
-		display.css({
-			 display:'inline',
-			 position: 'absolute',
-			 top: $(this).offset().top - $(this).height()/2,
-			 left: $(this).offset().left + $(this).width(),
-			 border: '1px black solid',
-			 zIndex: 1000,
-			 //background: 'white'
-		});
-		display.addClass('latest');
-		$('body').append(display);
-		if ($('.to_die').is(':offscreen')) {
-			 $(this).css('bottom', 0);
+		let id = $(this).attr('href');
+		let a = $(this);
+		if ($(id).length) {
+			var display = $(id).clone();
+			if (display.is('.thread-outer')) {
+				display = display.find('.thread');
+			}
+			display.toggleClass('to_die', true);
+			display.css({
+				 display:'inline',
+				 position: 'absolute',
+				 top: $(this).offset().top - $(this).height()/2,
+				 left: $(this).offset().left + $(this).width(),
+				 border: '1px black solid',
+				 zIndex: 1000,
+				 //background: 'white'
+			});
+			display.addClass('latest');
+			$('body').append(display);
+			if ($('.to_die').is(':offscreen')) {
+				 $(this).css('bottom', 0);
+			}
+		} else {
+			getPost(id.slice(1), a);
 		}
 	});
 	$('body').on('click', '.report', function() {
@@ -251,6 +257,50 @@ function sendAjaxReport(post, reason) {
 		}
 	});
 };
+
+function getPost(post, a) {
+	$.ajax({
+		url : "/ajax/get/",
+		type : "POST",
+		data : {post: post, _xsrf: getCookie("_xsrf")},
+		success : function(json) {
+			var json = jQuery.parseJSON(json);
+			if ('post' in json) {
+				var post = json['post'];
+				post['date'] = switchDate(post['date']);
+				post['text'] = replaceText(post['text']);
+				var template = $('#template').html();
+				Mustache.parse(template);
+				var rendered = Mustache.render(template, post);
+				var display = $('<div/>').html(rendered).contents().find('.post');
+				display.toggleClass('to_die', true);
+				display.css({
+					 display:'inline',
+					 position: 'absolute',
+					 top: a.offset().top - a.height()/2,
+					 left: a.offset().left + a.width(),
+					 border: '1px black solid',
+					 padding: '6px 3px',
+					 zIndex: 1000,
+				});
+				display.addClass('latest');
+				display.find('.report').remove();
+				$('body').append(display);
+				if ($('.to_die').is(':offscreen')) {
+					 $(this).css('bottom', 0);
+				}
+			} else {
+				popUp(json['status']);
+				return;
+			}
+		},
+
+		error : function(xhr,errmsg,err) {
+			console.log(xhr.status + ": " + xhr.responseText);
+		}
+	});
+};
+
 
 function sendAjaxPin(post) {
 	$.ajax({

@@ -82,3 +82,8 @@ class Settings(tornado.web.UIModule):
         return 'css/modules/settings.css'
     def render(self):
         return self.render_string('modules/settings.html')
+
+
+class Template(tornado.web.UIModule):
+    def render(self):
+        return self.render_string('modules/template.html')

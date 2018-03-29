@@ -4,6 +4,7 @@
 	<link rel='stylesheet' href="{{ static_url('css/modules/newpost_nodrag.css') }}">
 	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.13.1/jquery.validate.js"></script>
 	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.13.1/additional-methods.js"></script>
+	<script src='{{static_url("js/mustache.min.js")}}'></script>
 	<script src='{{static_url("js/posts.js")}}'></script>	
 {% end %}
 {% block title %}/{{board['short']}}/ - {{board['name']}}{% end %}
@@ -57,4 +58,5 @@
 		{% end %}
 	</div>
 	{% end %}
+	{% module Template() %}	
 {% end %}

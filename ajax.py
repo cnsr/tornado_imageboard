@@ -198,3 +198,23 @@ class AjaxDeletePassHandler(tornado.web.RequestHandler):
         else:
             self.write(json.dumps({'status': 'passwords do not match'}))
 
+
+class AjaxPostGetter(tornado.web.RequestHandler):
+
+    async def post(self):
+        result = {}
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        pid = int(data['post'].decode('utf-8'))
+        post = await db.posts.find_one({'count': pid})
+        if post:
+            result['status'] = 'success'
+            del post['_id']
+            del post['ip']
+            del post['pass']
+            post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
+            result['post'] = post
+        else:
+            result['status'] = 'no post found'
+        self.write(json.dumps(result))
+
