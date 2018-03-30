@@ -172,11 +172,6 @@ class BoardHandler(LoggedInHandler):
         else:
             self.redirect('/banned')
 
-    async def chunkify(self, a, n):
-        n = n['perpage']
-        k, m = divmod(len(a), n)
-        return list(a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
-
     async def chunkify(self, l, n):
         res = list()
         n = int(n['perpage'])
