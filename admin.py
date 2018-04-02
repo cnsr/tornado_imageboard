@@ -155,7 +155,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
         data['mediacount'] = 0
         data['created'] = datetime.datetime.utcnow()
         data['banners'] = []
-        data['perpage'] = int(self.get_argument('perpage', 10))
+        data['perpage'] = int(float(self.get_argument('perpage', 10)))
         if self.request.files:
             f = self.request.files['banner'][0]
             ext = f['filename'].split('.')[-1]
@@ -196,7 +196,7 @@ class AdminBoardEditHandler(LoggedInHandler):
         instance['country'] = 'country' in self.request.arguments
         instance['custom'] = 'custom' in self.request.arguments
         instance['roll'] = 'roll' in self.request.arguments
-        instance['perpage'] = int(self.get_argument('perpage', 10))
+        instance['perpage'] = int(float(self.get_argument('perpage', 10)))
         if self.request.files:
             f = self.request.files['banner'][0]
             ext = f['filename'].split('.')[-1]
