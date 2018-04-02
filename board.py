@@ -102,11 +102,10 @@ class BoardHandler(LoggedInHandler):
             if self.current_user: admin = True
             popup = None
             if self.get_arguments('err') != []:
+                errors = {'empty': 'Empty posts not allowed',
+                            'notfound': 'Thread not found', }
                 error = self.get_argument('err')
-                if error == 'empty':
-                    popup = "Empty posts not allowed."
-                else:
-                    popup = None
+                popup = errors.get(error)
             if self.get_arguments('page') != []:
                 try:
                     page = int(self.get_argument('page'))
@@ -208,7 +207,7 @@ class ThreadHandler(LoggedInHandler):
                 banner = random.choice(db_board['banners'])
             else: banner = None
             posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
-            op = await db['posts'].find_one({"count": thread_count})
+            op = await db['posts'].find_one({"count": thread_count, 'oppost': True})
             if op:
                 if await check_thread(db, thread_count, db_board['thread_posts']):
                     op['locked'] = True
@@ -229,7 +228,7 @@ class ThreadHandler(LoggedInHandler):
                             show=op['ip']==ip, banner=banner, popup=popup)
 
             else:
-                self.redirect('/' + board)
+                self.redirect('/' + board + '?err=notfound')
         else:
             self.redirect('/')
 
