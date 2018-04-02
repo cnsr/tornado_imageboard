@@ -93,7 +93,9 @@ class BoardHandler(LoggedInHandler):
             threads = await db.posts.find({'board': board,'oppost': True}).sort([('pinned', -1), ('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
             boards_list = await db.boards.find({}).to_list(None)
             for thread in threads:
-                posts = await db.posts.find({'thread': int(thread['count'])}).sort([('date', -1)]).limit(3).to_list(None)
+                limit = 3
+                if thread['pinned']: limit = 1
+                posts = await db.posts.find({'thread': int(thread['count'])}).sort([('date', -1)]).limit(limit).to_list(None)
                 posts.reverse()
                 thread['latest'] = posts
             admin = False

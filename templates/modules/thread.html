@@ -52,9 +52,15 @@
 				{% end %}
 			</li>
 		{% end %}
-		{% if thread['postcount']%}{% if thread['postcount'] - 3 > 0 %}
-			<p class='ommited'>Posts ommited: {{thread['postcount'] - 3}}{% if thread['filecount'] != 0 %}, files: {{thread['filecount']}}{% end %}</p>
-		{% end %}{% end %}
+		{% if not thread['pinned'] %}
+			{% if thread['postcount']%}{% if thread['postcount'] - 3 > 0 %}
+				<p class='ommited'>Posts ommited: {{thread['postcount'] - 3}}{% if thread['filecount'] != 0 %}, files: {{thread['filecount']}}{% end %}</p>
+			{% end %}{% end %}
+		{% else %}
+			{% if thread['postcount']%}{% if thread['postcount'] - 1 > 0 %}
+				<p class='ommited'>Posts ommited: {{thread['postcount'] - 1}}{% if thread['filecount'] != 0 %}, files: {{thread['filecount']}}{% end %}</p>
+			{% end %}{% end %}
+		{% end %}
 	</div>
 	{% if thread['latest'] %}
 		<div class='thread-latest'>
