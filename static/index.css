@@ -237,6 +237,12 @@ header {
 	.file-about {
 		font-size: 0.8rem !important;
 	}
+	.thread-media, .post-media-div, .oppost-media {
+		display: inline-block;
+	}
+	audio {
+		width: -webkit-fill-available;
+	}
 }
 
 .catalogbtn {
