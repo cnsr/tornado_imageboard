@@ -22,12 +22,12 @@
 		{% if thread['filetype'] %}
 			<div class='thread-media'>
 				{% if thread['video'] %}
-					<a href='{{thread["video"]}}' class='filedata-a'>{{thread['original']}}</a>
+					<a href='{{thread["video"]}}' class='filedata-a' target='_blank'>{{thread['original']}}</a>
 					<p class='filedata-p'>{{thread['filedata']}}</p>
 					{% module Video(thread['video'], thread['count'], thread['thumb']) %}
 				{% end %}
 				{% if thread['image'] %}
-					<a href='{{thread["image"]}}' class='filedata-a'>{{thread['original']}}</a>
+					<a href='{{thread["image"]}}' class='filedata-a' target='_blank'>{{thread['original']}}</a>
 					<p class='filedata-p'>{{thread['filedata']}}</p>
 					{% module Image(thread['image'], thread['count'], thread['thumb']) %}
 				{% end %}

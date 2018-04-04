@@ -23,22 +23,24 @@
 			<span class='report' data-id='{{post["count"]}}'>&#33;</span>
 			{% if post['sage'] %}<span class='sage'>&#11015;</span>{% end %}			
 		</div>
-		<div class='post-media-div'>
-			{% if post['video'] %}
-				<a href='/{{post["video"]}}' class='filedata-a'>{{post['original']}}</a>
-				<p class='filedata-p'>{{post['filedata']}}</p>							
-				{% module Video(post['video'], post['count'], post['thumb']) %}
-			{% end %}
-			{% if post['image'] %}
-				<a href='/{{post["image"]}}' class='filedata-a'>{{post['original']}}</a>
-				<p class='filedata-p'>{{post['filedata']}}</p>
-				{% module Image(post['image'], post['count'], post['thumb']) %}				
-			{% end %}
-			{% if post['audio'] %}
-				<p class='filedata-p'>{{post['original']}} {{post['filedata']}}</p>
-				{% module Audio(post['audio'], post['count']) %}
-			{% end %}
-		</div>
+		{% if post['filetype'] %}		
+			<div class='post-media-div'>
+				{% if post['video'] %}
+					<a href='/{{post["video"]}}' class='filedata-a' target='_blank'>{{post['original']}}</a>
+					<p class='filedata-p'>{{post['filedata']}}</p>							
+					{% module Video(post['video'], post['count'], post['thumb']) %}
+				{% end %}
+				{% if post['image'] %}
+					<a href='/{{post["image"]}}' class='filedata-a' target='_blank'>{{post['original']}}</a>
+					<p class='filedata-p'>{{post['filedata']}}</p>
+					{% module Image(post['image'], post['count'], post['thumb']) %}				
+				{% end %}
+				{% if post['audio'] %}
+					<p class='filedata-p'>{{post['original']}} {{post['filedata']}}</p>
+					{% module Audio(post['audio'], post['count']) %}
+				{% end %}
+			</div>
+		{% end %}
 		<p class='text'>{% raw post['text'] %}</p>
 		{% if post['roll'] %}
 			<span class='roll-result'>{{post['roll']}}</span>
