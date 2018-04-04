@@ -345,3 +345,14 @@ header {
 .to_die::before {
 	content: none !important;
 }
+
+.shortened {
+}
+
+.showmore {
+	margin-left: 15px;
+	display: block;
+	font-weight: bold;
+ 	color: black;
+	cursor: pointer;	 
+}
