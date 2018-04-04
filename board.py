@@ -97,6 +97,9 @@ class BoardHandler(LoggedInHandler):
                 if thread['pinned']: limit = 1
                 posts = await db.posts.find({'thread': int(thread['count'])}).sort([('date', -1)]).limit(limit).to_list(None)
                 posts.reverse()
+                for p in posts:
+                    if p['filetype']:
+                        thread['filecount'] -= 1
                 thread['latest'] = posts
             admin = False
             if self.current_user: admin = True
