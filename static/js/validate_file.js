@@ -1,7 +1,7 @@
 $(document).ready( function() {
 	$('.fileinput').on("change", function(e) {
 		if (this.files[0] != null) {
-			let maxfile = 10485760; //change this to desired filesize
+			let maxfile = 20971520; //change this to desired filesize
 			var fileSize = this.files[0].size;
 			if (fileSize > maxfile) {
 				$('.fileinput').val(null);

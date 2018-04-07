@@ -4,5 +4,5 @@ CHECK_TIMEOUT = 5
 # idk how to make this work the proper way tbh
 ADMIN_PASS = 'aaaa1234'
 # maximum filesize on upload
-MAX_FILESIZE = 10485760
+MAX_FILESIZE = 20971520
 
