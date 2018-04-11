@@ -8,7 +8,7 @@
 	<link rel='stylesheet' href="{{ static_url('css/modules/newpost.css') }}">
 {% end %}
 
-{% block title %}/{{board['short']}}/ - #{{ op['count'] }} - {{ op['subject'] }}{% end %}
+{% block title %}/{{board['short']}}/ - #{{ op['count'] }} {% if op['subject'] %} - {{ op['subject'] }}{% end %}{% end %}
 {% block catalog %}<a href="/{{board['short']}}/catalog/" class='catalogbtn'>Catalog</a>{% end %}
 {% block banner %}
 	<div id='actual-header'>
