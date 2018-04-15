@@ -8,7 +8,7 @@ from PIL import Image
 
 image_extensions = ["jpg", "jpeg", "png", "gif"]
 video_extensions = ["webm", "mp4"]
-audio_extensions = ["ogg", "mp3"]
+audio_extensions = ["ogg", "mp3", "wav"]
 image_codecs = ['JPEG', 'PNG', 'GIF']
 video_codecs = ['theora', 'vp8', 'vp9', 'h264', 'vp6f']
 thumbnail_size = (120, 100)
@@ -93,3 +93,4 @@ async def make_thumbnail(path):
         return None
     else:
         raise Exception("Format not supported")
+        return None
