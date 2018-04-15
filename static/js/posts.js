@@ -171,21 +171,15 @@ $(document).ready(function(){
 			getPost(id.slice(1), a);
 		}
 	});
-	$('.thread > .text, .oppost > .text, .post > .text, .preview-post > .text').each(function() {
-		let txt_body = $(this);
-		let txt = $(this).text();
-		if (txt.length > 500) {
-			let short_txt = txt.slice(0,500);
-			let shortened = '<p class="text rendered shortened">' + short_txt + '</p>';
+	$('.text').each(function() {
+		if ($(this).height() > 100) {
+			$(this).addClass('shortened');
 			let unshort = '<span class="showmore">Show more</span>';
-			txt_body.after(shortened);
-			txt_body.next().after(unshort);
-			txt_body.toggle();
+			$(this).after(unshort);
 		}
 	});
 	$('body').on('click', '.showmore', function() {
-		$(this).prev('.shortened').remove();
-		$(this).prev('.text:not(.shortened)').toggle();
+		$(this).prev('.text').removeClass('shortened');
 		$(this).remove();
 	});
 	$('body').on('click', '.report', function() {

@@ -347,6 +347,8 @@ header {
 }
 
 .shortened {
+	max-height: 100px;
+	overflow: hidden;
 }
 
 .showmore {
