@@ -327,7 +327,7 @@ async def upload_file(f):
         filetype = 'image'
     elif fext in ['.webm', '.mp4']:
         filetype = 'video'
-    elif fext in ['.mp3', '.ogg', '.wav']:
+    elif fext in ['.mp3', '.ogg', '.wav', '.opus']:
         filetype = 'audio'
     else:
         # if format not supported
@@ -355,7 +355,7 @@ async def process_file(fn):
         elif fn.endswith(('png', 'jpg', 'jpeg', 'gif')):
             with Image.open(fn) as img:
                 w, h = img.size
-        elif fn.endswith(('ogg', 'mp3', 'wav')):
+        elif fn.endswith(('ogg', 'mp3', 'wav', 'opus')):
             return '{0}, {1}'.format(fn.split('.')[-1].upper(), filesize)
         else:
             return False
