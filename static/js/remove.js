@@ -20,8 +20,7 @@ function sendAjaxRemove(id) {
 				if (json.op == 'true') {
 					window.location.replace($(location).attr('href').split('/').slice(0,-2).join('/'));
 				} else {
-					var post = $('#' + id);
-					post.remove();
+					$('#' + id).fadeOut('slow');					
 				}
             },
             error : function(xhr,errmsg,err) {

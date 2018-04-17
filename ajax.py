@@ -13,19 +13,23 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
         pid = int(data['post'].decode('utf-8'))
         post = await db.posts.find_one({'count': pid})
-        replies_to = await db.posts.find({'replies': {'$in': [pid]}}).to_list(None)
-        for reply in replies_to:
-            reply['replies'].remove(pid)
-            await update_db(db, reply['count'], reply)
-        response = {'succ':'ess'}
-        if post['oppost']:
-            posts = await db.posts.find({'thread': post['count']}).to_list(None)
-            for post in posts:
-                await removeing(post)
-                await db.posts.delete_one({'count': post['count']})
-            response['op'] = 'true'
-        await removeing(post)
-        await db.posts.delete_one({'count': pid})
+        if post:
+            replies_to = await db.posts.find({'replies': {'$in': [pid]}}).to_list(None)
+            for reply in replies_to:
+                reply['replies'].remove(pid)
+                await update_db(db, reply['count'], reply)
+            response = {}
+            if post['oppost']:
+                posts = await db.posts.find({'thread': post['count']}).to_list(None)
+                for post in posts:
+                    await removeing(post)
+                    await db.posts.delete_one({'count': post['count']})
+                response['op'] = 'true'
+            await removeing(post)
+            await db.posts.delete_one({'count': pid})
+            response['status'] = ['deleted']
+        else:
+            response = {'status': 'Error deleting post.'}
         self.write(json.dumps(response))
 
 
@@ -192,7 +196,7 @@ class AjaxDeletePassHandler(tornado.web.RequestHandler):
         password = data['password'].decode('utf-8')
         post = await db.posts.find_one({'count': pid})
         if post['pass'] == password:
-            response = {'succ':'ess'}
+            response = {}
             replies_to = await db.posts.find({'replies': {'$in': [pid]}}).to_list(None)
             for reply in replies_to:
                 reply['replies'].remove(pid)
@@ -202,10 +206,10 @@ class AjaxDeletePassHandler(tornado.web.RequestHandler):
                 for post in posts:
                     await removeing(post)
                     await db.posts.delete_one({'count': post['count']})
-                response = {'status':'deleted'}
                 response['op'] = 'true'
             await removeing(post)
             await db.posts.delete_one({'count': pid})
+            response['status'] = 'deleted'
             self.write(json.dumps(response))
         else:
             self.write(json.dumps({'status': 'passwords do not match'}))

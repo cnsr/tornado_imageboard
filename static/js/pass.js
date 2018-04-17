@@ -32,22 +32,3 @@ function setPass(v) {
 	$('#newpostpass').val(v);
 }
 
-$.ajaxSettings.traditional = true;
-function sendAjaxDel(id) {
-	$.ajax({
-		url : "/ajax/delete/",
-		type : "POST",
-		data : {post: id, _xsrf: getCookie("_xsrf"), password: localStorage.pass},
-		success : function(json) {
-			var json = jQuery.parseJSON(json);
-			if (json.status == 'deleted') {
-				popUp('Deleted');
-			} else {
-				popUp('Passwords do not match');
-			}
-		},
-		error : function(xhr,errmsg,err) {
-			console.log(xhr.status + ": " + xhr.responseText);
-		}
-	});
-};
