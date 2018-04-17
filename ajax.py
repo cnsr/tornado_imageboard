@@ -13,6 +13,10 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
         pid = int(data['post'].decode('utf-8'))
         post = await db.posts.find_one({'count': pid})
+        replies_to = await db.posts.find({'replies': {'$in': [pid]}}).to_list(None)
+        for reply in replies_to:
+            reply['replies'].remove(pid)
+            await update_db(db, reply['count'], reply)
         response = {'succ':'ess'}
         if post['oppost']:
             posts = await db.posts.find({'thread': post['count']}).to_list(None)
@@ -55,11 +59,14 @@ class AjaxInfoHandler(tornado.web.RequestHandler):
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
         for k, v in data.items(): data[k] = v.decode('utf-8')
         p = await db.posts.find_one({'count': int(data['post'])})
-        del p['_id']
-        p['date'] = p['date'].strftime("%Y-%m-%d %H:%M:%S")
-        if p.get('lastpost', ''):
-            p['lastpost'] = p['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
-        self.write(json.dumps(p, indent=4, ensure_ascii=False))
+        if p:
+            del p['_id']
+            p['date'] = p['date'].strftime("%Y-%m-%d %H:%M:%S")
+            if p.get('lastpost', ''):
+                p['lastpost'] = p['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
+            self.write(json.dumps(p, indent=4, ensure_ascii=False))
+        else:
+            self.write(json.dumps({'error': 'post does not exist. perhaps, it has been deleted?'}))
 
 
 class AjaxPinHandler(tornado.web.RequestHandler):
@@ -185,6 +192,11 @@ class AjaxDeletePassHandler(tornado.web.RequestHandler):
         password = data['password'].decode('utf-8')
         post = await db.posts.find_one({'count': pid})
         if post['pass'] == password:
+            response = {'succ':'ess'}
+            replies_to = await db.posts.find({'replies': {'$in': [pid]}}).to_list(None)
+            for reply in replies_to:
+                reply['replies'].remove(pid)
+                await update_db(db, reply['count'], reply)
             if post['oppost']:
                 posts = await db.posts.find({'thread': post['count']}).to_list(None)
                 for post in posts:
