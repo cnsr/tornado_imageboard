@@ -2,7 +2,7 @@ import tornado.web
 
 
 class Thread(tornado.web.UIModule):
-    def render(self, thread, autosage=None):
+    def render(self, thread, autosage):
         return self.render_string('modules/thread.html', thread=thread, autosage=autosage)
 
 

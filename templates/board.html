@@ -27,7 +27,7 @@
 	<div class='threads'>
 		<hr>
 		{% for thread in threads %}
-			{% module Thread(thread, board['']) %}
+			{% module Thread(thread, (board['thread_bump'] <= thread['postcount'])) %}
 			<hr>
 		{% end %}
 	</div>
