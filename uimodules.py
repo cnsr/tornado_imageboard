@@ -2,9 +2,8 @@ import tornado.web
 
 
 class Thread(tornado.web.UIModule):
-    def render(self, thread):
-        return self.render_string(
-            'modules/thread.html', thread=thread)
+    def render(self, thread, autosage=None):
+        return self.render_string('modules/thread.html', thread=thread, autosage=autosage)
 
 
 class CatalogThread(tornado.web.UIModule):

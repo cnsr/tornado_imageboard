@@ -1,5 +1,8 @@
 {% extends 'index.html' %}
 {% block title %}Board Stats{% end %}
+{% block css %}
+	<script src='{{static_url("js/popup.js")}}'></script>
+{% end %}
 {% block content %}
 <a href='/admin'><button>Back to admin</button></a>
 <table class='boards'>
@@ -9,7 +12,8 @@
 		<th>Username</th>
 		<th>Created</th>
 		<!-- description will be too wide TODO: think of simpler way to view it-->
-		<!--th>Description</th-->
+		<th>Description</th>
+		<!-- button onclick popup description? -->
 		<th>Country flags</th>
 		<th>Max posts in thread</th>
 		<th>Bumplimit</th>

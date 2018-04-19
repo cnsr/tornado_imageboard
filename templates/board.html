@@ -27,7 +27,7 @@
 	<div class='threads'>
 		<hr>
 		{% for thread in threads %}
-			{% module Thread(thread) %}
+			{% module Thread(thread, board['']) %}
 			<hr>
 		{% end %}
 	</div>
