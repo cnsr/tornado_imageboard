@@ -35,10 +35,13 @@ async def removeing(post):
 
 
 def sync_removeing(post):
-    if post['filetype']:
-        if os.path.isfile(post[post['filetype']]):
-            os.remove(post[post['filetype']])
-            if post['thumb']:
-                if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                    os.remove(post['thumb'])
+    try:
+        if post['filetype']:
+            if os.path.isfile(post[post['filetype']]):
+                os.remove(post[post['filetype']])
+                if post['thumb']:
+                    if post['thumb'] != thumb_def and post['thumb'] != spoilered:
+                        os.remove(post['thumb'])
+    except:
+        print(post)
 

@@ -11,9 +11,7 @@
 		<th>Short</th>
 		<th>Username</th>
 		<th>Created</th>
-		<!-- description will be too wide TODO: think of simpler way to view it-->
 		<th>Description</th>
-		<!-- button onclick popup description? -->
 		<th>Country flags</th>
 		<th>Max posts in thread</th>
 		<th>Bumplimit</th>
@@ -29,4 +27,9 @@
 		{% module Stats(board) %}
 	{% end %}
 </table>
+<script>
+ $('.show_desc').on('click', function() {
+	popUp($(this).attr('data-desc'))
+ });
+</script>
 {% end %}
