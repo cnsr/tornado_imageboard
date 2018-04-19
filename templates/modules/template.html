@@ -63,13 +63,13 @@
 		{{! #banned}}
 			<p class="banned">User has been banned for this post.</p>
 		{{! /banned}}		
-		{{! #replies? }}
+		{{! #replies.length }}
 			<li class=replies>
 				<p class='replies-p'>Replies: </p>
 				{{! #replies }}
 					<ul class='reply'><a href='#{{! .}}' class='reply'>>>{{! .}}</a></ul>
 				{{! /replies }}
 			</li>
-		{{! /replies? }}
+		{{! /replies.length }}
 	</div>
 </script>

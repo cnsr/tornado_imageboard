@@ -362,3 +362,7 @@ header {
 .autosage {
 	color: #B20000;
 }
+
+.reply-preview {
+	 display: block;
+}
