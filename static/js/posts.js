@@ -174,7 +174,7 @@ $(document).ready(function(){
 		}
 	});
 	$('.text').each(function() {
-		if ($(this).height() > 100) {
+		if ($(this).height() > 125) { // gonna cound the paddings
 			$(this).addClass('shortened');
 			let unshort = '<span class="showmore">Show more</span>';
 			$(this).after(unshort);
