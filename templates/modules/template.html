@@ -5,8 +5,7 @@
 			{{! #subject}}<h3>{{! subject}}</h3>{{! /subject}}
 			{{! #admin}}
 				<p class='username adminpost'>## Admin ##</p>
-				<p class='username adminpost-small'>&#x21AF;&#x21AF;</p>						
-			{{!/admin}}
+					<p class='username adminpost-small'>&#x21AF;&#x21AF;</p>			{{!/admin}}
 			{{!^admin}}
 				{{! #username}}<p class='username'>{{!username}}</p>{{! /username}}
 			{{! /admin}}
@@ -64,11 +63,13 @@
 		{{! #banned}}
 			<p class="banned">User has been banned for this post.</p>
 		{{! /banned}}		
-		{{! #replies}}
+		{{! #replies? }}
 			<li class=replies>
 				<p class='replies-p'>Replies: </p>
-				<ul class='reply'><a href='#{{! .}}' class='reply'>>>{{! .}}</a></ul>
+				{{! #replies }}
+					<ul class='reply'><a href='#{{! .}}' class='reply'>>>{{! .}}</a></ul>
+				{{! /replies }}
 			</li>
-		{{! /replies}}
+		{{! /replies? }}
 	</div>
 </script>
