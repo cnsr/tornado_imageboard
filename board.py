@@ -153,7 +153,6 @@ class BoardHandler(LoggedInHandler):
             text = self.get_argument('text', '')
             username = self.get_argument('username', '') or False
             text = strip_tags(text)
-            text = text.replace("\n","<br />")
             spoiler = 'spoilerimage' in self.request.arguments
             showop = 'showop' in self.request.arguments
             if self.request.files:
