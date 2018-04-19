@@ -14,13 +14,13 @@
 			{% if thread['country'] %}<img class='flag' src='/flags/{{thread["country"]}}.png' title='{{thread["countryname"]}}' />{% end %}
 			<a href='/{{thread["board"]}}/thread/{{thread["count"]}}' class='thread-href'>>>{{thread['count']}}</a>
 			{% if thread['sage'] %}<span class='sage' title='sage'>&#11015;</span>{% end %}
-			{% if autosage %}
-				<span class='autosage'>[AUTOSAGE]</span>
-			{% end %}
 			{% if thread['locked'] %}
 				<p class='locked' title='Thread is locked.'>&#x1f512;</p>
 			{% end %}
-			{% if thread['pinned'] %}<span class='pinned' title='Pinned thread'>📌</span>{% end %}			
+			{% if thread['pinned'] %}<span class='pinned' title='Pinned thread'>📌</span>{% end %}
+			{% if autosage %}
+				<span class='autosage'>[AUTOSAGE]</span>
+			{% end %}
 		</div>
 		{% if thread['filetype'] %}
 			<div class='thread-media'>

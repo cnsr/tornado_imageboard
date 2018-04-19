@@ -29,8 +29,8 @@ class Preview(tornado.web.UIModule):
 
 
 class OpPost(tornado.web.UIModule):
-    def render(self, op, admin):
-        return self.render_string('modules/oppost.html', op=op, admin=admin)
+    def render(self, op, admin, autosage):
+        return self.render_string('modules/oppost.html', op=op, admin=admin, autosage=autosage)
 
 
 class Board(tornado.web.UIModule):

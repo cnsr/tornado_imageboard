@@ -41,7 +41,7 @@
 		{% end %}
 	{% end %}
 	<div class='op'>
-		{% module OpPost(op, admin) %}
+		{% module OpPost(op, admin, (len(posts) + 1 >= board['thread_bump'])) %}
 	</div>
 	<div class='posts'>
 		{% if posts %}

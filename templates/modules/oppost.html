@@ -28,6 +28,9 @@
 			<span class='report' data-id='{{op["count"]}}'>&#33;</span>
 			{% if op['sage'] %}<span class='sage' title='sage'>&#11015;</span>{% end %}
 			{% if op['pinned'] %}<span class='pinned' title='Pinned thread'>📌</span>{% end %}
+			{% if autosage %}
+				<span class='autosage'>[AUTOSAGE]</span>
+			{% end %}			
 		</div>
 		{% if op['filetype'] %}		
 			<div class='oppost-media'>
