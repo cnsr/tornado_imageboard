@@ -4,6 +4,7 @@ import datetime
 import motor.motor_tornado
 
 from utils import *
+from logger import log
 
 # delete posts using ajax; doesnt have admin rights check and idk how to make it
 class AjaxDeleteHandler(tornado.web.RequestHandler):
@@ -26,6 +27,11 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
                     await db.posts.delete_one({'count': post['count']})
                 response['op'] = 'true'
             await removeing(post)
+            if post['oppost']:
+                log_message = 'Thread #{0} has been removed by admin'.format(pid)
+            else:
+                log_message = 'Post #{0} has been removed by admin'.format(pid)
+            await log('post_remove', log_message)
             await db.posts.delete_one({'count': pid})
             response['status'] = ['deleted']
         else:
@@ -51,6 +57,8 @@ class AjaxReportHandler(tornado.web.RequestHandler):
             report['url'] = '/' + p['board'] + '/thread/' + str(p['thread']) + '#' + str(p['count'])
         else:
             report['url'] = '/' + p['board'] + '/thread/' + str(p['count']) + '#' + str(p['count'])
+        log_message = 'Report has been sent for post #{0} with ip {1}.'.format(p['count'], p['ip'])
+        await log('post_remove', log_message)
         await db.reports.insert(report)
         response = {'ok': 'ok'}
         self.write(json.dumps(response))
@@ -147,6 +155,8 @@ class AjaxBanHandler(tornado.web.RequestHandler):
                 ban['url'] = '/' + p['board'] + '/thread/' + str(p['thread']) + '#' + str(p['count'])
             else:
                 ban['url'] = '/' + p['board'] + '/thread/' + str(p['count']) + '#' + str(p['count'])
+            log_message = '{0} was banned for post #{1} (unban {2}).'.format(p['ip'], p['count'], ban['date'])
+            await log('unban', log_message)
             await db.bans.insert(ban)
             p['banned'] = True
             if ban['locked'] and p['oppost']:
@@ -208,6 +218,11 @@ class AjaxDeletePassHandler(tornado.web.RequestHandler):
                     await db.posts.delete_one({'count': post['count']})
                 response['op'] = 'true'
             await removeing(post)
+            if post['oppost']:
+                log_message = 'Thread #{0} has been removed by {1}'.format(pid, post['ip'])
+            else:
+                log_message = 'Post #{0} has been removed by {1}'.format(pid, post['ip'])
+            await log('post_remove', log_message)
             await db.posts.delete_one({'count': pid})
             response['status'] = 'deleted'
             self.write(json.dumps(response))

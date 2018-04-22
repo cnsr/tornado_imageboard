@@ -1,14 +1,15 @@
 {% extends 'index.html' %}
-{% block title %}Add Board{% end %}
+{% block title %}ADMIN{% end %}
 {% block css %}
 {% end %}
 {% block content %}
 	<h1>Admin Panel</h3>
 	<div class='redirects'>
-		<a href='/admin/create'>Create New Board</a>
-		<a href='/admin/stats'>Browse Board Info</a>
-		<a href='/admin/bans'>Browse Bans</a>
-		<a href='/admin/reports'>Browse Reports</a>
+		<a href='/admin/create'>Create New Board</a><br />
+		<a href='/admin/stats'>Browse Board Info</a><br />
+		<a href='/admin/bans'>Browse Bans</a><br />
+		<a href='/admin/reports'>Browse Reports</a><br />
+		<a href='/admin/logs'>Browse Logs</a><br />
 	</div>
 	<a href='/admin/logout'>Logout</a>
 {% end %}

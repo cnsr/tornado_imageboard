@@ -22,6 +22,8 @@ from thumbnail import make_thumbnail
 from tripcode import tripcode
 import random
 
+from logger import log
+
 from admin import *
 from ajax import *
 from utils import *
@@ -169,6 +171,8 @@ class BoardHandler(LoggedInHandler):
                 data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata,
                 username, spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop, password=password)
                 await db.posts.insert(data)
+                log_message = '{0} created a thread {1} in {2}.'.format(ip, count, board)
+                await log('post', log_message)
                 self.redirect('/' + board + '/thread/' + str(data['count']))
             else:
                 self.redirect(self.request.uri + '?err=empty')
@@ -264,6 +268,8 @@ class ThreadHandler(LoggedInHandler):
                 data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
                     username, spoiler=spoiler, admin=admin, sage=sage, opip=op['ip'], showop=showop, password=password)
                 await db.posts.insert(data)
+                log_message = '{0} posted #{1} in a thread #{2} on {3} board.'.format(ip, count, thread, board)
+                await log('post', log_message)
                 op = await db['posts'].find_one({'count': thread_count})
                 if op:
                     db_board = await db.boards.find_one({'short': board})
@@ -474,6 +480,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
 
 
 # this is an ugly hack that works somehow
+# need to rework so that deleted post numbers cant be reused
 async def latest(db):
     try:
         return list(await db['posts'].find({}).sort('count', -1).to_list(None))[0]['count']
@@ -517,11 +524,6 @@ def schedule_check(app):
     tornado.ioloop.IOLoop.current().add_timeout(next_time, wrapper)
 
 
-async def get_ip(req):
-    x_real_ip = req.headers.get('X-Real-IP')
-    return x_real_ip or req.remote_ip
-
-
 async def is_banned(db, ip):
     ban = await db.bans.find_one({'ip': ip})
     if ban:
@@ -531,6 +533,8 @@ async def is_banned(db, ip):
                 return True
             else:
                 await db.bans.delete_one({'ip': ip})
+                log_message = '{0} was unbanned (banned until {1}).'.format(ip, ban['date'])
+                await log('unban', log_message)
                 return False
         else:
             return True
@@ -568,6 +572,7 @@ class Application(tornado.web.Application):
             (r'/admin/stats/?', AdminStatsHandler),
             (r'/admin/bans/?', AdminBannedHandler),
             (r'/admin/reports/?', AdminReportsHandler),
+            (r'/admin/logs/?', AdminLogsHandler),
             (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': 'uploads'}),
             (r'/ajax/remove/?', AjaxDeleteHandler),
             (r'/ajax/delete/?', AjaxDeletePassHandler),

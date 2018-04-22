@@ -6,6 +6,7 @@ import ib_settings as _ib
 from uuid import uuid4
 
 from utils import *
+from logger import log
 
 # decorator that checks if user is admin
 def ifadmin(f):
@@ -36,10 +37,15 @@ class AdminLoginHandler(LoggedInHandler):
 
     async def post(self):
         password = self.get_argument('password')
+        ip = await get_ip(self.request)
         if password == _ib.ADMIN_PASS:
             self.set_secure_cookie('adminlogin', 'true')
+            log_message = '{0} has logged in as admin'.format(ip)
+            await log('other', log_message)
             self.redirect('/admin')
         else:
+            log_message = '{0} has attempted to log in as admin'.format(ip)
+            log('other', log_message)
             self.redirect('/')
 
 
@@ -47,6 +53,9 @@ class AdminLogoutHandler(LoggedInHandler):
     @ifadmin
     async def get(self):
         self.clear_cookie('adminlogin')
+        ip = await get_ip(self.request)
+        log_message = '{0} has logged in as admin'.format(ip)
+        await log('other', log_message)
         self.redirect('/')
 
 
@@ -75,6 +84,8 @@ class AdminStatsHandler(LoggedInHandler):
                 for post in posts:
                     await removeing(post)
                     await self.application.database.posts.delete_one({'count': post['count']})
+                log_message = 'Board {0} has been deleted.'.format(board['short'])
+                await log('board_remove', log_message)
                 await self.application.database.boards.delete_one({'short':short})
                 self.redirect(url + '?msg=success')
             except:
@@ -97,6 +108,8 @@ class AdminBannedHandler(LoggedInHandler):
         db = self.application.database
         ip = self.get_argument('ip')
         await db.bans.delete_one({'ip': ip})
+        log_message = '{0} was unbanned by admin.'.format(ip)
+        await log('unban', log_message)
         self.redirect('/admin/bans')
 
 
@@ -164,6 +177,8 @@ class AdminBoardCreationHandler(LoggedInHandler):
                 nf.write(bytes(f['body']))
             data['banners'].append(newname)
         db = self.application.database.boards
+        log_message = 'Board /{0}/ has been created.'.format(data['short'])
+        await log('board_creation', log_message)
         await db.insert(data)
         self.redirect('/' + data['short'])
 
@@ -204,6 +219,57 @@ class AdminBoardEditHandler(LoggedInHandler):
             with open(newname, 'wb') as nf:
                 nf.write(bytes(f['body']))
             instance['banners'].append(newname)
+        log_message = 'Board /{0}/ has been edited.'.format(instance['short'])
+        await log('board_edit', log_message)
         await self.application.database.boards.update_one({'short':board},{'$set':instance})
         self.redirect('/admin/stats/')
+
+
+# you can view logs here
+class AdminLogsHandler(LoggedInHandler):
+    @ifadmin
+    async def get(self):
+        db = self.application.database
+        #logs = await db.logs.find({}).sort('time', -1).to_list(None)[:5000]
+        logs = await db.log.find({}).sort('time', -1).to_list(None) or None
+        if logs:
+            if self.get_arguments('page') != []:
+                try:
+                    page = int(self.get_argument('page'))
+                except ValueError:
+                    page = 0
+            else:
+                page = 0
+            _logs = await self.chunkify(logs)
+            try:
+                logs = _logs[page]
+            except IndexError:
+                try:
+                    logs = _logs[0]
+                except IndexError:
+                    pass
+            current = 0
+            if len(_logs) > 1:
+                paged = []
+                url = self.request.uri.split('?')[0]
+                for x in range(len(_logs)):
+                    paged.append({
+                        'numb': x,
+                        'url': url + '?page=' + str(x),
+                    })
+                    if x == page:
+                        current = x
+            else:
+                paged = None
+        else:
+            paged = None
+        boards_list = await db.boards.find({}).to_list(None)
+        self.render('admin_logs.html', logs=logs, boards_list=boards_list, paged=paged, current=current)
+
+    async def chunkify(self, l, n=30):
+        res = list()
+        for i in range(0, len(l), n):
+            res.append(l[i:i + n])
+        return res
+
 

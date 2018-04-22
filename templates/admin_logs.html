@@ -1,0 +1,54 @@
+{% extends 'index.html' %}
+{% block title %}Logs{% end %}
+
+{% block css %}
+	<link rel='stylesheet' href="{{ static_url('css/admin_banned.css') }}">
+{% end %}
+
+{% block content %}
+	{% if logs %}
+		<table class='logs'>
+			<tr>
+				<th>Date</th>
+				<th>Type</th>
+				<th>Log message</th>
+			</tr>
+			{% for log in logs %}
+				<tr>
+					<td>{{log['time']}}</td>
+					<td>{{log['type']}}</td>
+					<td>{{log['message']}}</td>
+				</tr>
+			{% end %}
+		</table>
+		{% if paged %}
+		<div class='paginate'>
+			{% if current == paged[0]['numb'] %}
+				<button class='paginate-control disabled'>[PREVIOUS]</button>
+			{% else %}
+				<a href='{{paged[current-1]["url"]}}'/>
+					<button class='paginate-control'>[PREVIOUS]</button>
+				</a>
+			{% end %}
+			{% for page in paged %}
+				{% if page['numb'] == current %}	
+					<button class='paginate-control disabled current'>[{{page["numb"]}}]</button>
+				{% else %}
+					<a href='{{page["url"]}}'/>
+						<button class='paginate-control'>[{{page["numb"]}}]</button>
+					</a>
+				{% end %}
+			{% end %}
+			{% if current == paged[-1]['numb'] %}
+				<button class='paginate-control disabled'>[NEXT]</button>
+			{% else %}
+				<a href='{{paged[current+1]["url"]}}'/>
+					<button class='paginate-control'>[NEXT]</button>
+				</a>
+			{% end %}
+		</div>
+		{% end %}
+	{% else %}
+		<h2>Nothing has been logged yet.</h2>
+	{% end %}
+{% end %}
