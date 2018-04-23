@@ -6,6 +6,7 @@ Tornado-based imageboard
     * Ability to post as admin;
     * Ability to remove posts, ban and unban users;
     * Ability to view detailed logging history;
+    * Ability to move threads to different board;
 2. Highly configurable imageboardboard creation tool with ability to set:
     * default poster name and ability to allow custom usernames (tripcodes are supported);
     * board full and shortened names;
@@ -18,7 +19,7 @@ Tornado-based imageboard
         * 300x100px banners,
         * optional dice rolls.
 3. Posting features:
-	* Support of:
+    * Support of:
         * .jpg/.jpeg, .png, .gif images,
         * .webm and .mp4 videos,
         * .mp3, .ogg, .wav, .opus audio;
