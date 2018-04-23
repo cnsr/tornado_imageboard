@@ -228,6 +228,36 @@ $(document).ready(function(){
 		var id = $(this).attr('data-id');
 		sendAjaxLock(id);
 	})
+	$(document).on('click', '.admin-move', function(){
+		$('#select-list').remove();
+		var id = $(this).attr('data-id');
+		let boards = $('.boards-list a');
+		let div = $('<div id="move-div">');
+		let list = $('<select id="move-list">');
+		for (i=0;i<boards.length;i++) {
+			let href = $(boards[i]).attr('href').split('/').pop();
+			if (href != board) {
+				list.append($('<option>', {
+					value: href,
+					text: '/' + href + '/',
+					class: 'move-option',
+					id: href + '-' + id
+				}))
+			}
+		}
+		div.append(list);		
+		div.append($('<button id="move-select">move</button><br />'));
+		div.append($('<button id="move-cancel">cancel</button>'));
+		$('body').append(div);
+	});
+	$('body').on('click', '#move-cancel', function() {
+		$('#move-div').remove();
+	})	
+	$('body').on('click', '#move-select', function() {
+		let s = $('#move-list').find(':selected');
+		$('#move-div').remove();
+		sendAjaxMove(s.attr('id'));
+	})
 	$('body').on('mouseover', '.to_die', function(e) {
         $(this).addClass('is-hover');
     });
@@ -270,6 +300,29 @@ function sendAjaxReport(post, reason) {
 		}
 	});
 };
+
+function sendAjaxMove(post) {
+	$.ajax({
+		url : "/ajax/move/",
+		type : "POST",
+		data : {post: post, _xsrf: getCookie("_xsrf")},
+		success : function(json) {
+			var json = jQuery.parseJSON(json);
+			if (json.status == 'Moved') {
+				popUp('Thread has been moved!');
+				let mv = post.split('-');
+				let to = '/' + mv[0] + '/thread/' + mv[1];
+				setTimeout(function() {
+					window.location.replace(to);
+				}, 2000);
+			}
+		},
+		error : function(xhr,errmsg,err) {
+			console.log(xhr.status + ": " + xhr.responseText);
+		}
+	});
+};
+
 
 function getPost(post, a) {
 	$.ajax({

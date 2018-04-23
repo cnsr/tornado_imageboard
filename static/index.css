@@ -366,3 +366,29 @@ header {
 .reply-preview {
 	 display: block;
 }
+
+#move-list {
+	background: #2c3338 !important;
+	border: 2px solid #eeeed8 !important;
+	padding: 5px;
+	display: block;
+	color: white;
+}
+
+#move-div {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	background: #2c3338 !important;
+	border: 2px solid #eeeed8 !important;
+	padding: 5px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	font-family: "Trebuchet MS",Trebuchet,tahoma,serif !important;
+	color: beige !important;
+	font-size: 16px !important;
+	transform: translate(-50%, -50%);
+	display: block;
+}
