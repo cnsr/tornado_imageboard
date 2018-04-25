@@ -251,3 +251,32 @@ class AjaxPostGetter(tornado.web.RequestHandler):
             result['status'] = 'no post found'
         self.write(json.dumps(result))
 
+# move thread to different board
+class AjaxMoveHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        data = data['post'].decode('utf-8').split('-')
+        destination = data[0]
+        pid = int(data[-1])
+        response = {}
+        thread = await db.posts.find_one({'count': pid})
+        if thread:
+            posts = await db.posts.find({'thread': thread['count']}).to_list(None)
+            for post in posts:
+                post['board'] = destination
+                await update_db(db, post['count'], post)
+            log_message = 'Thread #{0} has been moved from board /{1}/ to board /{2}/'.format(
+                thread['count'],
+                thread['board'],
+                destination
+            )
+            await log('other', log_message)
+            thread['board'] = destination
+            await update_db(db, thread['count'], thread)
+            response['status'] = ['Moved']
+        else:
+            response = {'status': 'Error moving thread.'}
+        self.write(json.dumps(response))
+

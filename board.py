@@ -583,6 +583,7 @@ class Application(tornado.web.Application):
             (r'/ajax/lock/?', AjaxLockHandler),
             (r'/ajax/get/?', AjaxPostGetter),
             (r'/ajax/banner-del/?', AjaxBannerDelHandler),
+            (r'/ajax/move/?', AjaxMoveHandler),
         ]
 
         settings = {
