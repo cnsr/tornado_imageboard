@@ -45,7 +45,7 @@ class AdminLoginHandler(LoggedInHandler):
             self.redirect('/admin')
         else:
             log_message = '{0} has attempted to log in as admin'.format(ip)
-            log('other', log_message)
+            await log('other', log_message)
             self.redirect('/')
 
 
