@@ -5,4 +5,5 @@ CHECK_TIMEOUT = 5
 ADMIN_PASS = 'aaaa1234'
 # maximum filesize on upload
 MAX_FILESIZE = 20971520
-
+# boards where posting with ban is allowed
+BAN_ALLOWED = ['bans',]

@@ -147,7 +147,7 @@ class BoardHandler(LoggedInHandler):
     async def post(self, board):
         db = self.application.database
         ip = await get_ip(self.request)
-        if not await is_banned(db, ip):
+        if not await is_banned(db, ip, board):
             db_board = await db.boards.find_one({'short': board})
             threads = await db['posts'].find({'board': board,'oppost': True}).sort([('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
             subject = self.get_argument('subject', '')
@@ -241,7 +241,7 @@ class ThreadHandler(LoggedInHandler):
     async def post(self, board, thread_count):
         db = self.application.database
         ip = await get_ip(self.request)
-        if not await is_banned(db, ip):
+        if not await is_banned(db, ip, board):
             thread_count = int(thread_count)
             subject = self.get_argument('subject', '')
             password = self.get_argument('pass', '')
@@ -524,21 +524,24 @@ def schedule_check(app):
     tornado.ioloop.IOLoop.current().add_timeout(next_time, wrapper)
 
 
-async def is_banned(db, ip):
-    ban = await db.bans.find_one({'ip': ip})
-    if ban:
-        if ban['date']:
-            expires = datetime.datetime.strptime(ban['date'], "%d-%m-%Y")
-            if expires > datetime.datetime.today():
-                return True
+async def is_banned(db, ip, board):
+    if board not in _ib.BAN_ALLOWED:
+        ban = await db.bans.find_one({'ip': ip})
+        if ban:
+            if ban['date']:
+                expires = datetime.datetime.strptime(ban['date'], "%d-%m-%Y")
+                if expires > datetime.datetime.today():
+                    return True
+                else:
+                    await db.bans.delete_one({'ip': ip})
+                    log_message = '{0} was unbanned (banned until {1}).'.format(ip, ban['date'])
+                    await log('unban', log_message)
+                    return False
             else:
-                await db.bans.delete_one({'ip': ip})
-                log_message = '{0} was unbanned (banned until {1}).'.format(ip, ban['date'])
-                await log('unban', log_message)
-                return False
-        else:
-            return True
-    return False
+                return True
+        return False
+    else:
+        return False
 
 
 def get_replies(text):
