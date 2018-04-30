@@ -392,3 +392,8 @@ header {
 	transform: translate(-50%, -50%);
 	display: block;
 }
+
+.hidden-href {
+	cursor: pointer;
+	color: #702802 !important;
+}

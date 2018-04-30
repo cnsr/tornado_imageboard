@@ -10,6 +10,12 @@ $(document).ready(function(){
 		}
 	});
 	if (localStorage.name != '' && localStorage.name != null) $('#username').val(localStorage.name);
+	if (typeof localStorage.hidden == undefined || localStorage.hidden == '') localStorage.hidden = JSON.stringify([]);
+	var hidden = JSON.parse(localStorage.hidden || null);
+	hidden.forEach(function(item, i , arr) {
+		let th = $('#' + item);
+		hideThread(th);
+	});
 	if ($(window).width() > 768) {
 		$('.add').addClass('drag');
 		if (typeof nodrag === 'undefined') {
@@ -33,6 +39,25 @@ $(document).ready(function(){
 		let spoiler = $(this).is(':checked');
 		toggleSpoiler(spoiler);
 	});
+	$(document).on('click', '.hide', function() { 
+		let thread = $(this).attr('data-thread');
+		hidden.push(thread);
+		localStorage.hidden = JSON.stringify(hidden);
+		hideThread($('#' + thread));
+	});
+	$(document).on('mouseenter', '.hidden-href', function() { 
+		$('#' + $(this).attr('data-id')).children(':not(:first-child)').show();
+	});
+	$(document).on('mouseleave', '.hidden-href', function() { 
+		$('#' + $(this).attr('data-id')).children(':not(:first-child)').hide();
+	});
+	$(document).on('click', '.hidden-href', function() {
+		let id = $(this).attr('data-id');
+		$('#' + id).children(':not(:first-child)').show();
+		$(this).parent().remove();
+		hidden.splice(hidden.indexOf(id), 1);
+		localStorage.hidden = JSON.stringify(hidden);
+	});	
 	$(document).on('keydown', function(e) {
 		let key = e.which;
 		let t = $(e.target);
@@ -514,6 +539,26 @@ function toggleSpoiler(spoiler) {
 			}
 		}
 	})
+}
+
+function hideThread(thread) {
+	th = thread.find('.thread');
+	let th_id = thread.attr('id');
+	let th_text = th.find('.psubject').text();
+	if (!th_text || /\S/.test(th_text)) {
+		th_text = th.find('.text').text();
+	}
+	if (!th_text || /\S/.test(th_text)) {
+		th_text = th.find('.filedata-p').text();
+	}
+	if (!th_text || /\S/.test(th_text)) {
+		th_text = '>>' + th_id;
+	}
+	th_text = th_text.length > 50 ? th_text.substring(0, 50) + '...' : th_text;
+	let replacement = '<div class="thread-header hidden">Hidden thread: <a class="hidden-href" data-id="'+
+	+ th_id + '">>>' + th_id + '</a> (' + th_text + ')</div>';
+	thread.children().hide();
+	thread.prepend(replacement);
 }
 
 String.prototype.trim = function() {
