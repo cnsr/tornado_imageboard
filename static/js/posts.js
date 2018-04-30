@@ -12,6 +12,10 @@ $(document).ready(function(){
 	if (localStorage.name != '' && localStorage.name != null) $('#username').val(localStorage.name);
 	if (typeof localStorage.hidden == undefined || localStorage.hidden == '') localStorage.hidden = JSON.stringify([]);
 	var hidden = JSON.parse(localStorage.hidden || null);
+	if (!hidden) {
+		localStorage.hidden = JSON.stringify([])
+		hidden = [];
+	}
 	hidden.forEach(function(item, i , arr) {
 		let th = $('#' + item);
 		hideThread(th);
