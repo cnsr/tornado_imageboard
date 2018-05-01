@@ -253,6 +253,10 @@ $(document).ready(function(){
 		var id = $(this).attr('data-id');
 		sendAjaxPin(id);
 	})
+	$(document).on('click', '.infinify', function(){
+		var id = $(this).attr('data-id');
+		sendAjaxInfinify(id);
+	})	
 	$(document).on('click', '.admin-lock', function(){
 		var id = $(this).attr('data-id');
 		sendAjaxLock(id);
@@ -396,6 +400,21 @@ function getPost(post, a) {
 	});
 };
 
+function sendAjaxInfinify(post) {
+	$.ajax({
+		url : "/ajax/infinify/",
+		type : "POST",
+		data : {post: post, _xsrf: getCookie("_xsrf")},
+		success : function(json) {
+			var json = jQuery.parseJSON(json);
+			popUp(json['status']);
+		},
+
+		error : function(xhr,errmsg,err) {
+			console.log(xhr.status + ": " + xhr.responseText);
+		}
+	});
+};
 
 function sendAjaxPin(post) {
 	$.ajax({

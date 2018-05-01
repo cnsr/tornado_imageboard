@@ -96,6 +96,21 @@ class AjaxPinHandler(tornado.web.RequestHandler):
             self.write(json.dumps({'status':'failed'}))
 
 
+class AjaxInfinifyHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        for k, v in data.items(): data[k] = v.decode('utf-8')
+        thread = await db.posts.find_one({'count': int(data['post'])})
+        if thread['oppost']:
+            thread['infinite'] = not thread['infinite']
+            await update_db(db, thread['count'], thread)
+            self.write(json.dumps({'status':'ok'}))
+        else:
+            self.write(json.dumps({'status':'failed'}))
+
+
 class AjaxLockHandler(tornado.web.RequestHandler):
 
     async def post(self):
