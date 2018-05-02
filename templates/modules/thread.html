@@ -23,7 +23,9 @@
 				<span class='pinned infinite' title='Infinite thread'>∞</span>
 			{% end %}
 			{% if autosage %}
-				<span class='autosage'>[AUTOSAGE]</span>
+				{% if not thread['infinite'] %}
+					<span class='autosage'>[AUTOSAGE]</span>
+				{% end %}
 			{% end %}
 		</div>
 		{% if thread['filetype'] %}
