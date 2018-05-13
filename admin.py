@@ -12,7 +12,7 @@ from logger import log
 def ifadmin(f):
     def wrapper(self, *args, **kwargs):
         if not self.current_user:
-            self.redirect('/admin/login')
+            return self.redirect('/admin/login')
         return f(self, *args, **kwargs)
     return wrapper
 
