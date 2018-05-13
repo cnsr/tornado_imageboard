@@ -397,3 +397,11 @@ header {
 	cursor: pointer;
 	color: #702802 !important;
 }
+
+.pinned, .infinite, .sage, .isop, .tripcode, .adminpost, .adminpost-small, .psubject, .flag {
+	cursor: help;
+}
+
+.username {
+	cursor: default;
+}

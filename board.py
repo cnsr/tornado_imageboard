@@ -215,9 +215,10 @@ class ThreadHandler(LoggedInHandler):
             posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
             op = await db['posts'].find_one({"count": thread_count, 'oppost': True})
             if op:
-                if await check_thread(db, thread_count, db_board['thread_posts']):
-                    op['locked'] = True
-                    await update_db(db, op['count'], op)
+                if not op['infinite']:
+                    if await check_thread(db, thread_count, db_board['thread_posts']):
+                        op['locked'] = True
+                        await update_db(db, op['count'], op)
                 boards_list = await db.boards.find({}).to_list(None)
                 admin = False
                 if self.current_user: admin = True
@@ -288,8 +289,15 @@ class ThreadHandler(LoggedInHandler):
                                 await update_db(db, p['count'], p)
                     if op != None:
                         if await check_thread(db, thread_count, db_board['thread_posts']):
-                            op['locked'] = True
-                            await update_db(db, op['count'], op)
+                            if not op['infinite']:
+                                op['locked'] = True
+                                await update_db(db, op['count'], op)
+                            else:
+                                posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
+                                p = posts[0]
+                                await removeing(p)
+                                await db.posts.delete_one({'count': p['count']})
+
                     self.redirect('/' + str(board) + '/thread/' + str(op['count']))
                 else:
                     self.redirect('/' + str(board))
@@ -450,6 +458,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
         data['postcount'] = 0
         data['filecount'] = 0
         data['pinned'] = False
+        data['infinite'] = False
     else:
         postcount = int(await db.posts.find({'thread': t['count']}).count())
         t['postcount'] = postcount + 1
@@ -587,6 +596,7 @@ class Application(tornado.web.Application):
             (r'/ajax/get/?', AjaxPostGetter),
             (r'/ajax/banner-del/?', AjaxBannerDelHandler),
             (r'/ajax/move/?', AjaxMoveHandler),
+            (r'/ajax/infinify/?', AjaxInfinifyHandler),
         ]
 
         settings = {

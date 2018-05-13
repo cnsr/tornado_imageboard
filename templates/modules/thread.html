@@ -19,8 +19,13 @@
 				<p class='locked' title='Thread is locked.'>&#x1f512;</p>
 			{% end %}
 			{% if thread['pinned'] %}<span class='pinned' title='Pinned thread'>📌</span>{% end %}
+			{% if thread['infinite'] %}
+				<span class='pinned infinite' title='Infinite thread'>∞</span>
+			{% end %}
 			{% if autosage %}
-				<span class='autosage'>[AUTOSAGE]</span>
+				{% if not thread['infinite'] %}
+					<span class='autosage'>[AUTOSAGE]</span>
+				{% end %}
 			{% end %}
 		</div>
 		{% if thread['filetype'] %}
