@@ -335,7 +335,7 @@ class JsonThreadHandler(LoggedInHandler):
 
 async def upload_file(f):
     fname = f['filename']
-    fext = os.path.splitext(fname)[1]
+    fext = os.path.splitext(fname)[1].lower()
     if fext in ['.jpg', '.gif', '.png','.jpeg']:
         filetype = 'image'
     elif fext in ['.webm', '.mp4']:
