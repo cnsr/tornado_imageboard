@@ -295,3 +295,14 @@ class AjaxMoveHandler(tornado.web.RequestHandler):
             response = {'status': 'Error moving thread.'}
         self.write(json.dumps(response))
 
+
+class AjaxMapHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        db = self.application.database
+        posters = await db.maps.find({}).to_list(None)
+        for poster in posters:
+            del poster['_id']
+            poster['date'] = poster['date'].strftime("%Y-%m-%d %H:%M:%S")
+        self.write(json.dumps(posters))
+

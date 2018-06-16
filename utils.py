@@ -25,6 +25,17 @@ async def update_db_b(db, short, variables):
         upsert=False,
     )
 
+
+async def check_map(db, mapdata):
+    exists = await db.maps.find_one({
+                'long': mapdata['long'],
+                'lat': mapdata['lat']})
+    if exists:
+        await db.maps.delete_one({
+                'long': mapdata['long'],
+                'lat': mapdata['lat']})
+
+
 async def removeing(post):
     if post['filetype']:
         if os.path.isfile(post[post['filetype']]):

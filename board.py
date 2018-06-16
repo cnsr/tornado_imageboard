@@ -82,6 +82,12 @@ class IndexHandler(tornado.web.RequestHandler):
         self.render('index.html', boards=boards, boards_list=boards_list)
 
 
+class MapHandler(tornado.web.RequestHandler):
+
+    async def get(self):
+        self.render('map.html')
+
+
 # list of threads
 class BoardHandler(LoggedInHandler):
 
@@ -423,13 +429,21 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
         # workaround for localhost, replaces localhost with google ip (US)
         if ip == '127.0.0.1':
             ip = '172.217.20.206'
-        data['country'] = gdbr.city(ip).country.iso_code
+        gdbr_data = gdbr.city(ip)
+        data['country'] = gdbr_data.country.iso_code
         extraflags = ['Bavaria', 'Scotland', 'Wales']
-        if gdbr.city(ip).subdivisions.most_specific.name in extraflags:
-            data['country'] = gdbr.city(ip).subdivisions.most_specific.name
+        if gdbr_data.subdivisions.most_specific.name in extraflags:
+            data['country'] = gdbr_data.subdivisions.most_specific.name
             data['countryname'] = data['country']
         else:
             data['countryname'] = regioncodes[data['country']]
+        mapdata = {'countryname': data['countryname'],
+                    'country': data['country'],
+                    'long': gdbr_data.location.longitude,
+                    'lat': gdbr_data.location.latitude,
+                    'date': datetime.datetime.utcnow()}
+        await check_map(db, mapdata)
+        await db.maps.insert(mapdata)
     if b['roll']:
         data['roll'] = await roll(data['subject'])
     if not b['custom']:
@@ -568,6 +582,7 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r'/$', IndexHandler),
+            (r'/map/?', MapHandler),
             (r'/admin/?', AdminHandler),
             (r'/banned/?', BannedHandler),
             (r'/flags/(.*)/?', tornado.web.StaticFileHandler, {'path': 'flags'}),
@@ -597,6 +612,7 @@ class Application(tornado.web.Application):
             (r'/ajax/banner-del/?', AjaxBannerDelHandler),
             (r'/ajax/move/?', AjaxMoveHandler),
             (r'/ajax/infinify/?', AjaxInfinifyHandler),
+            (r'/ajax/map/?', AjaxMapHandler),
         ]
 
         settings = {
