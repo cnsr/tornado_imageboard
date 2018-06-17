@@ -85,7 +85,10 @@ class IndexHandler(tornado.web.RequestHandler):
 class MapHandler(tornado.web.RequestHandler):
 
     async def get(self):
-        self.render('map.html')
+        db = self.application.database
+        boards = await db.boards.find({}).to_list(None) or None
+        boards_list = await db.boards.find({}).to_list(None) or None
+        self.render('map.html', boards=boards, boards_list=boards_list)
 
 
 # list of threads

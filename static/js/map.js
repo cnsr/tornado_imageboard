@@ -26,12 +26,12 @@ function getPosters() {
 				let icon = L.icon({
 					iconUrl: "/flags/" + poster.country  + ".png",
 					iconRetinaUrl: "/flags/" + poster.country  + ".png",
-					iconSize: [32, 32],
+					iconSize: [24, 24],
 					iconAnchor: [9, 21],
 					popupAnchor: [0, -14]
 				});
 				L.marker([poster.lat, poster.long], {icon: icon})
-				  .bindPopup( '<p>' + poster.countryname + '</p>' )
+				  .bindPopup( '<span>Last posted:<br />' + poster.date.split(' ')[0] + '</span>' )
 				  .addTo( map );
 			});
 		},
