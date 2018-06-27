@@ -24,9 +24,13 @@ $(document).ready(function() {
 	$('.text').each(function(){
 		if (!$(this).hasClass('rendered')) {
 			var txt = $(this).text();
-			for (var i =0;i<$format_search.length;i++) {
-				txt = txt.replace($format_search[i], $format_replace[i]);
+			txt_split = txt.split(/\r?\n/);
+			for (var j=0;j<txt_split.length;j++){
+				for (var i=0;i<$format_search.length;i++) {
+					txt_split[j] = txt_split[j].replace($format_search[i], $format_replace[i]);
+				}
 			}
+			txt = txt_split.join('\n');
 			$(this).html(txt);
 			$(this).addClass('rendered');
 		}
@@ -83,8 +87,11 @@ function wrapText(openTag) {
 }
 
 function replaceText(txt) {	
-	for (var i =0;i<$format_search.length;i++) {
-		txt = txt.replace($format_search[i], $format_replace[i]);
+	txt_split = txt.split(/\r?\n/);
+	for (var j=0;j<txt_split.length;j++){
+		for (var i=0;i<$format_search.length;i++) {
+			txt_split[j] = txt_split[j].replace($format_search[i], $format_replace[i]);
+		}
 	}
-	return txt	
+	txt = txt_split.join('\n');
 }
