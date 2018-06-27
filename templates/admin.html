@@ -2,6 +2,10 @@
 {% block title %}ADMIN{% end %}
 {% block css %}
 {% end %}
+{% block admin_header %}
+	<a href='/admin'><button>ADMIN</button></a>
+	<a href='/admin/logout'><button>LOGOUT</button></a>
+{% end %}
 {% block content %}
 	<h1>Admin Panel</h3>
 	<div class='redirects'>
@@ -11,5 +15,4 @@
 		<a href='/admin/reports'>Browse Reports</a><br />
 		<a href='/admin/logs'>Browse Logs</a><br />
 	</div>
-	<a href='/admin/logout'>Logout</a>
 {% end %}

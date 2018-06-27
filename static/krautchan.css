@@ -144,7 +144,8 @@ citation {
 	color: red;
 }
 
-.thread {
+.thread, .oppost {
 	border: none;
+	background-color: #eeeeee;
 }
 

@@ -1,10 +1,9 @@
-{% extends 'index.html' %}
+{% extends 'admin.html' %}
 {% block title %}Board Stats{% end %}
 {% block css %}
 	<script src='{{static_url("js/popup.js")}}'></script>
 {% end %}
 {% block content %}
-<a href='/admin'><button>Back to admin</button></a>
 <table class='boards'>
 	<tr class='table-header'>
 		<th>Name</th>
