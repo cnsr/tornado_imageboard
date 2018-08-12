@@ -16,6 +16,7 @@
 		<script src='{{static_url("js/bbcodes.js")}}'></script>
 		<script src='{{static_url("js/popup.js")}}'></script>
 		<script src='{{static_url("js/pass.js")}}'></script>
+		<!--script src="{{static_url('js/donate.js')}}"></script-->
 		<title>{% block title %}Index{% end %}</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 	</head>
@@ -69,6 +70,9 @@
 			This product includes GeoLite2 data created by MaxMind, available from
 			<a href="http://www.maxmind.com">http://www.maxmind.com</a>.
 		</div>
+		{% block donate %}
+			<a href='https://www.liqpay.ua/en/checkout/card/i96963268225' id='donate'>DONATE</a>
+		{% end %}
 	{% end %}
 	{% block settings %}
 		{% module Settings() %}
