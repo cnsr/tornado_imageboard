@@ -94,4 +94,5 @@ function replaceText(txt) {
 		}
 	}
 	txt = txt_split.join('\n');
+	return txt;
 }
