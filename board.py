@@ -92,16 +92,6 @@ class MapHandler(tornado.web.RequestHandler):
         self.render('map.html', boards=boards, boards_list=boards_list)
 
 
-# page for donates
-class DonateHandler(tornado.web.RequestHandler):
-
-    async def get(self):
-        db = self.application.database
-        boards = await db.boards.find({}).to_list(None) or None
-        boards_list = await db.boards.find({}).to_list(None) or None
-        self.render('donate.html', boards=boards, boards_list=boards_list)
-
-
 # list of threads
 class BoardHandler(LoggedInHandler):
 
@@ -597,7 +587,6 @@ class Application(tornado.web.Application):
         handlers = [
             (r'/$', IndexHandler),
             (r'/map/?', MapHandler),
-            (r'/donate/?', DonateHandler),
             (r'/admin/?', AdminHandler),
             (r'/banned/?', BannedHandler),
             (r'/flags/(.*)/?', tornado.web.StaticFileHandler, {'path': 'flags'}),
