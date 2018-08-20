@@ -2,6 +2,7 @@ import tornado.web
 import datetime
 import motor.motor_tornado
 import ib_settings as _ib
+import re
 
 from uuid import uuid4
 
@@ -232,8 +233,18 @@ class AdminLogsHandler(LoggedInHandler):
     @ifadmin
     async def get(self):
         db = self.application.database
-        #logs = await db.logs.find({}).sort('time', -1).to_list(None)[:5000]
-        logs = await db.log.find({}).sort('time', -1).to_list(None) or None
+        log_types = ['post', 'post_remove', 'board_creation', 'board_edit', 'board_remove', 'ban', 'unban', 'other',]
+        log_type = self.get_argument('type', 'all', False)
+        if not log_type:
+            #logs = await db.logs.find({}).sort('time', -1).to_list(None)[:5000]
+            logs = await db.log.find({}).sort('time', -1).to_list(None) or None
+        else:
+            if log_type != 'all':
+                if log_type in log_types:
+                    logs = await db.log.find({'type': log_type}).sort('time', -1).to_list(None) or None
+                else: logs = await db.log.find({}).sort('time', -1).to_list(None) or None
+            else:
+                logs = await db.log.find({}).sort('time', -1).to_list(None) or None
         if logs:
             if self.get_arguments('page') != []:
                 try:
@@ -266,7 +277,8 @@ class AdminLogsHandler(LoggedInHandler):
         else:
             paged = None
         boards_list = await db.boards.find({}).to_list(None)
-        self.render('admin_logs.html', logs=logs, boards_list=boards_list, paged=paged, current=current)
+        self.render('admin_logs.html', logs=logs, boards_list=boards_list, paged=paged, current=current,
+        log_types=log_types, curr_type=log_type)
 
     async def chunkify(self, l, n=30):
         res = list()
