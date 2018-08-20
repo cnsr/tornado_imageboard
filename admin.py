@@ -235,6 +235,7 @@ class AdminLogsHandler(LoggedInHandler):
         db = self.application.database
         log_types = ['post', 'post_remove', 'board_creation', 'board_edit', 'board_remove', 'ban', 'unban', 'other',]
         log_type = self.get_argument('type', 'all', False)
+        current = 0
         if not log_type:
             #logs = await db.logs.find({}).sort('time', -1).to_list(None)[:5000]
             logs = await db.log.find({}).sort('time', -1).to_list(None) or None
@@ -261,7 +262,6 @@ class AdminLogsHandler(LoggedInHandler):
                     logs = _logs[0]
                 except IndexError:
                     pass
-            current = 0
             if len(_logs) > 1:
                 paged = []
                 url = self.request.uri.split('?')[0]

@@ -11,14 +11,18 @@
 			let log_type = opt.val();
 			let url = window.location.href;
 			let regex = /([?&]type)=([^#&]*)/g;
+			let page_regex = /([?&]page)=([^#&]*)/g;			
 			let new_url = url;
 			if (regex.test(url)) {
 				new_url = url.replace(regex, '$1=' + log_type);
-			} else {new_url += '&type=' + log_type;}
+			} else {
+				let additional = '?';
+				if (page_regex.test(url)) additional = '&';
+				new_url += additional + 'type=' + log_type;
+			}
 			window.location.href = new_url;
 		}
 	</script>
-	{% if logs %}
 		<table class='logs'>
 			<tr>
 				<th>Date</th>
@@ -32,42 +36,45 @@
 				</th>
 				<th>Log message</th>
 			</tr>
-			{% for log in logs %}
-				<tr>
-					<td>{{log['time']}}</td>
-					<td>{{log['type']}}</td>
-					<td>{{log['message']}}</td>
-				</tr>
+			{% if logs %}
+				{% for log in logs %}
+					<tr>
+						<td>{{log['time']}}</td>
+						<td>{{log['type']}}</td>
+						<td>{{log['message']}}</td>
+					</tr>
+				{% end %}
+			{% else %}
+				<h2>Nothing has been logged yet.</h2>
 			{% end %}
 		</table>
-		{% if paged %}
-		<div class='paginate'>
-			{% if current == paged[0]['numb'] %}
-				<button class='paginate-control disabled'>[PREVIOUS]</button>
-			{% else %}
-				<a href='{{paged[current-1]["url"]}}&type={{curr_type}}'/>
-					<button class='paginate-control'>[PREVIOUS]</button>
-				</a>
-			{% end %}
-			{% for page in paged %}
-				{% if page['numb'] == current %}	
-					<button class='paginate-control disabled current'>[{{page["numb"]}}]</button>
+		{% if logs %}
+			{% if paged %}
+			<div class='paginate'>
+				{% if current == paged[0]['numb'] %}
+					<button class='paginate-control disabled'>[PREVIOUS]</button>
 				{% else %}
-					<a href='{{page["url"]}}&type={{curr_type}}'/>
-						<button class='paginate-control'>[{{page["numb"]}}]</button>
+					<a href='{{paged[current-1]["url"]}}&type={{curr_type}}'/>
+						<button class='paginate-control'>[PREVIOUS]</button>
 					</a>
 				{% end %}
+				{% for page in paged %}
+					{% if page['numb'] == current %}	
+						<button class='paginate-control disabled current'>[{{page["numb"]}}]</button>
+					{% else %}
+						<a href='{{page["url"]}}&type={{curr_type}}'/>
+							<button class='paginate-control'>[{{page["numb"]}}]</button>
+						</a>
+					{% end %}
+				{% end %}
+				{% if current == paged[-1]['numb'] %}
+					<button class='paginate-control disabled'>[NEXT]</button>
+				{% else %}
+					<a href='{{paged[current+1]["url"]}}&type={{curr_type}}'/>
+						<button class='paginate-control'>[NEXT]</button>
+					</a>
+				{% end %}
+			</div>
 			{% end %}
-			{% if current == paged[-1]['numb'] %}
-				<button class='paginate-control disabled'>[NEXT]</button>
-			{% else %}
-				<a href='{{paged[current+1]["url"]}}&type={{curr_type}}'/>
-					<button class='paginate-control'>[NEXT]</button>
-				</a>
-			{% end %}
-		</div>
 		{% end %}
-	{% else %}
-		<h2>Nothing has been logged yet.</h2>
-	{% end %}
 {% end %}
