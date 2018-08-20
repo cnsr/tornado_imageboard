@@ -37,6 +37,9 @@
 		<div class='thread_roll'>
 			<label for='roll'>Allow dice rolling</label><input id='roll' type='checkbox' name='roll' {% if i['roll']%}checked{%end%}/>
 		</div>
+		<div class='thread_unlisted'>
+			<label for='unlisted'>Hide board</label><input id='unlisted' type='checkbox' name='unlisted' {% if i['unlisted']%}checked{%end%}/>
+		</div>		
 		<div class='perpage'>
 			<label for='perpage'>Posts per page</label><input id='perpage' name='perpage' type='number'
 			value="{{i['perpage']}}" min="0" step="1"/>

@@ -164,6 +164,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
         data['country'] = 'country' in self.request.arguments
         data['custom'] = 'custom' in self.request.arguments
         data['roll'] = 'roll' in self.request.arguments
+        data['unlisted'] = 'unlisted' in self.request.arguments
         data['postcount'] = 0
         data['mediacount'] = 0
         data['created'] = datetime.datetime.utcnow()
@@ -211,6 +212,7 @@ class AdminBoardEditHandler(LoggedInHandler):
         instance['country'] = 'country' in self.request.arguments
         instance['custom'] = 'custom' in self.request.arguments
         instance['roll'] = 'roll' in self.request.arguments
+        instance['unlisted'] = 'unlisted' in self.request.arguments
         instance['perpage'] = int(float(self.get_argument('perpage', 10)))
         if self.request.files:
             f = self.request.files['banner'][0]

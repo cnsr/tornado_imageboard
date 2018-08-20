@@ -29,9 +29,11 @@
 			<ul class='boards-list'>
 				{% if boards_list %}
 					{% for b in boards_list %}
+						{% if not b['unlisted'] %}
 						<li class='boards-list-board'>
 							<a href='/{{b["short"]}}' class='board-link'>[{{b['short']}}]</a>
 						</li>
+						{% end %}
 					{% end %}
 				{% end %}
 			</ul>
