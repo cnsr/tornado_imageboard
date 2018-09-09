@@ -1,11 +1,4 @@
 $(document).ready(function() {
-	var today = new Date();
-	var tomorrow = new Date(today.getTime() + (24 * 60 * 60 * 1000));
-	tomorrow.setHours(0,0,0,0);
-	$("#ban-expires").datepicker({
-		minDate: tomorrow,
-		dateFormat: 'dd-mm-yy'
-	});
 	$('.banform').draggable({
 		containment: "window"	
 	});
@@ -28,7 +21,16 @@ $(document).ready(function() {
 		if ($('#ban-never').is(':checked')) {
 			ban = 'Never';
 		} else {
-			ban = $('#ban-expires').val();
+			var today = new Date();
+			let ban_total = 0;
+			let ban_days = parseInt($('#ban-days').val());
+			let ban_hours = parseInt($('#ban-hours').val());
+			let ban_minutes = parseInt($('#ban-minutes').val());
+			if (ban_days != 0) ban_total += ban_days * 24 * 60 * 60 * 1000;
+			if (ban_hours != 0 ) ban_total += ban_hours * 60 * 60 * 1000;
+			if (ban_minutes != 0 ) ban_total += ban_minutes * 60 * 1000;
+			let _ban = (new Date(today.getTime() + ban_total)).toGMTString();
+			ban = moment(_ban).format('DD-MM-YYYY HH:mm:ss');
 		}
 		if ($('#ban-lock').is(':checked')) {
 			 var lock = 'true';

@@ -3,7 +3,7 @@
 	 border: 1px solid black;
 	 background: white;
 	 position: fixed;
-	 z-index: 10;
+	 z-index: 1000000;
 }
 
 .banform p {

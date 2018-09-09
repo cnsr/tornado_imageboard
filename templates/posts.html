@@ -65,7 +65,21 @@
 					<label for='ban-lock'>Lock thread?</label>					
 					<div class='ban-expires-div'>
 						<p>Pick date of unban</p>
-						<input id='ban-expires' type='text' id='datepicker'/>
+						<table class="ban-table">
+							<tr>
+								<th class="ban-table-th">days</th>
+								<th class="ban-table-th">hours</th>
+								<th class="ban-table-th">minutes</th>
+							</tr>
+							<tr>
+								<td class="ban-table-td">
+									<input type='number' min='0' max='365' name='ban-days' id='ban-days' value='0'/></td>
+								<td class="ban-table-td">
+									<input type='number' min='0' max='24' name='ban-hours' id='ban-hours' value='0'/></td>
+								<td class="ban-table-td">
+									<input type='number' min='0' max='59' name='ban-minutes' id='ban-minutes' value='0'/></td>
+							</tr>
+						</table>
 					</div>
 				</div>
 				<label for='ban-reason'>Reason:</label>				
