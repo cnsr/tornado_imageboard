@@ -32,9 +32,16 @@ Tornado-based imageboard
 * python 3
 * mongodb
 * mediainfo
+* ffmpeg
+* imagemagick
 # How to run
-```sh
-$ pip install -r requirements.txt
-$ sudo service mongod start
-$ python board.py
-```
+1. Install all software dependencies
+2. Configure nginx, make sure mongo is running
+    ```sh
+    $ sudo service mongod start
+    ```
+3. Install module dependencies and run
+    ```sh
+    $ pip install -r requirements.txt
+    $ python board.py
+    ```
