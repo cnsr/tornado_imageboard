@@ -1,0 +1,33 @@
+			{% if thread['subject'] %}<h3 class='psubject' title='subject'>{{thread['subject']}}</h3>{% end %}
+			{% if thread['admin'] %}
+				<p class='username adminpost' title='admin'>## Admin ##</p>
+				<p class='username adminpost-small' title='admin'>&#x21AF;&#x21AF;</p>
+			{% else %}
+				{% if thread['username'] %}<p class='username'>{{thread['username']}}</p>{% end %}
+			{% end %}
+			{% if thread['trip'] %}<p class='tripcode' title='tripcode'>{{thread['trip']}}</p>{% end %}
+			<p class='date'>{{ thread['date']}}</p>
+			{% if thread['country'] %}<img class='flag' src='/flags/{{thread["country"]}}.png' title='{{thread["countryname"]}}' />{% end %}
+		</div>
+		{% if thread['filetype'] %}
+			<div class='thread-media'>
+				{% if thread['video'] %}
+					<a href='{{thread["video"]}}' class='filedata-a' target='_blank'>{{thread['original']}}</a>
+					<p class='filedata-p'>{{thread['filedata']}}</p>
+					{% module Video(thread['video'], thread['count'], thread['thumb']) %}
+				{% end %}
+				{% if thread['image'] %}
+					<a href='{{thread["image"]}}' class='filedata-a' target='_blank'>{{thread['original']}}</a>
+					<p class='filedata-p'>{{thread['filedata']}}</p>
+					{% module Image(thread['image'], thread['count'], thread['thumb']) %}
+				{% end %}
+				{% if thread['audio'] %}
+					<p class='filedata-p'>{{thread['original']}} {{thread['filedata']}}</p>
+					{% module Audio(thread['audio'], thread['count']) %}
+				{% end %}
+			</div>
+		{% end %}
+		<p class='text'>{% raw thread['text'] %}</p>
+<a href='/{{thread["board"]}}/thread/{{thread["count"]}}' class='pind-thread-href'>
+	<button>Visit thread</button>
+</a>

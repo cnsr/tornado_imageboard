@@ -2,6 +2,7 @@ var window_focus = true;
 var unread = 0;
 var title;
 var title_orig;
+var pin_id;
 
 $(document).ready(function(){
 	$(document).on("dragstart", function(e) {
@@ -241,6 +242,9 @@ $(document).ready(function(){
 	$('body').on('click', '#close-report', function(){
 		 $('.report-popup').remove();
 	});
+	$('body').on('click', '#pin-close', function(){
+		 $('#pin-selector').hide();
+	});	
 	$('body').on('click', '#submit-report', function(e){
 		e.preventDefault();
 		var id = $(this).closest('.report-popup').attr('data-id');
@@ -253,6 +257,18 @@ $(document).ready(function(){
 		var id = $(this).attr('data-id');
 		sendAjaxPin(id);
 	})
+	$(document).on('click', '.pin_b', function(){
+		pin_id = $(this).attr('data-id');
+		$('#pin-selector').show();
+	})
+	$(document).on('click', '#pin-submit', function(){
+		$('#pin-selector').hide();
+		let selected_boards = new Array();
+		$('.pinform').find('input:checkbox:checked').each(function() {
+			selected_boards.push($(this).attr('name'));
+		});
+		sendAjaxPinThread(pin_id, selected_boards);
+	})	
 	$(document).on('click', '.infinify', function(){
 		var id = $(this).attr('data-id');
 		sendAjaxInfinify(id);
@@ -431,6 +447,23 @@ function sendAjaxPin(post) {
 		}
 	});
 };
+
+function sendAjaxPinThread(post, selected_boards) {
+	$.ajax({
+		url : "/ajax/pin_thread/",
+		type : "POST",
+		data : {post: post, _xsrf: getCookie("_xsrf"), boards: JSON.stringify(selected_boards)},
+		success : function(json) {
+			var json = jQuery.parseJSON(json);
+			popUp(json['status']);
+		},
+
+		error : function(xhr,errmsg,err) {
+			console.log(xhr.status + ": " + xhr.responseText);
+		}
+	});
+};
+
 
 function sendAjaxLock(post) {
 	$.ajax({

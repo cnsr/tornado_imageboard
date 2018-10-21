@@ -44,6 +44,10 @@
 			<label for='perpage'>Posts per page</label><input id='perpage' name='perpage' type='number'
 			value="{{i['perpage']}}" min="0" step="1"/>
 		</div>
+		<div class='b_pinned'>
+			<label for='b_pinned'>Have a pinned thread?</label>
+			<input id='b_pinned' name='pinned' type='checkbox' {% if i['pinned'] %}checked{% end %}/>
+		</div>		
 		{% if i['banners'] %}
 			<div class='banners-preview'>
 				<ul id='banners-list'>

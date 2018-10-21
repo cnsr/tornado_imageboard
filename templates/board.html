@@ -18,6 +18,14 @@
 			{% end %}
 			<h2 id='board-title'>/{{board['short']}}/ - {{board['name']}}</h2>
 			<hr>
+			{% if pind %}
+				{% block pind %}
+					<div id='thread-pinned'>
+						<h3>Supperpinned thread:</h3>
+						{% module Pinned(pind) %}
+					</div>
+				{% end %}
+			{% end %}
 		</div>
 	{% end %}
 	{% block add %}

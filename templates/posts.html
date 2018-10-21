@@ -93,4 +93,16 @@
 		<button id='getnew'>Get New Posts</button>
 		<span id='newremain'>20</span>
 	</div>
+	{% if admin %}
+		<div id='pin-selector' style="display:none;">
+			<div class="pinform banform" style="display: inline-block; top: 58px; left: 40%; cursor: pointer;">
+				{% for bb in boards_list %}
+					<input type="checkbox" id="pin-select" value="" name='{{bb["short"]}}'>{{bb["short"]}}</input><br />
+				{% end %}
+				<button id="pin-submit">Pin</button>
+				<button id="pin-close">Cancel</button>
+			</div>
+			</div>
+		</div>
+	{% end %}
 {% end %}

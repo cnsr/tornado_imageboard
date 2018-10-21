@@ -13,12 +13,16 @@
 .thread:hover{
 	overflow: visible;
 	z-index: 1;
-	border-bottom: 0px solid transparent !important;
+	border-bottom: 0px solid transparent !important;	
 	border-bottom-left-radius: 0px;
 	border-bottom-right-radius: 0px;
 }
 
-.thread:hover text{
+.thread:hover + .text {
+	border-bottom: 1px dashed black !important;	
+}
+
+.thread:hover .text{
 	z-index: 1;
 }
 

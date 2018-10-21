@@ -81,6 +81,22 @@ class AjaxInfoHandler(tornado.web.RequestHandler):
             self.write(json.dumps({'error': 'post does not exist. perhaps, it has been deleted?'}))
 
 
+class AjaxThreadPinHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        for k, v in data.items(): data[k] = v.decode('utf-8')
+        pst = data['post']
+        # heard that eval is weak shit
+        for b in eval(data['boards']):
+            brd = await db.boards.find_one({'short': b})
+            brd['pinned'] = pst
+            await update_db_b(db, b, brd)
+        self.write(json.dumps({'status':'ok'}))
+
+
+
 class AjaxPinHandler(tornado.web.RequestHandler):
 
     async def post(self):

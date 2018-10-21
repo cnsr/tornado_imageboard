@@ -215,6 +215,9 @@ class AdminBoardEditHandler(LoggedInHandler):
         instance['roll'] = 'roll' in self.request.arguments
         instance['unlisted'] = 'unlisted' in self.request.arguments
         instance['perpage'] = int(float(self.get_argument('perpage', 10)))
+        pinned = 'pinned' in self.request.arguments
+        if not pinned:
+            instance['pinned'] = None
         if self.request.files:
             f = self.request.files['banner'][0]
             ext = f['filename'].split('.')[-1]

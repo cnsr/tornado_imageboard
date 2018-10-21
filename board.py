@@ -149,8 +149,11 @@ class BoardHandler(LoggedInHandler):
                         current = x
             else:
                 paged = None
+            pinned_thread = None
+            if db_board['pinned']:
+                pinned_thread = await db.posts.find_one({'count': int(db_board['pinned'])})
             self.render('board.html', threads=threads, board=db_board, boards_list=boards_list, admin=admin, show=True,
-                banner=banner, popup=popup, paged=paged, current=current)
+                banner=banner, popup=popup, paged=paged, current=current, pind=pinned_thread)
         else:
             self.redirect('/')
 
@@ -611,6 +614,7 @@ class Application(tornado.web.Application):
             (r'/ajax/report/?', AjaxReportHandler),
             (r'/ajax/info/?', AjaxInfoHandler),
             (r'/ajax/pin/?', AjaxPinHandler),
+            (r'/ajax/pin_thread/?', AjaxThreadPinHandler),
             (r'/ajax/lock/?', AjaxLockHandler),
             (r'/ajax/get/?', AjaxPostGetter),
             (r'/ajax/banner-del/?', AjaxBannerDelHandler),
