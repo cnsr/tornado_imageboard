@@ -171,6 +171,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
         data['created'] = datetime.datetime.utcnow()
         data['banners'] = []
         data['perpage'] = int(float(self.get_argument('perpage', 10)))
+        data['pinned'] = None
         if self.request.files:
             f = self.request.files['banner'][0]
             ext = f['filename'].split('.')[-1]
