@@ -1,7 +1,9 @@
 .filedata-a {
-	word-break: break-word;
+	word-break: break-all;
 	overflow-wrap: break-word;
   word-wrap: break-word;
+	display: inline-block;
+	max-width: 120px;
 }
 
 p {

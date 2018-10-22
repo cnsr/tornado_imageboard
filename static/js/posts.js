@@ -79,17 +79,21 @@ $(document).ready(function(){
 			}
 			case 37:
 			{
-				 if (e.ctrlKey && $('.modal').find('.modal-image').length) {
-					$('#modalL').trigger('click');
-				 }
-				 break;
+				if (!t.is('input') && !t.is('textarea')) {				
+					if (e.ctrlKey && $('.modal').find('.modal-image').length) {
+						$('#modalL').trigger('click');
+					}
+				};
+				break;
 			}
 			case 39:
 			{
-				 if (e.ctrlKey && $('.modal').find('.modal-image').length) {
+				if (!t.is('input') && !t.is('textarea')) {				
+					if (e.ctrlKey && $('.modal').find('.modal-image').length) {
 					$('#modalR').trigger('click');
-				 }
-				 break;
+					}
+				};
+				break;
 			}
 			case 27:
 			{
