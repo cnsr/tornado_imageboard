@@ -7,7 +7,10 @@ $format_search =  [
 	/^(?:(?!\<br ))([^\w>]|^)(>(?!>\d)(.+))/ig,
 	/( |^|\s| |\/>)>>(\d+)( |\s|$|>|<)/mg,
 	/(http|ftp|https):\/\/(?!\S+youtube\.com)([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])?/ig,
-	/(http|ftp|https):\/\/(www\.)?(m\.)?(youtube\.com)\/(watch\?v=)(\S+)?/ig
+	/(http|ftp|https):\/\/(www\.)?(m\.)?(youtube\.com)\/(watch\?v=)(\S+)?/ig,
+	/:upkot:/g,
+	/:downkot:/g,
+	/:opinion:/g
 ];
 $format_replace = [
     '<strong>$1</strong>',
@@ -19,6 +22,9 @@ $format_replace = [
 	'$1<a href="#$2" class="reply">&gt;&gt;$2</a>$3',
 	'<a href="$1://$2$3" class="outlink" target="_blank">$1://$2$3</a>',
 	'<a class="youtube" href="$1://$2$3$4/$5$6">$1://$2$3$4/$5$6</a><span class="embed" data-url="$6">(embed)</span>',
+	'<img class="sticker" src="/static/icons/upkot.png"/>',
+	'<img class="sticker" src="/static/icons/downkot.png"/>',
+	'<img class="sticker" src="/static/icons/neutralkot.png"/>',
 ];
 $(document).ready(function() {
 	$('.text').each(function(){

@@ -407,3 +407,7 @@ header {
 .username {
 	cursor: default;
 }
+
+.sticker {
+	vertical-align: text-bottom;
+}
