@@ -16,6 +16,11 @@ $(document).ready(function(){
 		$("html, body").animate({ scrollTop: 0 }, "fast");
 		return false;
 	});
+	$("#btm").click(function() {
+		$("html, body").animate({ scrollTop: document.body.scrollHeight }, "fast");
+		return false;
+	});
+
 });
 
 function get_theme() {
