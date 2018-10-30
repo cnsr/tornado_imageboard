@@ -110,8 +110,10 @@ class BoardHandler(LoggedInHandler):
                 posts = await db.posts.find({'thread': int(thread['count'])}).sort([('date', -1)]).limit(limit).to_list(None)
                 posts.reverse()
                 for p in posts:
-                    if p['filetype']:
-                        thread['filecount'] -= 1
+                    if p.get('files'):
+                        for f in p['files']:
+                            if f['filetype']:
+                                thread['filecount'] -= 1
                 thread['latest'] = posts
             admin = False
             if self.current_user: admin = True
@@ -170,18 +172,21 @@ class BoardHandler(LoggedInHandler):
             text = strip_tags(text)
             spoiler = 'spoilerimage' in self.request.arguments
             showop = 'showop' in self.request.arguments
+            files = []
             if self.request.files:
-                fo, ff, filetype, filedata = await upload_file(self.request.files['file'][0])
-            else:
-                fo = ff = filetype = filedata = None
+                for x in ['file1', 'file2', 'file3', 'file4']:
+                    if self.request.files.get(x):
+                        fo, ff, filetype, filedata = await upload_file(self.request.files[x][0])
+                        if fo and ff and filetype and filedata:
+                            files.append({'original':fo,'name': ff, 'filetype': filetype, 'filedata': filedata})
             count = await latest(db) + 1
             oppost = True
             thread = None
             admin = False
             sage = 'saging' in self.request.arguments
             if self.current_user and 'admin' in self.request.arguments: admin = True
-            if subject or text or fo:
-                data = await makedata(db, subject, text, count, board, ip, oppost, thread, fo, ff, filetype, filedata,
+            if subject or text or files:
+                data = await makedata(db, subject, text, count, board, ip, oppost, thread, files,
                 username, spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop, password=password)
                 await db.posts.insert(data)
                 log_message = '{0} created a thread {1} in {2}.'.format(ip, count, board)
@@ -263,10 +268,13 @@ class ThreadHandler(LoggedInHandler):
             text = strip_tags(text)
             text = text.replace("\n","<br />")
             username = self.get_argument('username', '') or False
+            files = []
             if self.request.files:
-                foriginal, ffile, filetype, filedata = await upload_file(self.request.files['file'][0])
-            else:
-                foriginal = ffile = filetype = filedata = None
+                for x in ['file1', 'file2', 'file3', 'file4']:
+                    if self.request.files.get(x):
+                        fo, ff, filetype, filedata = await upload_file(self.request.files[x][0])
+                        if fo and ff and filetype and filedata:
+                            files.append({'original':fo,'name': ff, 'filetype': filetype, 'filedata': filedata})
             replies = get_replies(text)
             count = await latest(db) + 1
             oppost = False
@@ -278,8 +286,8 @@ class ThreadHandler(LoggedInHandler):
             showop = 'showop' in self.request.arguments
             admin = False
             if self.current_user and 'admin' in self.request.arguments: admin = True
-            if subject or text or foriginal:
-                data = await makedata(db, subject, text, count, board, ip, oppost, thread, foriginal, ffile, filetype, filedata,
+            if subject or text or files:
+                data = await makedata(db, subject, text, count, board, ip, oppost, thread, files,
                     username, spoiler=spoiler, admin=admin, sage=sage, opip=op['ip'], showop=showop, password=password)
                 await db.posts.insert(data)
                 log_message = '{0} posted #{1} in a thread #{2} on {3} board.'.format(ip, count, thread, board)
@@ -400,9 +408,7 @@ class BannedHandler(tornado.web.RequestHandler):
 
 
 # constructs dictionary to insert into mongodb
-async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, fo=None, f=None, filetype=None,
-                    filedata=False, username=False, spoiler=False, admin=False, sage=False, opip='', showop=False,
-                    password='abcde'):
+async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, files=[], username=False, spoiler=False, admin=False, sage=False, opip='', showop=False, password='abcde'):
     data = {}
     data['ip'] = ip
     data['subject'] = subject
@@ -417,14 +423,10 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
     data['country'] = ''
     data['countryname'] = ''
     data['trip'] = None
-    data['image'] = None
-    data['video'] = None
-    data['audio'] = None
     data['admin'] = admin
-    data['thumb'] = None
     data['sage'] = sage
     data['roll'] = None
-    data['filetype'] = None
+    data['files'] = files
     data['op'] = ip == opip and showop
     if password == '':
         password = 'abcde'
@@ -484,24 +486,21 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
         postcount = int(await db.posts.find({'thread': t['count']}).count())
         t['postcount'] = postcount + 1
         await update_db(db, t['count'], t)
-    if f:
+    if files:
         b['mediacount'] = b['mediacount'] + 1
-        data['original'] = fo
-        data[filetype] = f
-        data['filetype'] = filetype
-        if not spoiler:
-            data['thumb'] = await make_thumbnail(f)
-        else:
-            data['thumb'] = spoilered
+        for f in files:
+            if f['filetype'] in ['image', 'video']:
+                if not spoiler:
+                    f['thumb'] = await make_thumbnail(f['name'])
+                else:
+                    f['thumb'] = spoilered
+            else:
+                f['thumb'] = None
         if not oppost:
-            filecount = await db.posts.find({'thread': t['count'],
-                                        'image': { '$ne': None }
-                                        }).count() + await db.posts.find({'thread': t['count'],
-                                                                    'video': {'$ne': None}}).count()
+            # this needs to be fixed so it counts all files
+            filecount = await db.posts.find({'thread': t['count'], 'files': { '$ne': None }}).count()
             t['filecount'] = filecount + 1
             await update_db(db, t['count'], t)
-        if filedata:
-            data['filedata'] = filedata
     else:
         data['image'] = data['video'] = None
     b['postcount'] = int(b['postcount']) + 1

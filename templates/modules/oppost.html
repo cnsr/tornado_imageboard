@@ -40,23 +40,27 @@
 				{% end %}
 			{% end %}			
 		</div>
-		{% if op['filetype'] %}		
-			<div class='oppost-media'>
-				{% if op['video'] %}
-					<a href='/{{op["video"]}}' class='filedata-a' target='_blank'>{{op['original']}}</a>
-					<p class='filedata-p'>{{op['filedata']}}</p>
-					{% module Video(op['video'], op['count'], op['thumb']) %}
+		{% if op['files'] %}
+			{% for file in op['files'] %}
+				{% if file['filetype'] %}
+					<div class='oppost-media'>
+						{% if file['filetype'] == 'video' %}
+							<a href='/{{file["name"]}}' class='filedata-a' target='_blank'>{{file['original']}}</a>
+							<p class='filedata-p'>{{file['filedata']}}</p>
+							{% module Video(file['name'], op['count'], file['thumb']) %}
+						{% end %}
+						{% if file['filetype'] == 'image' %}
+							<a href='/{{file["name"]}}' class='filedata-a' target='_blank'>{{file['original']}}</a>
+							<p class='filedata-p'>{{file['filedata']}}</p>							
+							{% module Image(file['name'], op['count'], file['thumb']) %}
+						{% end %}
+						{% if file['filetype'] == 'audio' %}
+							<p class='filedata-p'>{{file['original']}} {{ file['filedata']}}</p>
+							{% module Audio(file['name'], op['count']) %}
+						{% end %}			
+					</div>
 				{% end %}
-				{% if op['image'] %}
-					<a href='/{{op["image"]}}' class='filedata-a' target='_blank'>{{op['original']}}</a>
-					<p class='filedata-p'>{{op['filedata']}}</p>							
-					{% module Image(op['image'], op['count'], op['thumb']) %}
-				{% end %}
-				{% if op['audio'] %}
-					<p class='filedata-p'>{{op['original']}} {{op['filedata']}}</p>
-					{% module Audio(op['audio'], op['count']) %}
-				{% end %}			
-			</div>
+			{% end %}
 		{% end %}
 		<p class='text'>{% raw  op['text'] %}</p>
 		{% if op['roll'] %}

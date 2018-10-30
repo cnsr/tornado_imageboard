@@ -16,23 +16,27 @@
 			<p class='post-number'></p>
 			{% if post['sage'] %}<span class='sage'>&#11015;</span>{% end %}
 		</div>
-		{% if post['filetype'] %}
-			<div class='post-media-div'>
-				{% if post['video'] %}
-					<a href='/{{post["video"]}}' class='filedata-a' target='_blank'>{{post['original']}}</a>
-					<p class='filedata-p'>{{post['filedata']}}</p>							
-					{% module Video(post['video'], post['count'], post['thumb']) %}
+		{% if post['files'] %}
+			{% for file in post['files'] %}
+				{% if file['filetype'] %}
+					<div class='post-media-div'>
+						{% if file['filetype'] == 'video' %}
+							<a href='/{{file["name"]}}' class='filedata-a' target='_blank'>{{file['original']}}</a>
+							<p class='filedata-p'>{{file['filedata']}}</p>
+							{% module Video(file['name'], post['count'], file['thumb']) %}
+						{% end %}
+						{% if file['filetype'] == 'image' %}
+							<a href='/{{file["name"]}}' class='filedata-a' target='_blank'>{{file['original']}}</a>
+							<p class='filedata-p'>{{file['filedata']}}</p>							
+							{% module Image(file['name'], post['count'], file['thumb']) %}
+						{% end %}
+						{% if file['filetype'] == 'audio' %}
+							<p class='filedata-p'>{{file['original']}} {{ file['filedata']}}</p>
+							{% module Audio(file['name'], post['count']) %}
+						{% end %}			
+					</div>
 				{% end %}
-				{% if post['image'] %}
-					<a href='/{{post["image"]}}' class='filedata-a' target='_blank'>{{post['original']}}</a>
-					<p class='filedata-p'>{{post['filedata']}}</p>
-					{% module Image(post['image'], post['count'], post['thumb']) %}				
-				{% end %}
-				{% if post['audio'] %}
-					<p class='filedata-p'>{{post['original']}} {{post['filedata']}}</p>
-					{% module Audio(post['audio'], post['count']) %}
-				{% end %}
-			</div>
+			{% end %}
 		{% end %}
 		<p class='text'>{% raw post['text'] %}</p>
 		{% if post['roll'] %}

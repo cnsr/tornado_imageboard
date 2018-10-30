@@ -23,39 +23,43 @@
 			<span class='report' data-id='{{! count}}'>&#33;</span>
 			{{! #sage}}<span class='sage'>&#11015;</span>{{! /sage}}
 		</div>
-		<div class='post-media-div'>
-			{{! #video}}
-				<a href='/{{! video}}' class='filedata-a'>{{! original}}</a>
-				<p class='filedata-p'>{{! filedata}}</p>
-				<div class='post-video-div'>
-					<div class='info' id='media{{! count}}'></div>	
-					<div class='post-spoiler'>
-						<video class='post-media post-video' height=180px width=200px src='/{{! video}}'
-							poster='/{{! thumb}}' data-oid='{{! count}}' controls>
-					</div>
+		{{! #files.length }}
+			{{! #files }}
+				<div class='post-media-div'>
+					{{! #video}}
+						<a href='/{{! video}}' class='filedata-a'>{{! original}}</a>
+						<p class='filedata-p'>{{! filedata}}</p>
+						<div class='post-video-div'>
+							<div class='info' id='media{{! count}}'></div>	
+							<div class='post-spoiler'>
+								<video class='post-media post-video' height=180px width=200px src='/{{! video}}'
+									poster='/{{! thumb}}' data-oid='{{! count}}' controls>
+							</div>
+						</div>
+					{{! /video}}
+					{{! #image}}
+						<a href='/{{! image}}' class='filedata-a'>{{! original}}</a>
+						<p class='filedata-p'>{{! filedata}}</p>
+						<div class='post-image-div'>
+							<div class='info' id='media{{! count}}'></div>
+							<div class='post-spoiler'>
+								<img src='/{{! thumb}}' data-image='/{{! image}}' class='post-image post-media'
+									data-oid='{{! count}}'>
+							</div>
+						</div>
+					{{! /image}}
+					{{! #audio}}
+						<p class='filedata-p'>{{! original}} {{! filedata}}</p>
+						<div class='post-audio-div'>
+							<div class='info' id='media{{! count}}'></div>	
+							<div>
+								<audio class='post-media post-audio' src='/{{! audio}}' data-oid='{{! count}}' controls>
+							</div>
+						</div>
+					{{! /audio}}
 				</div>
-			{{! /video}}
-			{{! #image}}
-				<a href='/{{! image}}' class='filedata-a'>{{! original}}</a>
-				<p class='filedata-p'>{{! filedata}}</p>
-				<div class='post-image-div'>
-					<div class='info' id='media{{! count}}'></div>
-					<div class='post-spoiler'>
-						<img src='/{{! thumb}}' data-image='/{{! image}}' class='post-image post-media'
-							data-oid='{{! count}}'>
-					</div>
-				</div>
-			{{! /image}}
-			{{! #audio}}
-				<p class='filedata-p'>{{! original}} {{! filedata}}</p>
-				<div class='post-audio-div'>
-					<div class='info' id='media{{! count}}'></div>	
-					<div>
-						<audio class='post-media post-audio' src='/{{! audio}}' data-oid='{{! count}}' controls>
-					</div>
-				</div>
-			{{! /audio}}
-		</div>
+			{{! /files }}
+		{{! /files.length }}
 		<p class='text'>{{{! text }}}</p>
 		{{! #roll }}
 			<span class='roll-result'>{{! roll}}</span>

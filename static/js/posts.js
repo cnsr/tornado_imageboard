@@ -335,6 +335,20 @@ $(document).ready(function(){
 function loadPost(dict) {
 	var template = $('#template').html();
 	Mustache.parse(template);
+	for (var i = 0; i < dict['files'].length; i++) {
+		switch (dict['files'][i]['filetype']) {
+			case 'image':
+				dict['files'][i]['image'] = true;
+				break;
+			case 'video':
+				dict['files'][i]['video'] = true;
+				break;
+			case 'audio':
+				dict['files'][i]['audio'] = true;
+				break;
+			default: break;
+		};
+	}
 	var rendered = Mustache.render(template, dict);
 	$('.posts').append(rendered);
 }
