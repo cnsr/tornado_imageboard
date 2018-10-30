@@ -27,7 +27,7 @@ def change_posts():
                                 'filetype': filetype,
                                 }]
             else:
-            post['files'] = []
+                post['files'] = []
         post.pop('original', None)
         post.pop('thumb', None)
         post.pop('filedata', None)
