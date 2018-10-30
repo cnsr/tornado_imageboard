@@ -411,3 +411,7 @@ header {
 .sticker {
 	vertical-align: text-bottom;
 }
+
+.fileinput {
+	display: block;
+}
