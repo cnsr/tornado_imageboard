@@ -32,7 +32,7 @@ $(document).ready(function(){
 			if (!next_image.length == 1) {
 				next_image = $('video[src="' + fnext + '"]');
 			}
-			let post = $('#' + next_image.closest('.oppost, .thread, .post, .preview-post').attr('id'));
+			let post = $('#' + next_image.closest('.oppost, .thread-outer, .post, .preview-post').attr('id'));
 			$('.focused').removeClass('focused');
 			$('html,body').animate({
 				scrollTop: post.offset().top
