@@ -37,22 +37,24 @@ async def check_map(db, mapdata):
 
 
 async def removeing(post):
-    if post['filetype']:
-        if os.path.isfile(post[post['filetype']]):
-            os.remove(post[post['filetype']])
-            if post['thumb']:
-                if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                    os.remove(post['thumb'])
+    if post['files']:
+        for f in post['files']:
+            if os.path.isfile(f['name']):
+                os.remove(f['name'])
+                if f['thumb']:
+                    if f['thumb'] != thumb_def and f['thumb'] != spoilered:
+                        os.remove(f['thumb'])
 
 
 def sync_removeing(post):
     try:
-        if post['filetype']:
-            if os.path.isfile(post[post['filetype']]):
-                os.remove(post[post['filetype']])
-                if post['thumb']:
-                    if post['thumb'] != thumb_def and post['thumb'] != spoilered:
-                        os.remove(post['thumb'])
+        if post['files']:
+            for f in post['files']:
+                if os.path.isfile(f['name']):
+                    os.remove(f['name'])
+                    if f['thumb']:
+                        if f['thumb'] != thumb_def and f['thumb'] != spoilered:
+                            os.remove(f['thumb'])
     except:
         print(post)
 
