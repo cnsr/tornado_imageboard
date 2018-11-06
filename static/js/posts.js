@@ -404,6 +404,21 @@ function getPost(post, a) {
 				post['text'] = replaceText(post['text']);
 				var template = $('#template').html();
 				Mustache.parse(template);
+				for (var i = 0; i < post['files'].length; i++) {
+					switch (post['files'][i]['filetype']) {
+						case 'image':
+							post['files'][i]['image'] = true;
+							break;
+						case 'video':
+							post['files'][i]['video'] = true;
+							break;
+						case 'audio':
+							post['files'][i]['audio'] = true;
+							break;
+						default: break;
+					};
+				}
+
 				var rendered = Mustache.render(template, post);
 				var display = $('<div/>').html(rendered).contents().find('.post');
 				display.toggleClass('to_die', true);
