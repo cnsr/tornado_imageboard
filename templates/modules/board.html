@@ -1,6 +1,8 @@
-<div class='board'>
-	<a href='/{{board["short"]}}' class='boardlink'>
-		<h3>{{board['name']}}</h3>
-		<p>{{board['description']}}</p>
-	</a>
-</div>
+{% if not board['unlisted'] %}
+	<div class='board'>
+		<a href='/{{board["short"]}}' class='boardlink'>
+			<h3>{{board['name']}}</h3>
+			<p>{{board['description']}}</p>
+		</a>
+	</div>
+{% end %}
