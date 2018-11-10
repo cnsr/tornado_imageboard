@@ -415,3 +415,8 @@ header {
 .fileinput {
 	display: block;
 }
+
+.thread-div, .post-media-div, .thread-media {
+	display: inline-block;
+  vertical-align: top;
+}
