@@ -25,7 +25,7 @@ Tornado-based imageboard
         * .mp3, .ogg, .wav, .opus audio;
     * Up to 20 MB filesize;
     * Spoiler thumbnails for images and videos;
-    * Maximum of one file per post;
+    * Maximum of four files per post;
     * Ability to report posts;
     * Ability to remove your own posts.
 # Requirements
@@ -36,7 +36,7 @@ Tornado-based imageboard
 * imagemagick
 # How to run
 1. Install all software dependencies
-2. Configure nginx, make sure mongo is running
+2. Configure nginx - use example config, make sure mongo is running
     ```sh
     $ sudo service mongod start
     ```
