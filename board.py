@@ -212,6 +212,9 @@ class CatalogHandler(tornado.web.RequestHandler):
         db_board = await db.boards.find_one({'short': board})
         if db_board:
             threads = await db.posts.find({'board': board,'oppost': True}).sort([('pinned', -1), ('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
+            for thread in threads:
+                if thread.get('files'):
+                    thread['file'] = thread['files'][0]
             boards_list = await db.boards.find({}).to_list(None)
             self.render('catalog.html', threads=threads, board=db_board, boards_list=boards_list)
         else:
