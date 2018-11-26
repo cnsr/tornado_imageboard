@@ -17,7 +17,11 @@ def resolution(pathToInputVideo):
     #pp.pprint(ffprobeOutput)
 
     # for example, find height and width
-    height = ffprobeOutput['streams'][0]['height']
-    width = ffprobeOutput['streams'][0]['width']
+    # return zeros if there is no such data
+    try:
+        height = ffprobeOutput['streams'][0]['height']
+        width = ffprobeOutput['streams'][0]['width']
+    except:
+        height = width = 0
 
     return width, height
