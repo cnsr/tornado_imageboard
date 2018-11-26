@@ -32,7 +32,7 @@
 						<div class='post-video-div'>
 							<div class='info' id='media{{! count}}'></div>	
 							<div class='post-spoiler'>
-								<video class='post-media post-video' height=180px width=200px src='/{{! video}}'
+								<video class='post-media post-video' height=180px width=200px src='/{{! name }}'
 									poster='/{{! thumb}}' data-oid='{{! count}}' controls>
 							</div>
 						</div>
@@ -43,7 +43,7 @@
 						<div class='post-image-div'>
 							<div class='info' id='media{{! count}}'></div>
 							<div class='post-spoiler'>
-								<img src='/{{! thumb}}' data-image='/{{! image}}' class='post-image post-media'
+								<img src='/{{! thumb}}' data-image='/{{! name}}' class='post-image post-media'
 									data-oid='{{! count}}'>
 							</div>
 						</div>
@@ -53,7 +53,7 @@
 						<div class='post-audio-div'>
 							<div class='info' id='media{{! count}}'></div>	
 							<div>
-								<audio class='post-media post-audio' src='/{{! audio}}' data-oid='{{! count}}' controls>
+								<audio class='post-media post-audio' src='/{{! name}}' data-oid='{{! count}}' controls>
 							</div>
 						</div>
 					{{! /audio}}
