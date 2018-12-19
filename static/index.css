@@ -420,3 +420,9 @@ header {
 	display: inline-block;
   vertical-align: top;
 }
+
+.flag-newyear {
+	position: relative;
+	left: -8px;
+	top: -6px;
+}

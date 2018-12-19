@@ -27,6 +27,13 @@ $format_replace = [
 	'<img class="sticker" src="/static/icons/neutralkot.png"/>',
 ];
 $(document).ready(function() {
+	$('.flag').each(function(){
+		console.log('a');
+		let ny = $('<img>');
+		ny.attr('src','/static/icons/newyear.png');
+		ny.addClass('flag-newyear');
+		$(this).after(ny);
+	});
 	$('.text').each(function(){
 		if (!$(this).hasClass('rendered')) {
 			var txt = $(this).text();
