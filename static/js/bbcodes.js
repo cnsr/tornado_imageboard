@@ -10,7 +10,12 @@ $format_search =  [
 	/(http|ftp|https):\/\/(www\.)?(m\.)?(youtube\.com)\/(watch\?v=)(\S+)?/ig,
 	/:upkot:/g,
 	/:downkot:/g,
-	/:opinion:/g
+	/:opinion:/g,
+	/'''(.+)'''/ig,
+	/''(.+)''/ig,
+	/__(.+)__/ig,
+	/~~(.+)~~/ig,
+	/\*\*(.+)\*\*/ig
 ];
 $format_replace = [
     '<strong>$1</strong>',
@@ -25,6 +30,11 @@ $format_replace = [
 	'<img class="sticker" src="/static/icons/upkot.png"/>',
 	'<img class="sticker" src="/static/icons/downkot.png"/>',
 	'<img class="sticker" src="/static/icons/neutralkot.png"/>',
+    '<strong>$1</strong>',
+    '<em>$1</em>',
+	'<underline>$1</underline>',
+	'<strike>$1</strike>',
+	'<spoiler>$1</spoiler>',
 ];
 $(document).ready(function() {
 	$('.flag').each(function(){

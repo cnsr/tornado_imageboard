@@ -115,7 +115,7 @@ $(document).ready(function(){
 				var new_val = $('textarea').val() + addition + number.substring(1, number.length) + '\n';
 				$('textarea').val(new_val);
 				setTimeout(function() {
-					if ($('.add').length) $('.add').find('#text-area').get(0).focus();
+					if ($('.add').length) $('#text-area').putCursorAtEnd();
 				}, 1);
 				if (!$('.add').hasClass('drag')) {
 					if (!typeof $('.add').offset() === undefined) {
@@ -652,4 +652,21 @@ function hideThread(thread) {
 
 String.prototype.trim = function() {
   return this.replace(/^\s+|\s+$/g, "");
-};
+}
+
+jQuery.fn.putCursorAtEnd = function() {
+
+  return this.each(function() {
+
+    $(this).focus()
+    if (this.setSelectionRange) {
+      var len = $(this).val().length * 2;
+
+      this.setSelectionRange(len, len);
+
+    } else {
+      $(this).val($(this).val());
+    }
+  });
+
+};;
