@@ -37,13 +37,12 @@ $format_replace = [
 	'<spoiler>$1</spoiler>',
 ];
 $(document).ready(function() {
-	$('.flag').each(function(){
-		console.log('a');
+	/*$('.flag').each(function(){
 		let ny = $('<img>');
 		ny.attr('src','/static/icons/newyear.png');
 		ny.addClass('flag-newyear');
 		$(this).after(ny);
-	});
+	});*/
 	$('.text').each(function(){
 		if (!$(this).hasClass('rendered')) {
 			var txt = $(this).text();

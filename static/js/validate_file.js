@@ -7,10 +7,13 @@ $(document).ready( function() {
 				$('.fileinput').val(null);
 				$('#text-area').prop('required',true);
 				$('.spoiler-div').hide();
-				popUp("File too large!");				
+				popUp("File too large!");
 			} else {
 				$('#text-area').prop('required',false);
-				$('.spoiler-div').show();				
+				$('.spoiler-div').show();
+				$(this).css('display', 'inline-block');
+				$('button[data-id=' + this.id + ']').css('display', 'inline-block');
+				$('button[data-id=' + this.id + ']').after('<br />');
 			}
 		}
 	});

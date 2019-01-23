@@ -1,4 +1,4 @@
-var default_theme = 'purple.css';
+var default_theme = 'brutalism.css';
 
 $(document).ready(function(){
 	$('[value="' + localStorage.theme + '"]').attr('selected', true);	

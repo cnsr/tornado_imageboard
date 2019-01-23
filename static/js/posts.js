@@ -5,6 +5,12 @@ var title_orig;
 var pin_id;
 
 $(document).ready(function(){
+	$('.file_remove').on('click', function(e) {
+		e.preventDefault();
+		$('#' + $(this).attr('data-id')).val(null).css('display','block');
+		$(this).hide();
+		$(this).next("br").remove();
+	});
 	$(document).on("dragstart", function(e) {
 		if (e.target.nodeName.toUpperCase() == "IMG") {
 			return false;

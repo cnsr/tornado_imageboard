@@ -410,6 +410,11 @@ class BannedHandler(tornado.web.RequestHandler):
         self.render('banned.html', ban=ban, boards_list=None)
 
 
+class AboutHandler(tornado.web.RequestHandler):
+    async def get(self):
+        self.render('about.html', boards_list=None)
+
+
 # constructs dictionary to insert into mongodb
 async def makedata(db, subject, text, count, board, ip, oppost=False, thread=None, files=[], username=False, spoiler=False, admin=False, sage=False, opip='', showop=False, password='abcde'):
     data = {}
@@ -594,6 +599,7 @@ class Application(tornado.web.Application):
             (r'/map/?', MapHandler),
             (r'/admin/?', AdminHandler),
             (r'/banned/?', BannedHandler),
+            (r'/about/?', AboutHandler),
             (r'/flags/(.*)/?', tornado.web.StaticFileHandler, {'path': 'flags'}),
             (r'/banners/(.*)/?', tornado.web.StaticFileHandler, {'path': 'banners'}),
             (r'/(\w+)/?', BoardHandler),
