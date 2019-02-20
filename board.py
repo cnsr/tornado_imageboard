@@ -8,7 +8,7 @@ import uimodules
 import datetime
 import ib_settings as _ib
 from tornado import concurrent
-import re
+import re, cgi
 from uuid import uuid4
 import os
 from mimetypes import guess_type
@@ -58,9 +58,12 @@ class MLStripper(HTMLParser):
 
 # this is done to ensure user does not input any html in posting form
 def strip_tags(html):
-    s = MLStripper()
-    s.feed(html)
-    return s.get_data()
+    tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
+    no_tags = tag_re.sub('', html)
+    return cgi.escape(no_tags)
+    #s = MLStripper()
+    #s.feed(html)
+    #return s.get_data()
 
 
 async def roll(subject):

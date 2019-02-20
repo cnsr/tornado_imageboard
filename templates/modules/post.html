@@ -45,7 +45,7 @@
 				{% end %}
 			{% end %}
 		{% end %}
-		<p class='text'>{% raw post['text'] %}</p>
+		<p class='text'>{{ post['text'] }}</p>
 		{% if post['roll'] %}
 			<span class='roll-result'>{{post['roll']}}</span>
 		{% end %}

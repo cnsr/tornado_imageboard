@@ -1,3 +1,7 @@
+br {
+	display: none;
+}
+
 .filedata-a {
 	word-break: break-all;
 	overflow-wrap: break-word;

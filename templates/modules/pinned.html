@@ -27,7 +27,7 @@
 				{% end %}
 			</div>
 		{% end %}
-		<p class='text'>{% raw thread['text'] %}</p>
+		<p class='text'>{{ thread['text'] }}</p>
 <a href='/{{thread["board"]}}/thread/{{thread["count"]}}' class='pind-thread-href'>
 	<button>Visit thread</button>
 </a>

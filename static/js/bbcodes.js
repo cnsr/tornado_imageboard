@@ -46,13 +46,7 @@ $(document).ready(function() {
 	$('.text').each(function(){
 		if (!$(this).hasClass('rendered')) {
 			var txt = $(this).text();
-			txt_split = txt.split(/\r?\n/);
-			for (var j=0;j<txt_split.length;j++){
-				for (var i=0;i<$format_search.length;i++) {
-					txt_split[j] = txt_split[j].replace($format_search[i], $format_replace[i]);
-				}
-			}
-			txt = txt_split.join('\n');
+			txt = replaceText(txt);
 			$(this).html(txt);
 			$(this).addClass('rendered');
 		}

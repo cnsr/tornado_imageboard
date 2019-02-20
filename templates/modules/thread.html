@@ -48,7 +48,7 @@
 				</div>
 			{% end %}
 		{% end %}
-		<p class='text'>{% raw thread['text'] %}</p>
+		<p class='text'>{{ thread['text'] }}</p>
 		{% if thread['roll'] %}
 			<span class='roll-result'>{{thread['roll']}}</span>
 		{% end %}		
