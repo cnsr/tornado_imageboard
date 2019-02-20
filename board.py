@@ -58,12 +58,10 @@ class MLStripper(HTMLParser):
 
 # this is done to ensure user does not input any html in posting form
 def strip_tags(html):
+    # MLStripper fucks up posts with more than one "<"
     tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
     no_tags = tag_re.sub('', html)
     return cgi.escape(no_tags)
-    #s = MLStripper()
-    #s.feed(html)
-    #return s.get_data()
 
 
 async def roll(subject):
@@ -173,6 +171,8 @@ class BoardHandler(LoggedInHandler):
             text = self.get_argument('text', '')
             username = self.get_argument('username', '') or False
             text = strip_tags(text)
+            text = text.replace('&gt;', '>')
+            text = text.strip()
             spoiler = 'spoilerimage' in self.request.arguments
             showop = 'showop' in self.request.arguments
             files = []
@@ -272,7 +272,7 @@ class ThreadHandler(LoggedInHandler):
             password = self.get_argument('pass', '')
             text = self.get_argument('text', 'empty post')
             text = strip_tags(text)
-            text = text.replace("\n","<br />")
+            text = text.replace('&gt;', '>')
             username = self.get_argument('username', '') or False
             files = []
             if self.request.files:
@@ -282,6 +282,7 @@ class ThreadHandler(LoggedInHandler):
                         if fo and ff and filetype and filedata:
                             files.append({'original':fo,'name': ff, 'filetype': filetype, 'filedata': filedata})
             replies = get_replies(text)
+            text = text.strip()
             count = await latest(db) + 1
             oppost = False
             thread = thread_count #wtf why
@@ -585,6 +586,7 @@ async def is_banned(db, ip, board):
 
 
 def get_replies(text):
+    text = text.replace('&gt;', '>')
     replies = []
     x = re.compile(r'(>>\d+)')
     it = re.finditer(x, text)
