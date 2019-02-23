@@ -570,8 +570,8 @@ async def is_banned(db, ip, board):
         ban = await db.bans.find_one({'ip': ip})
         if ban:
             if ban['date']:
-                expires = datetime.datetime.strptime(ban['date'], "%d-%m-%Y %H:%M:%S")
-                if expires > datetime.datetime.now():
+                expires = datetime.datetime.strptime(ban['date'], "%a, %d %b %Y %H:%M:%S %Z")
+                if expires > datetime.datetime.utcnow():
                     return True
                 else:
                     await db.bans.delete_one({'ip': ip})
