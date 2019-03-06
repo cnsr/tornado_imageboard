@@ -15,7 +15,9 @@ $format_search =  [
 	/''(.+)''/ig,
 	/__(.+)__/ig,
 	/~~(.+)~~/ig,
-	/\*\*(.+)\*\*/ig
+	/\*\*(.+)\*\*/ig,
+	/:waifu:/g,
+	/:pepemad:/g
 ];
 $format_replace = [
     '<strong>$1</strong>',
@@ -35,6 +37,8 @@ $format_replace = [
 	'<underline>$1</underline>',
 	'<strike>$1</strike>',
 	'<spoiler>$1</spoiler>',
+	'<img class="sticker" src="/static/icons/waifu.png"/>',
+	'<img class="sticker" src="/static/icons/pepe_mad.png"/>',	
 ];
 $(document).ready(function() {
 	/*$('.flag').each(function(){
