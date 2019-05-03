@@ -35,6 +35,9 @@ executor = concurrent.futures.ThreadPoolExecutor(8)
 
 uploads = 'uploads/'
 
+global latest_postnumber
+latest_postnumber = 0
+
 with open('static/regioncodes.json') as f:
     regioncodes = json.loads(f.read())
 
@@ -182,7 +185,10 @@ class BoardHandler(LoggedInHandler):
                         fo, ff, filetype, filedata = await upload_file(self.request.files[x][0])
                         if fo and ff and filetype and filedata:
                             files.append({'original':fo,'name': ff, 'filetype': filetype, 'filedata': filedata})
-            count = await latest(db) + 1
+            #count = await latest(db) + 1
+            global latest_postnumber
+            latest_postnumber += 1
+            count = latest_postnumber
             oppost = True
             thread = None
             admin = False
@@ -283,7 +289,10 @@ class ThreadHandler(LoggedInHandler):
                             files.append({'original':fo,'name': ff, 'filetype': filetype, 'filedata': filedata})
             replies = get_replies(text)
             text = text.strip()
-            count = await latest(db) + 1
+            #count = await latest(db) + 1
+            global latest_postnumber
+            latest_postnumber += 1
+            count = latest_postnumber
             oppost = False
             thread = thread_count #wtf why
             op = await db.posts.find_one({'count': int(thread)})
@@ -659,6 +668,11 @@ def main():
     check_path('banners/')
     tornado.options.parse_command_line()
     application = Application()
+    global latest_postnumber
+    import pymongo
+    latest_con = pymongo.MongoClient('localhost', 27017)
+    latest_db = latest_con['imageboard']
+    latest_postnumber = latest_db['posts'].find({}).sort('count', -1)[0]['count']
     http_server = tornado.httpserver.HTTPServer(application, max_buffer_size=_ib.MAX_FILESIZE)
     http_server.listen(options.port)
     schedule_check(application)
