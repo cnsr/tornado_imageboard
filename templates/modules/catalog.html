@@ -20,19 +20,19 @@
 		</div>
 		{% if thread['files'] %}
 			<div class='thread-media'>
-				{% if thread['file']['filetype'] == 'video' %}
-					<a href='/{{thread["file"]["original"]}}' class='filedata-a'>{{thread['file']['original']}}</a>
+				{% if thread['files'][0]['filetype'] == 'video' %}
+					<a href='/{{thread["files"][0]["name"]}}' class='filedata-a'>{{thread['file']['original']}}</a>
 					<p class='filedata-p'>{{thread['file']['filedata']}}</p>			
-					{% module Video(thread['file']['name'], thread['count'], thread['file']['thumb']) %}
+					{% module Video(thread['files'][0]['name'], thread['count'], thread['file']['thumb']) %}
 				{% end %}
-				{% if thread['file']['filetype'] ==  'image' %}
-					<a href='/{{thread["file"]["original"]}}' class='filedata-a'>{{thread['file']['original']}}</a>
+				{% if thread['files'][0]['filetype'] ==  'image' %}
+					<a href='/{{thread["file"]["name"]}}' class='filedata-a'>{{thread['file']['original']}}</a>
 					<p class='filedata-p'>{{thread['file']['filedata']}}</p>			
-					{% module Image(thread['file']['name'], thread['count'], thread['file']['thumb']) %}
+					{% module Image(thread['files'][0]['name'], thread['count'], thread['file']['thumb']) %}
 				{% end %}
-				{% if thread['file']['filetype'] == 'audio' %}
-					<p class='filedata-p'>{{thread['file']['original']}} {{thread['file']['filedata']}}</p>
-					{% module Audio(thread['file']['name'], thread['count']) %}
+				{% if thread['files'][0]['filetype'] == 'audio' %}
+					<p class='filedata-p'>{{thread['file']['name']}} {{thread['file']['filedata']}}</p>
+					{% module Audio(thread['files'][0]['name'], thread['count']) %}
 				{% end %}						
 			</div>
 		{% end %}
