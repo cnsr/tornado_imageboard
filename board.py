@@ -344,6 +344,22 @@ class ThreadHandler(LoggedInHandler):
             self.redirect('/banned')
 
 
+class JsonBoardHandler(LoggedInHandler):
+    thread_count = ''
+
+    async def get(self, board):
+        db = self.application.database
+        db_board = await db.boards.find_one({'short': board, 'oppost': True})
+        threads = await db.posts.find({'board': board,'oppost': True}).sort([('pinned', -1), ('lastpost', -1)]).to_list(None)
+        for thread in threads:
+            del thread['_id']
+            del thread['ip']
+            del thread['pass']
+            thread['date'] = thread['date'].strftime("%Y-%m-%d %H:%M:%S")
+            thread['lastpost'] = thread['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
+        self.write(json.dumps(threads, indent=4, ensure_ascii=False))
+
+
 class JsonThreadHandler(LoggedInHandler):
     thread_count = ''
 
@@ -622,6 +638,7 @@ class Application(tornado.web.Application):
             (r'/flags/(.*)/?', tornado.web.StaticFileHandler, {'path': 'flags'}),
             (r'/banners/(.*)/?', tornado.web.StaticFileHandler, {'path': 'banners'}),
             (r'/(\w+)/?', BoardHandler),
+            (r'/(\w+)/json/?', JsonBoardHandler),
             (r'/(\w+)/catalog/?', CatalogHandler),
             (r'/(\w+)/thread/(\d+)/?', ThreadHandler),
             (r'/(\w+)/thread/(\d+)/new/?', AjaxNewHandler),
