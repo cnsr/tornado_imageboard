@@ -487,7 +487,11 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
         elif is_in_exceptions:
             data['country'] = data['countryname'] = is_in_exceptions[0]
         else:
-            data['countryname'] = regioncodes[data['country']]
+            try:
+                data['countryname'] = regioncodes[data['country']]
+            except KeyError:
+                data['countryname'] = 'Proxy'
+                data['country'] = 'PROXY'
         mapdata = {'countryname': data['countryname'],
                     'country': data['country'],
                     'long': gdbr_data.location.longitude,
