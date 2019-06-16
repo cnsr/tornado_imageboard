@@ -17,7 +17,8 @@ $(document).ready(function() {
 	$('#ban-submit').on('click', function(e) {
 		e.preventDefault();
 		var post = $('#ban-post').val();
-		var ban = '';
+		var iban = '';
+		var rm = $('#ban-rm').is(':checked');
 		if ($('#ban-never').is(':checked')) {
 			ban = 'Never';
 		} else {
@@ -37,7 +38,7 @@ $(document).ready(function() {
 			 var lock = 'true';
 		} else { var lock = 'false'; }
 		var reason = $('#ban-reason').val();
-		sendAjaxBan(post, ban, reason, lock);
+		sendAjaxBan(post, ban, reason, lock, rm);
 		popUp('User has been banned');
 		$('.banform').hide();
 	})
@@ -47,13 +48,14 @@ $(document).ready(function() {
 });
 
 $.ajaxSettings.traditional = true;
-function sendAjaxBan(post, date, reason, lock) {
+function sendAjaxBan(post, date, reason, lock, rm) {
 	$.ajax({
 		url : "/ajax/ban/",
 		type : "POST",
-		data : {post: post, date: date, reason: reason, lock: lock, _xsrf: getCookie("_xsrf")},
+		data : {post: post, date: date, reason: reason, lock: lock, rm: rm, _xsrf: getCookie("_xsrf")},
 		success : function(json) {
 			$('#' + post).append('<p class="banned">User has been banned for this post</p>');
+			if (rm) $('#' + post).parent().remove();
 		},
 
 		error : function(xhr,errmsg,err) {

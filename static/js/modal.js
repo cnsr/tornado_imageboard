@@ -3,7 +3,6 @@ $(document).ready(function(){
 	$('.post-image, .post-video').each(function() {
 		if (!$(this).hasClass('modal-image')) {
 			var attr = $(this).attr('data-oid');
-			//files.push(attr);
 			if ($(this).is('img')) {
 				files.push($(this).attr('data-image'));
 			} else if ($(this).is('video')) {
@@ -175,8 +174,7 @@ $(document).ready(function(){
 					$('.modal').css('top', '0px');
 					$('.modal-image').css('height', window.innerHeight + 'px');
 					$('.modal-image').css('width',$('.modal-image').width()); // wtf is this lol					
-					if ($('.modal-image').css('width') < window.innerWidth) {
-					} else {
+					if ($('.modal-image').css('width') > window.innerWidth) {
 						let centerW = Math.round((window.innerWidth - parseInt($('.modal-image').css('width')))/2);
 						$('.modal').css('left',centerW);
 					}

@@ -193,6 +193,14 @@ class AjaxBanHandler(tornado.web.RequestHandler):
             if ban['locked'] and p['oppost']:
                 p['locked'] = True
             await update_db(db, p['count'], p)
+            if data['rm'] == 'true':
+                if p['oppost']:
+                    posts = await db.posts.find({'thread': p['count']}).to_list(None)
+                    for subp in posts:
+                        await removeing(subp)
+                    await db.posts.delete_many({'thread': p['count']})
+                await removeing(p)
+                await db.posts.delete_one({'count': p['count']})
         response = {'ok': 'ok'}
         self.write(json.dumps(response))
 

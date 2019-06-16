@@ -14,3 +14,6 @@
 	 background:lightgray;
 }
 
+.banform br {
+	display: block;
+}
