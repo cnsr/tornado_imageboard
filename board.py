@@ -600,8 +600,8 @@ def schedule_check(app):
 
 
 async def is_banned(db, ip, board):
+    ban = await db.bans.find_one({'ip': ip})
     if board not in _ib.BAN_ALLOWED:
-        ban = await db.bans.find_one({'ip': ip})
         if ban:
             if ban['date']:
                 expires = datetime.datetime.strptime(ban['date'], "%a, %d %b %Y %H:%M:%S %Z")
@@ -616,7 +616,12 @@ async def is_banned(db, ip, board):
                 return True
         return False
     else:
-        return False
+        if ban:
+            if ban['date']:
+                return False
+            else:
+                return True
+        else: return False
 
 
 def get_replies(text):
