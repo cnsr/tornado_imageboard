@@ -45,3 +45,7 @@ Tornado-based imageboard
     $ pip install -r requirements.txt
     $ python board.py
     ```
+
+## LicensedNFLv1  -  No  Faggots  License  Version  One 
+
+Anyone may run, modify, distribute, sell or otherwise use  this software as they see fit with the understanding that it is provided without a warranty of any kind, so long  as they are heterosexual.  This license bans all homosexuals, bisexuals, transgenders,  and other assorted queers from  using  or interacting with  this software in any way.  Homosexuals may not run, modify, distribute, sell, fork,  or otherwise use  this code in any way.
