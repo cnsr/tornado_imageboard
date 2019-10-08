@@ -1,0 +1,18 @@
+.blacklisted {
+	display: inline;
+	list-style-type: none;
+	width: 600px;
+}
+
+.word {
+	list-style: none;
+	display: inline;
+}
+
+.redirects * {
+	display:inline-block;
+}
+
+.word_form {
+	display:inline;
+}

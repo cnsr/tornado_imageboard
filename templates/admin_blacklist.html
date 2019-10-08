@@ -1,0 +1,35 @@
+{% extends 'admin.html' %}
+{% block title %}Blacklist{% end %}
+
+{% block css %}
+	<link rel='stylesheet' href="{{ static_url('css/admin_blacklist.css') }}">
+{% end %}
+
+{% block content %}
+	<div class='add_word'>
+		<form action='' method='POST'>
+			{% module xsrf_form_html() %}		
+			<input hidden name='add' />
+			<label for='addblacklisted'>Enter words or phrases to add, separated by a coma.</label>
+			<input type='text' maxlength='500' id='addblacklisted' name='words'/>
+			<button type='submit'>Add words</button>
+		</form>
+	</div>
+	{% if blacklist %}
+		<ul class='blacklisted'>
+			{% for word in blacklist %}
+				<li class='word'>
+					{{word}}
+					<form action='' method='POST' class='word_form'>
+						{% module xsrf_form_html() %}					
+						<input hidden name='delete' value='{{word}}' />
+						<button type='submit'>x</button>
+					</form>
+				</li>
+			{% end %}
+		</ul>
+	{% else %}
+		<h4>No words have been blacklisted yet</h4>
+	{% end %}
+	<br />
+{% end %}

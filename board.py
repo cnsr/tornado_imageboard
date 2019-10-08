@@ -124,7 +124,8 @@ class BoardHandler(LoggedInHandler):
             popup = None
             if self.get_arguments('err') != []:
                 errors = {'empty': 'Empty posts not allowed',
-                            'notfound': 'Thread not found', }
+                            'notfound': 'Thread not found',
+                            'bl': 'Your post contained words from blacklist',}
                 error = self.get_argument('err')
                 popup = errors.get(error)
             if self.get_arguments('page') != []:
@@ -176,33 +177,36 @@ class BoardHandler(LoggedInHandler):
             text = strip_tags(text)
             text = text.replace('&gt;', '>')
             text = text.strip()
-            spoiler = 'spoilerimage' in self.request.arguments
-            showop = 'showop' in self.request.arguments
-            files = []
-            if self.request.files:
-                for x in ['file1', 'file2', 'file3', 'file4']:
-                    if self.request.files.get(x):
-                        fo, ff, filetype, filedata = await upload_file(self.request.files[x][0])
-                        if fo and ff and filetype and filedata:
-                            files.append({'original':fo,'name': ff, 'filetype': filetype, 'filedata': filedata})
-            #count = await latest(db) + 1
-            global latest_postnumber
-            latest_postnumber += 1
-            count = latest_postnumber
-            oppost = True
-            thread = None
-            admin = False
-            sage = 'saging' in self.request.arguments
-            if self.current_user and 'admin' in self.request.arguments: admin = True
-            if subject or text or files:
-                data = await makedata(db, subject, text, count, board, ip, oppost, thread, files,
-                username, spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop, password=password)
-                await db.posts.insert(data)
-                log_message = '{0} created a thread {1} in {2}.'.format(ip, count, board)
-                await log('post', log_message)
-                self.redirect('/' + board + '/thread/' + str(data['count']))
+            if has_blacklisted_words(text):
+                self.redirect('/'+ board + '?err=bl')
             else:
-                self.redirect(self.request.uri + '?err=empty')
+                spoiler = 'spoilerimage' in self.request.arguments
+                showop = 'showop' in self.request.arguments
+                files = []
+                if self.request.files:
+                    for x in ['file1', 'file2', 'file3', 'file4']:
+                        if self.request.files.get(x):
+                            fo, ff, filetype, filedata = await upload_file(self.request.files[x][0])
+                            if fo and ff and filetype and filedata:
+                                files.append({'original':fo,'name': ff, 'filetype': filetype, 'filedata': filedata})
+                #count = await latest(db) + 1
+                global latest_postnumber
+                latest_postnumber += 1
+                count = latest_postnumber
+                oppost = True
+                thread = None
+                admin = False
+                sage = 'saging' in self.request.arguments
+                if self.current_user and 'admin' in self.request.arguments: admin = True
+                if subject or text or files:
+                    data = await makedata(db, subject, text, count, board, ip, oppost, thread, files,
+                    username, spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop, password=password)
+                    await db.posts.insert(data)
+                    log_message = '{0} created a thread {1} in {2}.'.format(ip, count, board)
+                    await log('post', log_message)
+                    self.redirect('/' + board + '/thread/' + str(data['count']))
+                else:
+                    self.redirect(self.request.uri + '?err=empty')
         else:
             self.redirect('/banned')
 
@@ -279,67 +283,70 @@ class ThreadHandler(LoggedInHandler):
             text = self.get_argument('text', 'empty post')
             text = strip_tags(text)
             text = text.replace('&gt;', '>')
-            username = self.get_argument('username', '') or False
-            files = []
-            if self.request.files:
-                for x in ['file1', 'file2', 'file3', 'file4']:
-                    if self.request.files.get(x):
-                        fo, ff, filetype, filedata = await upload_file(self.request.files[x][0])
-                        if fo and ff and filetype and filedata:
-                            files.append({'original':fo,'name': ff, 'filetype': filetype, 'filedata': filedata})
-            replies = get_replies(text)
-            text = text.strip()
-            #count = await latest(db) + 1
-            global latest_postnumber
-            latest_postnumber += 1
-            count = latest_postnumber
-            oppost = False
-            thread = thread_count #wtf why
-            op = await db.posts.find_one({'count': int(thread)})
-            ip = await get_ip(self.request)
-            spoiler = 'spoilerimage' in self.request.arguments
-            sage = 'saging' in self.request.arguments
-            showop = 'showop' in self.request.arguments
-            admin = False
-            if self.current_user and 'admin' in self.request.arguments: admin = True
-            if subject or text or files:
-                data = await makedata(db, subject, text, count, board, ip, oppost, thread, files,
-                    username, spoiler=spoiler, admin=admin, sage=sage, opip=op['ip'], showop=showop, password=password)
-                await db.posts.insert(data)
-                log_message = '{0} posted #{1} in a thread #{2} on {3} board.'.format(ip, count, thread, board)
-                await log('post', log_message)
-                op = await db['posts'].find_one({'count': thread_count})
-                if op:
-                    db_board = await db.boards.find_one({'short': board})
-                    if not op['locked']:
-                        if not await check_thread(db, thread_count, db_board['thread_bump']):
-                            if not data['sage']:
-                                if not data['subject'].lower() == 'sage':
-                                    op['lastpost'] = datetime.datetime.utcnow()
-                                    await update_db(db, op['count'], op)
-                        for number in replies:
-                            p = await db.posts.find_one({'count': int(number)})
-                            old_replies = p['replies']
-                            if int(data['count']) not in old_replies:
-                                old_replies.append(int(data['count']))
-                                p['replies'] = old_replies
-                                await update_db(db, p['count'], p)
-                    if op != None:
-                        if await check_thread(db, thread_count, db_board['thread_posts']):
-                            if not op['infinite']:
-                                op['locked'] = True
-                                await update_db(db, op['count'], op)
-                            else:
-                                posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
-                                p = posts[0]
-                                await removeing(p)
-                                await db.posts.delete_one({'count': p['count']})
-
-                    self.redirect('/' + str(board) + '/thread/' + str(op['count']))
-                else:
-                    self.redirect('/' + str(board))
+            if has_blacklisted_words(text):
+                self.redirect('/'+ board + '?err=bl')
             else:
-                self.redirect(self.request.uri + '?err=empty')
+                username = self.get_argument('username', '') or False
+                files = []
+                if self.request.files:
+                    for x in ['file1', 'file2', 'file3', 'file4']:
+                        if self.request.files.get(x):
+                            fo, ff, filetype, filedata = await upload_file(self.request.files[x][0])
+                            if fo and ff and filetype and filedata:
+                                files.append({'original':fo,'name': ff, 'filetype': filetype, 'filedata': filedata})
+                replies = get_replies(text)
+                text = text.strip()
+                #count = await latest(db) + 1
+                global latest_postnumber
+                latest_postnumber += 1
+                count = latest_postnumber
+                oppost = False
+                thread = thread_count #wtf why
+                op = await db.posts.find_one({'count': int(thread)})
+                ip = await get_ip(self.request)
+                spoiler = 'spoilerimage' in self.request.arguments
+                sage = 'saging' in self.request.arguments
+                showop = 'showop' in self.request.arguments
+                admin = False
+                if self.current_user and 'admin' in self.request.arguments: admin = True
+                if subject or text or files:
+                    data = await makedata(db, subject, text, count, board, ip, oppost, thread, files,
+                        username, spoiler=spoiler, admin=admin, sage=sage, opip=op['ip'], showop=showop, password=password)
+                    await db.posts.insert(data)
+                    log_message = '{0} posted #{1} in a thread #{2} on {3} board.'.format(ip, count, thread, board)
+                    await log('post', log_message)
+                    op = await db['posts'].find_one({'count': thread_count})
+                    if op:
+                        db_board = await db.boards.find_one({'short': board})
+                        if not op['locked']:
+                            if not await check_thread(db, thread_count, db_board['thread_bump']):
+                                if not data['sage']:
+                                    if not data['subject'].lower() == 'sage':
+                                        op['lastpost'] = datetime.datetime.utcnow()
+                                        await update_db(db, op['count'], op)
+                            for number in replies:
+                                p = await db.posts.find_one({'count': int(number)})
+                                old_replies = p['replies']
+                                if int(data['count']) not in old_replies:
+                                    old_replies.append(int(data['count']))
+                                    p['replies'] = old_replies
+                                    await update_db(db, p['count'], p)
+                        if op != None:
+                            if await check_thread(db, thread_count, db_board['thread_posts']):
+                                if not op['infinite']:
+                                    op['locked'] = True
+                                    await update_db(db, op['count'], op)
+                                else:
+                                    posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
+                                    p = posts[0]
+                                    await removeing(p)
+                                    await db.posts.delete_one({'count': p['count']})
+
+                        self.redirect('/' + str(board) + '/thread/' + str(op['count']))
+                    else:
+                        self.redirect('/' + str(board))
+                else:
+                    self.redirect(self.request.uri + '?err=empty')
         else:
             self.redirect('/banned')
 
@@ -660,6 +667,7 @@ class Application(tornado.web.Application):
             (r'/admin/bans/?', AdminBannedHandler),
             (r'/admin/reports/?', AdminReportsHandler),
             (r'/admin/logs/?', AdminLogsHandler),
+            (r'/admin/blacklist/?', AdminBlackListHandler),
             (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': 'uploads'}),
             (r'/ajax/remove/?', AjaxDeleteHandler),
             (r'/ajax/delete/?', AjaxDeletePassHandler),

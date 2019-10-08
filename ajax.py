@@ -6,6 +6,7 @@ import motor.motor_tornado
 from utils import *
 from logger import log
 
+
 # delete posts using ajax; doesnt have admin rights check and idk how to make it
 class AjaxDeleteHandler(tornado.web.RequestHandler):
 

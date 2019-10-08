@@ -3,11 +3,11 @@ import datetime
 import motor.motor_tornado
 import ib_settings as _ib
 import re
-
 from uuid import uuid4
 
 from utils import *
 from logger import log
+
 
 # decorator that checks if user is admin
 def ifadmin(f):
@@ -290,4 +290,28 @@ class AdminLogsHandler(LoggedInHandler):
             res.append(l[i:i + n])
         return res
 
+
+class AdminBlackListHandler(LoggedInHandler):
+    @ifadmin
+    async def get(self):
+        db = self.application.database
+        blacklist = get_blacklist()
+        boards_list = await db.boards.find({}).to_list(None)
+        self.render('admin_blacklist.html', boards_list=boards_list, blacklist=blacklist)
+
+    @ifadmin
+    async def post(self):
+        blacklist = get_blacklist()
+        del_word = self.get_argument('delete', '')
+        if del_word:
+            blacklist.remove(del_word)
+            save_blacklist(blacklist)
+            self.redirect('/admin/blacklist/')
+        else:
+            words = self.get_argument('words', '')
+            words = words.split(',')
+            words = [word.strip() for word in words]
+            blacklist += words
+            save_blacklist(blacklist)
+            self.redirect('/admin/blacklist/')
 

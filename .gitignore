@@ -12,3 +12,4 @@ uploads/*.ogg
 uploads/*.mp3
 banners/*
 .python-version
+blacklist.pkl

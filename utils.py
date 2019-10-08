@@ -1,5 +1,7 @@
 import motor.motor_tornado
 import os
+import pickle
+import re
 
 thumb_def = 'static/missing_thumbnail.jpg'
 spoilered = 'static/spoiler.jpg'
@@ -63,3 +65,25 @@ async def get_ip(req):
     x_real_ip = req.headers.get('X-Real-IP')
     return x_real_ip or req.remote_ip
 
+
+def save_blacklist(blacklist):
+    # clean up duplicates
+    blacklist = list(set(blacklist))
+    with open('blacklist.pkl', 'wb') as f:
+        pickle.dump(blacklist, f)
+
+
+def get_blacklist():
+    try:
+        with open('blacklist.pkl', 'rb') as f:
+            blacklist = pickle.load(f)
+        return blacklist
+    except (EOFError, FileNotFoundError):
+        return []
+
+
+def has_blacklisted_words(text):
+    blacklist = set(get_blacklist())
+    text = re.sub(re.compile('[^a-zA-Z\s]'), '', text)
+    text = set(text.split(' '))
+    return bool(blacklist&text)
