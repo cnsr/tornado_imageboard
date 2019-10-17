@@ -87,7 +87,14 @@ class Template(tornado.web.UIModule):
     def render(self):
         return self.render_string('modules/template.html')
 
+
 class Pinned(tornado.web.UIModule):
     def render(self, thread):
         return self.render_string('modules/pinned.html', thread=thread)
+
+
+class SearchResult(tornado.web.UIModule):
+    def render(self, post):
+        return self.render_string('modules/searchresult.html', post=post)
+
 

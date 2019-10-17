@@ -306,3 +306,26 @@ class AdminBlackListHandler(LoggedInHandler):
             save_blacklist(blacklist)
             self.redirect('/admin/blacklist/')
 
+
+class AdminIPSearchHandler(LoggedInHandler):
+    responses = {'success':'Success',
+                'error': 'No posts were found'}
+    @ifadmin
+    async def get(self, count):
+        popup = None
+        if self.get_arguments('msg') != []:
+            msg = self.get_argument('msg')
+            popup = self.responses.get(msg)
+        boards = await self.application.database.boards.find({}).to_list(None)
+        boards_list = await self.application.database.boards.find({}).to_list(None)
+        post = await self.application.database.posts.find_one({'count': int(count)}) or None
+        if post:
+            posts_by_same_ip = await self.application.database.posts.find({'ip': post['ip']}).sort('date', -1).to_list(None)
+            self.render('admin_search.html', boards=boards,
+                        boards_list=boards_list, popup=popup,
+                        posts=posts_by_same_ip)
+        else:
+            self.redirect('/admin/')
+
+    # TODO: add deletion and banning that keep the post list upon page update
+

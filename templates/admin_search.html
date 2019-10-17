@@ -1,0 +1,15 @@
+{% extends 'admin.html' %}
+{% block title %}Search results{% end %}
+{% block css %}
+	<script src='{{static_url("js/popup.js")}}'></script>
+	<script src='{{static_url("js/mustache.min.js")}}'></script>
+	<script src='{{static_url("js/posts.js")}}'></script>
+	<script src='{{static_url("js/remove.js")}}'></script>	
+	<script src='{{static_url("js/banned.js")}}'></script>	
+	<link rel='stylesheet' href="{{ static_url('css/modules/post.css') }}">	
+{% end %}
+{% block content %}
+	{% for post in posts %}
+		{% module SearchResult(post) %}
+	{% end %}
+{% end %}

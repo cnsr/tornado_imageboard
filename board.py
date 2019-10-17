@@ -668,6 +668,7 @@ class Application(tornado.web.Application):
             (r'/admin/reports/?', AdminReportsHandler),
             (r'/admin/logs/?', AdminLogsHandler),
             (r'/admin/blacklist/?', AdminBlackListHandler),
+            (r'/admin/search/(\d+)/?', AdminIPSearchHandler),
             (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': 'uploads'}),
             (r'/ajax/remove/?', AjaxDeleteHandler),
             (r'/ajax/delete/?', AjaxDeletePassHandler),

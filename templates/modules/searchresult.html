@@ -12,18 +12,10 @@
 			{% if post['op'] %}<span class='isop' title='original poster'>#OP</span>{% end %}			
 			<p class='date'>{{ post['date']}}</p>
 			{% if post['country'] %}<img class='flag' src='/flags/{{post["country"]}}.png' title='{{post["countryname"]}}' />{% end %}
-			<a href='#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
+			<a href='/{{post["board"]}}/thread/{{post["thread"]}}#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
 			<p class='post-number'></p>
-			<button class='del-post' data-id='{{post["count"]}}'>&#9746;</button>
-			{% if admin %}
-				<button class='ban' data-id='{{post["count"]}}'>BAN</button>
-				<button class='del' data-id='{{post["count"]}}'>&#x2716;</button>
-				<button class='post-info' data-id='{{post["count"]}}'>?</button>
-				<a href='/admin/search/{{post["count"]}}' class='thread-href'>
-					<button class='btn-search' title='Search by ip'>Q</button>
-				</a>
-			{% end %}
-			<span class='report' data-id='{{post["count"]}}'>&#33;</span>
+			<button class='del' data-id='{{post["count"]}}'>&#x2716;</button>
+			<button class='post-info' data-id='{{post["count"]}}'>?</button>
 			{% if post['sage'] %}<span class='sage'>&#11015;</span>{% end %}			
 		</div>
 		{% if post['files'] %}

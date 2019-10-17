@@ -27,6 +27,9 @@
 				<button class='infinify' data-id="{{op['count']}}">∞</button>	
 				<button class='admin-lock' data-id="{{op['count']}}">🔒</button>
 				<button class='admin-move' data-id="{{op['count']}}">mv</button>
+				<a href='/admin/search/{{op["count"]}}' class='thread-href'>
+					<button class='btn-search' title='Search by ip'>Q</button>
+				</a>				
 			{% end %}
 			<span class='report' data-id='{{op["count"]}}'>&#33;</span>
 			{% if op['sage'] %}<span class='sage' title='sage'>&#11015;</span>{% end %}
