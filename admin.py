@@ -301,7 +301,7 @@ class AdminBlackListHandler(LoggedInHandler):
         else:
             words = self.get_argument('words', '')
             words = words.split(',')
-            words = [word.strip() for word in words]
+            words = [word.strip().lower() for word in words]
             blacklist += words
             save_blacklist(blacklist)
             self.redirect('/admin/blacklist/')

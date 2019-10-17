@@ -92,7 +92,9 @@ def get_blacklist():
 
 
 def has_blacklisted_words(text):
-    blacklist = set(get_blacklist())
-    text = re.sub(re.compile('[^a-zA-Z\s]'), '', text)
-    text = set(text.split(' '))
-    return bool(blacklist&text)
+    blacklist = get_blacklist()
+    for word in blacklist:
+        found = re.search(word, text, re.IGNORECASE)
+        if found is not None: return True
+    return False
+
