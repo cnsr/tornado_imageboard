@@ -94,7 +94,7 @@ def get_blacklist():
 def has_blacklisted_words(text):
     blacklist = get_blacklist()
     for word in blacklist:
-        found = re.search(word, text, re.IGNORECASE)
+        found = re.search(re.escape(word), text, re.IGNORECASE)
         if found is not None: return True
     return False
 
