@@ -9,15 +9,6 @@ from utils import *
 from logger import log
 
 
-# decorator that checks if user is admin
-def ifadmin(f):
-    def wrapper(self, *args, **kwargs):
-        if not self.current_user:
-            return self.redirect('/admin/login')
-        return f(self, *args, **kwargs)
-    return wrapper
-
-
 # crappy handler that checks if user is admin
 class LoggedInHandler(tornado.web.RequestHandler):
     def get_current_user(self):

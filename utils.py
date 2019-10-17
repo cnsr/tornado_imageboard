@@ -66,6 +66,15 @@ async def get_ip(req):
     return x_real_ip or req.remote_ip
 
 
+# decorator that checks if user is admin
+def ifadmin(f):
+    def wrapper(self, *args, **kwargs):
+        if not self.current_user:
+            return self.redirect('/admin/login')
+        return f(self, *args, **kwargs)
+    return wrapper
+
+
 def save_blacklist(blacklist):
     # clean up duplicates
     blacklist = list(set(blacklist))

@@ -7,9 +7,16 @@ from utils import *
 from logger import log
 
 
-# delete posts using ajax; doesnt have admin rights check and idk how to make it
-class AjaxDeleteHandler(tornado.web.RequestHandler):
+# crappy handler that checks if user is admin
+class LoggedInHandler(tornado.web.RequestHandler):
+    def get_current_user(self):
+        return self.get_secure_cookie('adminlogin')
 
+
+# delete posts using ajax
+class AjaxDeleteHandler(LoggedInHandler):
+
+    @ifadmin
     async def post(self):
         db = self.application.database
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
@@ -40,7 +47,7 @@ class AjaxDeleteHandler(tornado.web.RequestHandler):
         self.write(json.dumps(response))
 
 
-# reporting users using ajax; same stuff as with previous one
+# reporting users using ajax, doesnt need admin check
 class AjaxReportHandler(tornado.web.RequestHandler):
 
     async def post(self):
@@ -65,8 +72,10 @@ class AjaxReportHandler(tornado.web.RequestHandler):
         self.write(json.dumps(response))
 
 
-class AjaxInfoHandler(tornado.web.RequestHandler):
+# gives info about post
+class AjaxInfoHandler(LoggedInHandler):
 
+    @ifadmin
     async def post(self):
         db = self.application.database
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
@@ -82,8 +91,10 @@ class AjaxInfoHandler(tornado.web.RequestHandler):
             self.write(json.dumps({'error': 'post does not exist. perhaps, it has been deleted?'}))
 
 
-class AjaxThreadPinHandler(tornado.web.RequestHandler):
+# pins threads
+class AjaxThreadPinHandler(LoggedInHandler):
 
+    @ifadmin
     async def post(self):
         db = self.application.database
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
@@ -97,9 +108,10 @@ class AjaxThreadPinHandler(tornado.web.RequestHandler):
         self.write(json.dumps({'status':'ok'}))
 
 
+# pins the threads so they appear first in query
+class AjaxPinHandler(LoggedInHandler):
 
-class AjaxPinHandler(tornado.web.RequestHandler):
-
+    @ifadmin
     async def post(self):
         db = self.application.database
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
@@ -113,8 +125,12 @@ class AjaxPinHandler(tornado.web.RequestHandler):
             self.write(json.dumps({'status':'failed'}))
 
 
-class AjaxInfinifyHandler(tornado.web.RequestHandler):
+# threads are infinite:
+# first in - first out,
+# posts get deleted when they go beyond thread post limit
+class AjaxInfinifyHandler(LoggedInHandler):
 
+    @ifadmin
     async def post(self):
         db = self.application.database
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
@@ -128,9 +144,12 @@ class AjaxInfinifyHandler(tornado.web.RequestHandler):
             self.write(json.dumps({'status':'failed'}))
 
 
-class AjaxLockHandler(tornado.web.RequestHandler):
+# locks the threads so that they can't be posted in
+class AjaxLockHandler(LoggedInHandler):
 
+    @ifadmin
     async def post(self):
+        print(self.current_user)
         db = self.application.database
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
         for k, v in data.items(): data[k] = v.decode('utf-8')
@@ -143,9 +162,10 @@ class AjaxLockHandler(tornado.web.RequestHandler):
             self.write(json.dumps({'status':'failed'}))
 
 
-# banner deleting handler
-class AjaxBannerDelHandler(tornado.web.RequestHandler):
+# deletion of banners
+class AjaxBannerDelHandler(LoggedInHandler):
 
+    @ifadmin
     async def post(self):
         db = self.application.database
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
@@ -161,9 +181,10 @@ class AjaxBannerDelHandler(tornado.web.RequestHandler):
             self.write(json.dumps({'status':'failed'}))
 
 
-# banning users using ajax; same stuff as with previous one
-class AjaxBanHandler(tornado.web.RequestHandler):
+# banning users
+class AjaxBanHandler(LoggedInHandler):
 
+    @ifadmin
     async def post(self):
         db = self.application.database
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
@@ -206,6 +227,7 @@ class AjaxBanHandler(tornado.web.RequestHandler):
         self.write(json.dumps(response))
 
 
+# gets posts that have been posted since user loaded the page
 class AjaxNewHandler(tornado.web.RequestHandler):
 
     async def post(self, board, thread):
@@ -237,6 +259,7 @@ class AjaxNewHandler(tornado.web.RequestHandler):
 
 
 # delete posts using ajax if password is correct
+# therefore, doesn't need admin check
 class AjaxDeletePassHandler(tornado.web.RequestHandler):
 
     async def post(self):
@@ -270,6 +293,7 @@ class AjaxDeletePassHandler(tornado.web.RequestHandler):
             self.write(json.dumps({'status': 'passwords do not match'}))
 
 
+# loads the post from same or different threads on mouseover
 class AjaxPostGetter(tornado.web.RequestHandler):
 
     async def post(self):
@@ -291,9 +315,11 @@ class AjaxPostGetter(tornado.web.RequestHandler):
             result['status'] = 'no post found'
         self.write(json.dumps(result))
 
-# move thread to different board
-class AjaxMoveHandler(tornado.web.RequestHandler):
 
+# move thread to different board
+class AjaxMoveHandler(LoggedInHandler):
+
+    @ifadmin
     async def post(self):
         db = self.application.database
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
@@ -321,6 +347,7 @@ class AjaxMoveHandler(tornado.web.RequestHandler):
         self.write(json.dumps(response))
 
 
+# gets information used to fill in map with data
 class AjaxMapHandler(tornado.web.RequestHandler):
 
     async def post(self):
