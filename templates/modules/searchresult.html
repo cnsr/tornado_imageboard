@@ -1,5 +1,5 @@
 <div class='post-outer'>
-	<div class='post' id='{{post["count"]}}'>
+	<div class='post {% if str(post["count"]) == count %}queryresult{% end %}' id='{{post["count"]}}'>
 		<div class='post-header'>
 			{% if post['subject'] %}<h3 class='psubject' title='subject'>{{post['subject']}}</h3>{% end %}
 			{% if post['admin'] %}

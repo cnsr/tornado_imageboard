@@ -308,10 +308,12 @@ class AdminBlackListHandler(LoggedInHandler):
 
 
 class AdminIPSearchHandler(LoggedInHandler):
-    responses = {'success':'Success',
-                'error': 'No posts were found'}
+    responses = {'success':'Successfully banned',
+                'error': 'No posts were found',
+                'nop': 'Error banning IP'}
     @ifadmin
     async def get(self, count):
+        # TODO: show whether IP has any bans
         popup = None
         if self.get_arguments('msg') != []:
             msg = self.get_argument('msg')
@@ -319,13 +321,45 @@ class AdminIPSearchHandler(LoggedInHandler):
         boards = await self.application.database.boards.find({}).to_list(None)
         boards_list = await self.application.database.boards.find({}).to_list(None)
         post = await self.application.database.posts.find_one({'count': int(count)}) or None
+        banned = await self.application.database.bans.find_one({'ip': post['ip']}) or None
         if post:
             posts_by_same_ip = await self.application.database.posts.find({'ip': post['ip']}).sort('date', -1).to_list(None)
             self.render('admin_search.html', boards=boards,
                         boards_list=boards_list, popup=popup,
-                        posts=posts_by_same_ip)
+                        posts=posts_by_same_ip, count=count,
+                        banned=banned)
         else:
             self.redirect('/admin/')
 
-    # TODO: add deletion and banning that keep the post list upon page update
+    # TODO: add deletion that keeps the post list upon page update
+    @ifadmin
+    async def post(self, count):
+        action = self.get_argument('action')
+        post = await self.application.database.posts.find_one({'count': int(count)}) or None
+        if post:
+            if action == 'ban':
+                banned = await self.application.database.bans.find_one({'ip': post['ip']})
+                if not banned:
+                    ban = {
+                        'ip': post['ip'],
+                        'ban_post': int(post['count']),
+                        'reason': 'Banned after reviewing post history',
+                        'locked': False,
+                        'date': None,
+                        'date_of': datetime.datetime.utcnow(),
+                    }
+                    if not post['oppost']:
+                        ban['url'] = '/' + post['board'] + '/thread/' + str(post['thread']) + '#' + str(post['count'])
+                    else:
+                        ban['url'] = '/' + post['board'] + '/thread/' + str(post['count']) + '#' + str(post['count'])
+                    log_message = '{0} was banned for post #{1} (unban {2}).'.format(post['ip'], post['count'], ban['date'])
+                    await log('ban', log_message)
+                    await self.application.database.bans.insert(ban)
+                    post['banned'] = True
+                    await update_db(self.application.database, post['count'], post)
+        else:
+            self.redirect('/admin/search' + count +'?msg=nop')
+        self.redirect('/admin/search/' + count + '/')
+
+
 

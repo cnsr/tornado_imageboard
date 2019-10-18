@@ -94,7 +94,7 @@ class Pinned(tornado.web.UIModule):
 
 
 class SearchResult(tornado.web.UIModule):
-    def render(self, post):
-        return self.render_string('modules/searchresult.html', post=post)
+    def render(self, post, count):
+        return self.render_string('modules/searchresult.html', post=post, count=count)
 
 

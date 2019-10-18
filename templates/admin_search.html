@@ -9,7 +9,17 @@
 	<link rel='stylesheet' href="{{ static_url('css/modules/post.css') }}">	
 {% end %}
 {% block content %}
+	<form action='' method='POST'>
+		{% module xsrf_form_html() %}
+		<input hidden name='action' value='ban' />
+		<button input='submit'>Ban user</button>
+	</form>
+	{% if banned %}
+		<div class='ban-info'>
+			<pre>User has been banned for <a href='#{{banned["ban_post"]}}'>this post</a> until {{banned['date']}}</pre>
+		</div>
+	{% end %}
 	{% for post in posts %}
-		{% module SearchResult(post) %}
+		{% module SearchResult(post, count) %}
 	{% end %}
 {% end %}

@@ -434,3 +434,7 @@ header {
 .file_remove {
 	display: none;
 }
+
+.queryresult {
+	border: 2px solid red;
+}

@@ -186,6 +186,7 @@ class AjaxBanHandler(LoggedInHandler):
 
     @ifadmin
     async def post(self):
+        response = {'ok': 'Banned'}
         db = self.application.database
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
         for k, v in data.items(): data[k] = v.decode('utf-8')
@@ -223,7 +224,16 @@ class AjaxBanHandler(LoggedInHandler):
                     await db.posts.delete_many({'thread': p['count']})
                 await removeing(p)
                 await db.posts.delete_one({'count': p['count']})
-        response = {'ok': 'ok'}
+        # TODO: make so it only updates the ban info and keep the post deletion/locking unchanged
+        else:
+            if data['date'] != 'Never':
+                banned['date'] = data['date']
+            else:
+                banned['date'] = None
+            banned['date_of'] = datetime.datetime.utcnow()
+            await db.bans.update_one({'ip': banned['ip']}, {"$set": banned}, upsert=False)
+            p['banned'] = True
+            await update_db(db, p['count'], p)
         self.write(json.dumps(response))
 
 
