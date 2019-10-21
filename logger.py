@@ -14,5 +14,5 @@ async def log(message_type, message):
         'type': message_type,
         'message': message,
     }
-    db.log.insert(data)
+    await db.log.insert_one(data)
 

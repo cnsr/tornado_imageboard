@@ -201,7 +201,7 @@ class BoardHandler(LoggedInHandler):
                 if subject or text or files:
                     data = await makedata(db, subject, text, count, board, ip, oppost, thread, files,
                     username, spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop, password=password)
-                    await db.posts.insert(data)
+                    await db.posts.insert_one(data)
                     log_message = '{0} created a thread {1} in {2}.'.format(ip, count, board)
                     await log('post', log_message)
                     self.redirect('/' + board + '/thread/' + str(data['count']))
@@ -296,7 +296,6 @@ class ThreadHandler(LoggedInHandler):
                                 files.append({'original':fo,'name': ff, 'filetype': filetype, 'filedata': filedata})
                 replies = get_replies(text)
                 text = text.strip()
-                #count = await latest(db) + 1
                 global latest_postnumber
                 latest_postnumber += 1
                 count = latest_postnumber
@@ -312,7 +311,7 @@ class ThreadHandler(LoggedInHandler):
                 if subject or text or files:
                     data = await makedata(db, subject, text, count, board, ip, oppost, thread, files,
                         username, spoiler=spoiler, admin=admin, sage=sage, opip=op['ip'], showop=showop, password=password)
-                    await db.posts.insert(data)
+                    await db.posts.insert_one(data)
                     log_message = '{0} posted #{1} in a thread #{2} on {3} board.'.format(ip, count, thread, board)
                     await log('post', log_message)
                     op = await db['posts'].find_one({'count': thread_count})
@@ -485,6 +484,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
         gdbr_data = gdbr.city(ip)
         data['country'] = gdbr_data.country.iso_code
         extraflags = ['Bavaria', 'Scotland', 'Wales']
+        # exceptions for IPs that are incorrectly detected, has to be changed manually smh
         ip_exceptions = {"80.128.":'Bavaria',
                         "95.91.205": 'Bavaria'}
         is_in_exceptions = [v for k,v in ip_exceptions.items() if ip.startswith(k)]
@@ -505,7 +505,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
                     'lat': gdbr_data.location.latitude,
                     'date': datetime.datetime.utcnow()}
         await check_map(db, mapdata)
-        await db.maps.insert(mapdata)
+        await db.maps.insert_one(mapdata)
     if b['roll']:
         data['roll'] = await roll(data['subject'])
     if not b['custom']:
@@ -536,7 +536,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
         data['pinned'] = False
         data['infinite'] = False
     else:
-        postcount = int(await db.posts.find({'thread': t['count']}).count())
+        postcount = int(await db.posts.count_documents({'thread': t['count']}))
         t['postcount'] = postcount + 1
         await update_db(db, t['count'], t)
     if files:
@@ -551,7 +551,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
                 f['thumb'] = None
         if not oppost:
             # this needs to be fixed so it counts all files
-            filecount = await db.posts.find({'thread': t['count'], 'files': { '$ne': None }}).count()
+            filecount = await db.posts.find({'thread': t['count'], 'files': { '$ne': None }}).count_documents({})
             t['filecount'] = filecount + 1
             await update_db(db, t['count'], t)
     else:
@@ -572,7 +572,7 @@ async def latest(db):
 
 # checks if number of posts in thread exceeds whatever number you check it against
 async def check_thread(db, thread, subj):
-    return await db.posts.find({'thread': thread}).count() >= subj - 1
+    return await db.posts.count_documents({'thread': thread}) >= subj - 1
 
 
 # deletes the threads that are inactive after there are too much threads
@@ -588,7 +588,7 @@ def schedule_check(app):
                 threads = yield db.posts.find({'oppost': True,
                                         'board': board['short']}).sort('lastpost', 1).to_list(None)
                 if not len(threads) <= board['thread_catalog']:
-                    threads = threads[:(threads.count(None) - board['thread_catalog'])]
+                    threads = threads[:(len(threads) - board['thread_catalog'])]
                     for thread in threads:
                         if not thread['pinned']:
                             sync_removeing(thread)

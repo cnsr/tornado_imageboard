@@ -173,7 +173,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
         db = self.application.database.boards
         log_message = 'Board /{0}/ has been created.'.format(data['short'])
         await log('board_creation', log_message)
-        await db.insert(data)
+        await db.insert_one(data)
         self.redirect('/' + data['short'])
 
 
@@ -354,7 +354,7 @@ class AdminIPSearchHandler(LoggedInHandler):
                         ban['url'] = '/' + post['board'] + '/thread/' + str(post['count']) + '#' + str(post['count'])
                     log_message = '{0} was banned for post #{1} (unban {2}).'.format(post['ip'], post['count'], ban['date'])
                     await log('ban', log_message)
-                    await self.application.database.bans.insert(ban)
+                    await self.application.database.bans.insert_one(ban)
                     post['banned'] = True
                     await update_db(self.application.database, post['count'], post)
         else:

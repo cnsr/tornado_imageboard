@@ -67,7 +67,7 @@ class AjaxReportHandler(tornado.web.RequestHandler):
             report['url'] = '/' + p['board'] + '/thread/' + str(p['count']) + '#' + str(p['count'])
         log_message = 'Report has been sent for post #{0} with ip {1}.'.format(p['count'], p['ip'])
         await log('post_remove', log_message)
-        await db.reports.insert(report)
+        await db.reports.insert_one(report)
         response = {'ok': 'ok'}
         self.write(json.dumps(response))
 
@@ -211,7 +211,7 @@ class AjaxBanHandler(LoggedInHandler):
                 ban['url'] = '/' + p['board'] + '/thread/' + str(p['count']) + '#' + str(p['count'])
             log_message = '{0} was banned for post #{1} (unban {2}).'.format(p['ip'], p['count'], ban['date'])
             await log('unban', log_message)
-            await db.bans.insert(ban)
+            await db.bans.insert_one(ban)
             p['banned'] = True
             if ban['locked'] and p['oppost']:
                 p['locked'] = True
