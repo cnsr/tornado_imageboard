@@ -550,8 +550,8 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
             else:
                 f['thumb'] = None
         if not oppost:
-            # this needs to be fixed so it counts all files
-            filecount = await db.posts.find({'thread': t['count'], 'files': { '$ne': None }}).count_documents({})
+            # TODO: this needs to be fixed so it counts all files
+            filecount = await db.posts.count_documents({'thread': t['count'], 'files': { '$ne': None }})
             t['filecount'] = filecount + 1
             await update_db(db, t['count'], t)
     else:
