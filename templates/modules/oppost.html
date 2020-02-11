@@ -29,8 +29,11 @@
 				<button class='admin-move' data-id="{{op['count']}}">mv</button>
 				<a href='/admin/search/{{op["count"]}}' class='thread-href'>
 					<button class='btn-search' title='Search by ip'>Q</button>
-				</a>				
+				</a>
+				<button class='seal' data-id="{{op['count']}}" title='Grand Poorchan Seal Of Approval'>⌘</button>
 			{% end %}
+			<!--<button class='vote vote-up' data-id='{{op["count"]}}'>based</button>
+			<button class='vote vote-down' data-id='{{op["count"]}}'>cringe</button>-->
 			<span class='report' data-id='{{op["count"]}}'>&#33;</span>
 			{% if op['sage'] %}<span class='sage' title='sage'>&#11015;</span>{% end %}
 			{% if op['pinned'] %}<span class='pinned' title='Pinned thread'>📌</span>{% end %}
@@ -71,6 +74,9 @@
 		{% end %}		
 		{% if op['banned'] %}
 			<p class="banned">User has been banned for this post.</p>
+		{% end %}
+		{% if op['seal'] %}
+			<img class='sealed' src='/static/seal.png' />
 		{% end %}
 		{% if op['replies'] %}
 			<li class=replies>

@@ -224,6 +224,10 @@ $(document).ready(function(){
 		$(this).prev('.text').removeClass('shortened');
 		$(this).remove();
 	});
+	$(document).on('click', '.seal', function() {
+		var id = $(this).attr('data-id');
+		sendAjaxSeal(id);
+	})
 	$('body').on('click', '.report', function() {
 		$('.report-popup').remove();
 		var id = $(this).attr('data-id');		
@@ -373,6 +377,21 @@ function sendAjaxReport(post, reason) {
 		}
 	});
 };
+
+const sendAjaxSeal = (id) => {
+	$.ajax({
+		url : '/ajax/seal',
+		type: 'POST',
+		data: {post: id, _xsrf: getCookie("_xsrf")},
+		success: (json) => {
+			popUp('Sealed, refresh cuz im too lazy to code this in')
+		},
+		error: (err) => {
+			console.log(err)
+			popUp('Error wtf tell yaro to fix')
+		}
+	})
+}
 
 function sendAjaxMove(post) {
 	$.ajax({
@@ -545,6 +564,27 @@ function getNewAjax(latest, url) {
 		}
 	});
 };
+
+$.ajaxSettings.traditional = true;
+function sendAjaxUpvote(id, action) {
+	$.ajax({
+		url : "/ajax/upvote/",
+		type : "POST",
+		data : {post: id, _xsrf: getCookie("_xsrf"), action: action},
+		success : function(json) {
+			var json = jQuery.parseJSON(json);
+			if (json.status == 'voted') {
+				console.log('voted');
+			} else {
+				console.log('didnt vote and you are white')
+			}
+		},
+		error : function(xhr,errmsg,err) {
+			console.log(xhr.status + ": " + xhr.responseText);
+		}
+	});
+};
+
 
 $.ajaxSettings.traditional = true;
 function sendAjaxDel(id) {

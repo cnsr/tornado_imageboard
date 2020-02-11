@@ -22,9 +22,12 @@
 				<a href='/admin/search/{{post["count"]}}' class='thread-href'>
 					<button class='btn-search' title='Search by ip'>Q</button>
 				</a>
+				<button class='seal' data-id="{{post['count']}}">⌘</button>
 			{% end %}
 			<span class='report' data-id='{{post["count"]}}'>&#33;</span>
-			{% if post['sage'] %}<span class='sage'>&#11015;</span>{% end %}			
+			<!--<span class='vote vote-up' data-id='{{post["count"]}}'>based</span>
+			<span class='vote vote-down' data-id='{{post["count"]}}'>cringe</span>-->
+			{% if post['sage'] %}<span class='sage'>&#11015;</span>{% end %}
 		</div>
 		{% if post['files'] %}
 			{% for file in post['files'] %}
@@ -54,7 +57,10 @@
 		{% end %}
 		{% if post['banned'] %}
 			<p class="banned">User has been banned for this post.</p>
-		{% end %}		
+		{% end %}
+		{% if post['seal'] %}
+			<img class='sealed' src='/static/seal.png' />
+		{% end %}
 		{% if post['replies'] %}
 			<li class=replies>
 				<p class='replies-p'>Replies: </p>

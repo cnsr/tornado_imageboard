@@ -55,6 +55,9 @@
 		{% if thread['banned'] %}
 			<p class="banned">User has been banned for this post.</p>
 		{% end %}
+		{% if thread['seal'] %}
+			<img class='sealed' src='/static/seal.png' />
+		{% end %}
 		{% if thread['replies'] %}
 			<li class=replies>
 				<p class='replies-p'>Replies: </p>

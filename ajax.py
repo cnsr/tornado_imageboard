@@ -368,3 +368,14 @@ class AjaxMapHandler(tornado.web.RequestHandler):
             poster['date'] = poster['date'].strftime("%Y-%m-%d %H:%M:%S")
         self.write(json.dumps(posters))
 
+# poorchanga seal of approval
+class AjaxSealHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        db = self.application.database
+        data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
+        pid = int(data['post'].decode('utf-8'))
+        post = await db.posts.find_one({'count': pid})
+        post['seal'] = True
+        await update_db(db, post['count'], post)
+        self.write(json.dumps({'status': 'success'}))

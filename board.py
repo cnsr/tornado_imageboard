@@ -470,6 +470,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
     data['sage'] = sage
     data['roll'] = None
     data['files'] = files
+    data['seal'] = False
     data['op'] = ip == opip and showop
     if password == '':
         password = 'abcde'
@@ -683,6 +684,7 @@ class Application(tornado.web.Application):
             (r'/ajax/move/?', AjaxMoveHandler),
             (r'/ajax/infinify/?', AjaxInfinifyHandler),
             (r'/ajax/map/?', AjaxMapHandler),
+            (r'/ajax/seal/?', AjaxSealHandler),
         ]
 
         settings = {
