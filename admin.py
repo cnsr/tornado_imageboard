@@ -14,6 +14,14 @@ class LoggedInHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         return self.get_secure_cookie('adminlogin')
 
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+
+     def options(self):
+        self.set_status(204)
+        self.finish()
 
 # login for admin; it's fucking awful since pass is in plaintext and that's only one of shitty things
 # also cant use decorator here thus it's ugly as fuck
