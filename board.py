@@ -353,6 +353,20 @@ class ThreadHandler(LoggedInHandler):
 class JsonBoardHandler(LoggedInHandler):
     thread_count = ''
 
+    async def check_origin(self, origin):
+        return True
+
+    async def set_default_headers(self):
+        print('setting headers')
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+
+    async def options(self):
+        print('options')
+        self.set_status(204)
+        self.finish()
+
     async def get(self, board):
         db = self.application.database
         db_board = await db.boards.find_one({'short': board, 'oppost': True})
@@ -368,6 +382,19 @@ class JsonBoardHandler(LoggedInHandler):
 
 class JsonThreadHandler(LoggedInHandler):
     thread_count = ''
+
+    async def check_origin(self, origin):
+        return True
+
+    async def set_default_headers(self):
+        print('setting headers')
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+
+    async def options(self):
+        self.set_status(204)
+        self.finish()
 
     async def get(self, board, count):
         thread_count = int(count)
