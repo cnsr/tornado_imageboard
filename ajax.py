@@ -54,7 +54,7 @@ class AjaxReportHandler(tornado.web.RequestHandler):
         db = self.application.database
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
         for k, v in data.items(): data[k] = v.decode('utf-8')
-        p = await db.posts.find_one({'count': int(data['post'])})
+        p = await db.posts.find_one({'count': int(data['post'])}, {'_id': False})
         report = {
             'ip': p['ip'],
             'post': int(data['post']),
@@ -80,9 +80,8 @@ class AjaxInfoHandler(LoggedInHandler):
         db = self.application.database
         data = dict((k,v[-1] ) for k, v in self.request.arguments.items())
         for k, v in data.items(): data[k] = v.decode('utf-8')
-        p = await db.posts.find_one({'count': int(data['post'])})
+        p = await db.posts.find_one({'count': int(data['post'])}, {'_id': False})
         if p:
-            del p['_id']
             p['date'] = p['date'].strftime("%Y-%m-%d %H:%M:%S")
             if p.get('lastpost', ''):
                 p['lastpost'] = p['lastpost'].strftime("%Y-%m-%d %H:%M:%S")

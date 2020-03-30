@@ -21,12 +21,14 @@ import geoip2.database as gdb
 from thumbnail import make_thumbnail
 from tripcode import tripcode
 import random
+import pymongo
 
 from logger import log
 
 from admin import *
 from ajax import *
 from utils import *
+from api import *
 
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
@@ -370,11 +372,9 @@ class JsonBoardHandler(LoggedInHandler):
     async def get(self, board):
         db = self.application.database
         db_board = await db.boards.find_one({'short': board, 'oppost': True})
-        threads = await db.posts.find({'board': board,'oppost': True}).sort([('pinned', -1), ('lastpost', -1)]).to_list(None)
+        exclude_fields = ['_id', 'ip', 'pass']
+        threads = await db.posts.find({'board': board,'oppost': True}, exclude(exclude_fields)).sort([('pinned', -1), ('lastpost', -1)]).to_list(None)
         for thread in threads:
-            del thread['_id']
-            del thread['ip']
-            del thread['pass']
             thread['date'] = thread['date'].strftime("%Y-%m-%d %H:%M:%S")
             thread['lastpost'] = thread['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
         self.write(json.dumps(threads, indent=4, ensure_ascii=False))
@@ -400,19 +400,15 @@ class JsonThreadHandler(LoggedInHandler):
         thread_count = int(count)
         db = self.application.database
         db_board = await db.boards.find_one({'short': board})
-        op = await db.posts.find_one({'count': thread_count})
-        del op['_id']
-        del op['ip']
-        del op['pass']
+        op_exclude_fields = ['_id', 'ip', 'pass']
+        op = await db.posts.find_one({'count': thread_count}, exclude(op_exclude_fields))
         op['date'] = op['date'].strftime("%Y-%m-%d %H:%M:%S")
         op['lastpost'] = op['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
         op = {k:v for k,v in op.items() if v != None}
         res = [op]
-        posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
+        exclude_fields = ['_id', 'ip', 'pass']
+        posts = await db['posts'].find({'thread': thread_count}, exclude(exclude_fields)).sort([('count', 1)]).to_list(None)
         for post in posts:
-            del post['_id']
-            del post['ip']
-            del post['pass']
             post['date'] = post['date'].strftime("%Y-%m-%d %H:%M:%S")
             post = {k:v for k,v in post.items() if v != None}
             res.append(post)
@@ -712,6 +708,9 @@ class Application(tornado.web.Application):
             (r'/ajax/infinify/?', AjaxInfinifyHandler),
             (r'/ajax/map/?', AjaxMapHandler),
             (r'/ajax/seal/?', AjaxSealHandler),
+            (r'/api/boards/?', GetBoards),
+            (r'/api/boards/(\w+)/?', GetThreads),
+            (r'/api/boards/(\w+)/(\d+)/?', GetPosts),
         ]
 
         settings = {
@@ -733,7 +732,6 @@ def main():
     tornado.options.parse_command_line()
     application = Application()
     global latest_postnumber
-    import pymongo
     latest_con = pymongo.MongoClient('localhost', 27017)
     latest_db = latest_con['imageboard']
     latest_postnumber = latest_db['posts'].find({}).sort('count', -1)[0]['count']

@@ -6,6 +6,9 @@ import re
 thumb_def = 'static/missing_thumbnail.jpg'
 spoilered = 'static/spoiler.jpg'
 
+def exclude(_from):
+    return {i: False for i in _from}
+
 # updates one db entry by set parametres
 async def update_db(db, count, variables):
     await db.posts.update_one(
