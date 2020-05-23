@@ -734,7 +734,13 @@ def main():
     global latest_postnumber
     latest_con = pymongo.MongoClient('localhost', 27017)
     latest_db = latest_con['imageboard']
-    latest_postnumber = latest_db['posts'].find({}).sort('count', -1)[0]['count']
+    try:
+        latest_postnumber = latest_db['posts'].find({}).sort('count', -1)[0]['count']
+    except IndexError:
+        # in case you are running the server for the first time
+        # there will be no posts therefore this should return 0
+        # and the first post will be №1
+        latest_postnumber = 0
     http_server = tornado.httpserver.HTTPServer(application, max_buffer_size=_ib.MAX_FILESIZE)
     http_server.listen(options.port)
     schedule_check(application)
