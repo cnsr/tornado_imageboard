@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import tornado.options
 import tornado.httpserver
 import tornado.web
@@ -32,6 +33,13 @@ from api import *
 
 from tornado.options import define, options
 define('port', default=8000, help='run on given port', type=int)
+
+logger = logging.getLogger('board')
+logger.setLevel(logging.DEBUG)
+# console log handler
+ch = logging.StreamHandler()
+ch.setLevel(logging.WARNING)
+logger.addHandler(ch)
 
 executor = concurrent.futures.ThreadPoolExecutor(8)
 
@@ -359,13 +367,11 @@ class JsonBoardHandler(LoggedInHandler):
         return True
 
     async def set_default_headers(self):
-        print('setting headers')
         self.set_header("Access-Control-Allow-Origin", "*")
         self.set_header("Access-Control-Allow-Headers", "x-requested-with")
         self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
 
     async def options(self):
-        print('options')
         self.set_status(204)
         self.finish()
 
@@ -387,7 +393,6 @@ class JsonThreadHandler(LoggedInHandler):
         return True
 
     async def set_default_headers(self):
-        print('setting headers')
         self.set_header("Access-Control-Allow-Origin", "*")
         self.set_header("Access-Control-Allow-Headers", "x-requested-with")
         self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
@@ -485,6 +490,7 @@ async def makedata(db, subject, text, count, board, ip, oppost=False, thread=Non
     data['oppost'] = oppost
     data['thread'] = thread
     data['banned'] = False
+    data['ban_message'] = None
     data['replies'] = []
     data['country'] = ''
     data['countryname'] = ''
@@ -622,6 +628,7 @@ def schedule_check(app):
                             yield db.posts.delete_many({'thread': thread['count']})
                             yield db.posts.remove({'count': thread['count']})
         except Exception as e:
+            logger.critical('Error processing scheduled check', exc_info=e)
             print(repr(e))
             pass
     def wrapper():
@@ -631,6 +638,7 @@ def schedule_check(app):
 
 
 async def is_banned(db, ip, board):
+    # wtf even is this
     ban = await db.bans.find_one({'ip': ip})
     if board not in _ib.BAN_ALLOWED:
         if ban:
@@ -640,7 +648,8 @@ async def is_banned(db, ip, board):
                     return True
                 else:
                     await db.bans.delete_one({'ip': ip})
-                    log_message = '{0} was unbanned (banned until {1}).'.format(ip, ban['date'])
+                    log_message = f'{ip} was unbanned (banned until {ban["date"]}).'
+                    logging.info(log_message)
                     await log('unban', log_message)
                     return False
             else:
@@ -650,9 +659,8 @@ async def is_banned(db, ip, board):
         if ban:
             if ban['date']:
                 return False
-            else:
-                return True
-        else: return False
+            return True
+        return False
 
 
 def get_replies(text):
@@ -727,6 +735,7 @@ class Application(tornado.web.Application):
 
 
 def main():
+    logger.info('Starting up the server...')
     check_path(uploads)
     check_path('banners/')
     tornado.options.parse_command_line()
@@ -743,6 +752,7 @@ def main():
         latest_postnumber = 0
     http_server = tornado.httpserver.HTTPServer(application, max_buffer_size=_ib.MAX_FILESIZE)
     http_server.listen(options.port)
+    logger.info(f'Server is running on {options.port}')
     schedule_check(application)
     tornado.ioloop.IOLoop.instance().start()
 

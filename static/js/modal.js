@@ -1,19 +1,15 @@
 var files = new Array;
 $(document).ready(function(){
-	$('.post-image, .post-video').each(function() {
+	$('.post-image').each(function() {
 		if (!$(this).hasClass('modal-image')) {
-			var attr = $(this).attr('data-oid');
 			if ($(this).is('img')) {
 				files.push($(this).attr('data-image'));
-			} else if ($(this).is('video')) {
-				files.push($(this).attr('src'));
 			}
 		}
 	});
 	if (localStorage.volume === null || localStorage.volume === '' || typeof localStorage.volume === 'undefined') {
 		localStorage.volume = 0.5;
 	}
-	var win = $(window);	
 	$('.modal').draggable();
 	$(document).on('click', '.modal-c', function(e) {
 		e.preventDefault();		
@@ -47,7 +43,7 @@ $(document).ready(function(){
 	})
 	$(document).on("click", function(event) {
 		var target = $(event.target);
-		if(target.hasClass('post-media')) {
+		if(target.hasClass('post-image')) {
 			$('.modal-controls').css('display', 'block');
 			if (!target.parents('.modal').length){
 				$('.modal').empty();
@@ -94,48 +90,49 @@ $(document).ready(function(){
 						}
 						return false;
 					});
-				} else if (target.is('audio')) {
+				} else if (target.is('audio') || target.is('video')) {
 					return false;
-				} else {
-					centerModal();
-					var vid = $('.modal-image');
-					vid.attr('autoplay', '');
-					$(vid).on('loadeddata', function() {
-						var vw = vid[0].videoWidth;
-						var vh = vid[0].videoHeight;
-						if (vw <= $(window).width() &&  vh <= $(window).height()) {
-							vid.css('height', vh);
-							vid.css('width', vw);
-							centerModal();
-						} else {
-							vid.css('height', $(window).height());
-							vid.css('width', $(window).width());
-							centerModal();							 
-						}
-					});
-					var vol = parseFloat(localStorage.volume);
-					if (isNaN(vol)) {vol = 0.5};
-					if (vol > 1.0) {vol = 1.0};
-					if (vol < 0) {vol = 0.0};
-					vid.prop('volume', parseFloat(vol));
-					localStorage.volume = vol;
-					vid.on('DOMMouseScroll mousewheel wheel', function(e){
-						e.preventDefault();
-						vol = parseFloat(localStorage.volume);
-						if (vol > 1.0) {vol = 1.0};
-						if (vol < 0) {vol = 0.0};
-						vid.prop('volume', parseFloat(vol));
-						if(e.originalEvent.detail > 0 || e.originalEvent.wheelDelta < 0) {
-							var volume = (vol - 0.1);
-							localStorage.volume = volume;
-						} else {
-							var volume = (vol + 0.1);
-							localStorage.volume = volume;
-
-						}
-					});
-
 				}
+				// } else {
+				// 	centerModal();
+				// 	var vid = $('.modal-image');
+				// 	vid.attr('autoplay', '');
+				// 	$(vid).on('loadeddata', function() {
+				// 		var vw = vid[0].videoWidth;
+				// 		var vh = vid[0].videoHeight;
+				// 		if (vw <= $(window).width() &&  vh <= $(window).height()) {
+				// 			vid.css('height', vh);
+				// 			vid.css('width', vw);
+				// 			centerModal();
+				// 		} else {
+				// 			vid.css('height', $(window).height());
+				// 			vid.css('width', $(window).width());
+				// 			centerModal();							 
+				// 		}
+				// 	});
+				// 	var vol = parseFloat(localStorage.volume);
+				// 	if (isNaN(vol)) {vol = 0.5};
+				// 	if (vol > 1.0) {vol = 1.0};
+				// 	if (vol < 0) {vol = 0.0};
+				// 	vid.prop('volume', parseFloat(vol));
+				// 	localStorage.volume = vol;
+				// 	vid.on('DOMMouseScroll mousewheel wheel', function(e){
+				// 		e.preventDefault();
+				// 		vol = parseFloat(localStorage.volume);
+				// 		if (vol > 1.0) {vol = 1.0};
+				// 		if (vol < 0) {vol = 0.0};
+				// 		vid.prop('volume', parseFloat(vol));
+				// 		if(e.originalEvent.detail > 0 || e.originalEvent.wheelDelta < 0) {
+				// 			var volume = (vol - 0.1);
+				// 			localStorage.volume = volume;
+				// 		} else {
+				// 			var volume = (vol + 0.1);
+				// 			localStorage.volume = volume;
+
+				// 		}
+				// 	});
+
+				// }
 			}
 		} else {
 			// horrible mess of if's

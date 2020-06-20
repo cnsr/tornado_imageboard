@@ -49,8 +49,28 @@
 		</div>
 		<br />
 		<input type="hidden" name="pass" value='default' id='newpostpass' />
-		<input type='submit' id='sendpost'>
-		<input type='checkbox' name='saging' id='saging' title='Sage'/>
-		<label for='saging'> </label>		
+		<div id='sendpost-box'>
+			<input type='submit' id='sendpost'>
+			<input type='checkbox' name='saging' id='saging' title='Sage'/>
+			<label for='saging'> </label>
+		</div>
 	</form>
+	<style>
+		#sendpost-box {
+			margin-top: 5px;
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		#saging {
+			transform:scale(1.5);
+		}
+
+		#sendpost {
+			width: 40%;
+			height: 32px;
+		}
+	</style>
 </div>

@@ -76,7 +76,7 @@ $(document).ready(function() {
 			$(this).text('(embed)');			 
 		} else {
 			let url = $(this).attr('data-url')
-			let iframe = '<iframe width="320" height="240" src="https://www.youtube.com/embed/'+url+'?autoplay=1" class="youtube-frame"></iframe>';
+			let iframe = '<iframe width="480" height="320" src="https://www.youtube.com/embed/'+url+'?autoplay=1" class="youtube-frame"></iframe>';
 			$(this).after(iframe);
 			$(this).text('(unembed)');
 		}

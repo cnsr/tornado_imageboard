@@ -17,7 +17,8 @@ $(document).ready(function() {
 	$('#ban-submit').on('click', function(e) {
 		e.preventDefault();
 		var post = $('#ban-post').val();
-		var iban = '';
+		var ban;
+		var lock;
 		var rm = $('#ban-rm').is(':checked');
 		if ($('#ban-never').is(':checked')) {
 			ban = 'Never';
@@ -35,11 +36,12 @@ $(document).ready(function() {
 			ban = moment.utc(_ban)._i;
 		}
 		if ($('#ban-lock').is(':checked')) {
-			 var lock = 'true';
-		} else { var lock = 'false'; }
+			 lock = 'true';
+		} else { lock = 'false'; }
 		var reason = $('#ban-reason').val();
-		sendAjaxBan(post, ban, reason, lock, rm);
-		popUp('User has been banned');
+		var banMessage = $('#ban-message').val();
+		
+		sendAjaxBan(post, ban, reason, banMessage, lock, rm);
 		$('.banform').hide();
 	})
 	$('#ban-close').on('click', function() {
@@ -48,18 +50,20 @@ $(document).ready(function() {
 });
 
 $.ajaxSettings.traditional = true;
-function sendAjaxBan(post, date, reason, lock, rm) {
+function sendAjaxBan(post, date, reason, banMessage, lock, rm) {
 	$.ajax({
 		url : "/ajax/ban/",
 		type : "POST",
-		data : {post: post, date: date, reason: reason, lock: lock, rm: rm, _xsrf: getCookie("_xsrf")},
+		data : {post: post, date: date, reason: reason, ban_message: banMessage, lock: lock, rm: rm, _xsrf: getCookie("_xsrf")},
 		success : function(json) {
-			$('#' + post).append('<p class="banned">User has been banned for this post</p>');
+			$('#' + post).append(`<p class="banned">${banMessage ? banMessage : "User has been banned for this post"}</p>`);
 			if (rm) $('#' + post).parent().remove();
+			popUp('User has been banned');
 		},
 
 		error : function(xhr,errmsg,err) {
 			console.log(xhr.status + ": " + xhr.responseText);
+			popUp('Failed to ban user');
 		}
 	});
 };

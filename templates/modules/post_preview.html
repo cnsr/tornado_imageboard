@@ -43,7 +43,11 @@
 			<span class='roll-result'>{{post['roll']}}</span>
 		{% end %}		
 		{% if post['banned'] %}
-			<p class="banned">User has been banned for this post.</p>
+			{% if post.get('ban_message', None) %}
+				<p class="banned">{{post['ban_message']}}</p>
+			{% else %}
+				<p class="banned">User has been banned for this post.</p>
+			{% end %}
 		{% end %}
 		{% if post['seal'] %}
 			<img class='sealed' src='/static/seal.png' />

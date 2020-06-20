@@ -261,7 +261,11 @@ header {
 }
 
 .youtube-frame {
+	min-height: 320px;
+	min-width: 480px;
 	display: block;
+	resize: both;
+	overflow: auto;
 }
 
 .modal-c {

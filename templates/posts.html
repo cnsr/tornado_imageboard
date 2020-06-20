@@ -55,8 +55,10 @@
 		<link rel='stylesheet' href="{{ static_url('css/banform.css') }}">		
 		<div class='banform'>
 			<form method='POST' action=''>
-				<input id='ban-post' disabled type='text'>
-				<button id='ban-close'>X</button>
+				<div class='ban-row'>
+					<input id='ban-post' disabled type='text'>
+					<button id='ban-close'>X</button>
+				</div>
 				<div class='ban-expires'>
 					<p>Expiration:</p>
 					<input type='checkbox' id='ban-never'/>
@@ -84,10 +86,18 @@
 						</table>
 					</div>
 				</div>
-				<label for='ban-reason'>Reason:</label>				
-				<input type='text' id='ban-reason' maxlength=100 required>
-				<input type='Submit' value='Ban' id='ban-submit'>
-			</form>
+				<div class='ban-col'>
+					<div class='ban-subrow'>
+						<label for='ban-reason'>Reason:</label>				
+						<input type='text' id='ban-reason' maxlength=100 required>
+					</div>
+					<div class='ban-subrow'>
+						<label for='ban-message'>Ban message:</label>				
+						<input type='text' id='ban-message' maxlength=150>
+					</div>
+					<input type='Submit' value='Ban' id='ban-submit'>
+				</div>
+				</form>
 		</div>
 	{% end %}
 	{% module Template() %}	

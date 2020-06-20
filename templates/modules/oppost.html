@@ -73,7 +73,11 @@
 			<span class='roll-result'>{{op['roll']}}</span>
 		{% end %}		
 		{% if op['banned'] %}
-			<p class="banned">User has been banned for this post.</p>
+			{% if op.get('ban_message') %}
+				<p class="banned">{{op['ban_message']}}</p>
+			{% else %}
+				<p class="banned">User has been banned for this post.</p>
+			{% end %}
 		{% end %}
 		{% if op['seal'] %}
 			<img class='sealed' src='/static/seal.png' />

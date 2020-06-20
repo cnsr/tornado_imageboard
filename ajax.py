@@ -212,6 +212,7 @@ class AjaxBanHandler(LoggedInHandler):
             await log('unban', log_message)
             await db.bans.insert_one(ban)
             p['banned'] = True
+            p['ban_message'] = data.get('ban_message', 'User has been banned for this post')
             if ban['locked'] and p['oppost']:
                 p['locked'] = True
             await update_db(db, p['count'], p)

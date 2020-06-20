@@ -1,9 +1,10 @@
 .banform {
 	 display:none;
 	 border: 1px solid black;
-	 background: white;
+	 background: lightgray;
 	 position: fixed;
 	 z-index: 1000000;
+	 padding: 5px;
 }
 
 .banform p {
@@ -16,4 +17,41 @@
 
 .banform br {
 	display: block;
+}
+
+.ban-row {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+.ban-col {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	margin-bottom: 3px;
+	margin-top: 6px;
+}
+
+.ban-subrow {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	margin-top: 3px;
+}
+
+.ban-subrow ~ label {
+	padding-right: 5px;
+}
+
+.ban-subrow ~ input {
+	min-width: 100%;
+}
+
+#ban-reason {
+	width: 120%;
+}
+
+#ban-submit {
+	margin-top: 4px;
 }
