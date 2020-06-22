@@ -18,7 +18,8 @@ $format_search =  [
 	/\*\*(.+)\*\*/ig,
 	/:waifu:/g,
 	/:pepemad:/g,
-	/:pardon:/g
+	/:pardon:/g,
+	/\[(color|c)=#?([0-9a-f]{3}|[0-9a-f]{6})\](.+)(\[\/(color|c)\])?/gi
 ];
 $format_replace = [
     '<strong>$1</strong>',
@@ -40,7 +41,8 @@ $format_replace = [
 	'<spoiler>$1</spoiler>',
 	'<img class="sticker" src="/static/icons/waifu.png"/>',
 	'<img class="sticker" src="/static/icons/pepe_mad.png"/>',
-	'<img class="sticker" src="/static/icons/pardon.gif"/>',	
+	'<img class="sticker" src="/static/icons/pardon.gif"/>',
+	'<span style="color:#$2;">$3</span>',
 ];
 $(document).ready(function() {
 	/*$('.flag').each(function(){
