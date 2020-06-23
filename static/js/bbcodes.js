@@ -19,7 +19,7 @@ $format_search =  [
 	/:waifu:/g,
 	/:pepemad:/g,
 	/:pardon:/g,
-	/\[(color|c)=#?([0-9a-f]{3}|[0-9a-f]{6})\](.+)(\[\/(color|c)\])?/gi
+	/\[(color|c)=#?([0-9a-f]{3}|[0-9a-f]{6})\](.+?)(\[\/(color|c)\])?/gi
 ];
 $format_replace = [
     '<strong>$1</strong>',
