@@ -9,44 +9,88 @@
 	<form method='POST' action='' enctype="multipart/form-data">
 		{% module xsrf_form_html() %}
 		<div class='name'>
-			<label for='name'>Name</label><input type='text' name='name' maxlength=50 required/>
+			<label for='name'>Full name</label><input type='text' name='name' maxlength=50 required/>
 		</div>
 		<div class='short'>
-			<label for='short'>Short</label><input type='text' name='short' maxlength=5 required/>
+			<label for='short'>URL handle</label><input type='text' name='short' maxlength=5 required/>
 		</div>
-		<div class='username'>
-			<label for='username'>Username</label><input type='text' name='username' maxlength=20 /><br />
-			<input type='checkbox' id='custom' name='custom'/><label for='custom'>Allow custom usernames</label>
+		<div id='username-wrapper'>
+            <div id='username-username'>
+    			<label for='username'>Default username</label>
+                <input type='text' name='username' maxlength=20 />
+            </div>
+            <div id='username-custom'>
+    			<input type='checkbox' id='custom' name='custom'/><label for='custom'>Allow custom usernames</label>
+            </div>
 		</div>		
 		<div class='description'>
-			<label for'description'>Description</label><textarea rows=4 cols=55 name='description' maxlength=500></textarea>
+			<label for'description'>Board description</label><textarea rows=4 cols=55 name='description' maxlength=500></textarea>
 		</div>
-		<div class='thread_posts'>
-			<label for='thread_posts'>Max amount of posts in thread</label><input type='text' name='thread_posts' maxlength=4 onkeypress='validate(event)' required/>
+		<div class='board-details'>
+			<label for='thread_posts'>Max amount of posts in thread</label><input type='number' name='thread_posts' onkeypress='validate(event)' min='1' max='1001' required/>
 		</div>
-		<div class='thread_bump'>
-			<label for='thread_bump'>Bumplimit</label><input type='text' name='thread_bump' onkeypress='validate(event)' maxlength=4 required/>
+		<div class='board-details'>
+			<label for='thread_bump'>Bumplimit</label>
+            <input type='number' name='thread_bump' onkeypress='validate(event)' required min='1' max='1001'/>
+            <small>Amount of posts after which thread is no longer being sorted by date</small>
 		</div>
-		<div class='thread_bump'>
-			<label for='country'>Country flags?</label><input id='country' type='checkbox' name='country'/>
+		<div class='board-details-inline'>
+			<label for='country'>Country flags?</label>
+            <input id='country' type='checkbox' name='country'/>
 		</div>		
-		<div class='thread_catalog'>
-			<label for='thread_catalog'>Max amount of threads in catalog</label><input type='text' name='thread_catalog' onkeypress='validate(event)' maxlength=2 required/>
+        <small>Enable countryflag display. Country data will be stored in either case.</small>
+		<div class='board-details'>
+			<label for='thread_catalog'>Max amount of threads in catalog</label><input type='number' name='thread_catalog' onkeypress='validate(event)' min=1 max=101 required/>
 		</div>
-		<div class='thread_roll'>
-			<label for='roll'>Allow dice rolls</label><input id='roll' type='checkbox' name='roll'/>
+		<div class='board-details-inline'>
+			<label for='roll'>Allow dice rolls</label>
+            <input id='roll' type='checkbox' name='roll'/>
 		</div>
-		<div class='thread_unlisted'>
-			<label for='unlisted'>Hide board</label><input id='unlisted' type='checkbox' name='unlisted'/>
-		</div>		
-		<div class='perpage'>
+        <small>Enable rolling dice in post title. TODO: lookup format.</small>
+		<div class='board-details-inline'>
+			<label for='unlisted'>Hide board</label>
+            <input id='unlisted' type='checkbox' name='unlisted'/>
+		</div>
+        <small>Remove board from public view.</small>
+		<div class='board-details-inline'>
 			<label for='perpage'>Posts per page</label><input id='perpage' name='perpage' type='number'
 			value="10" min="0" step="1"/>
 		</div>
-		<pre>Banners need to be 300x100</pre>
-		<label for='banner'>Banner</label>
-		<input type='file' name='banner' id='banner' class='fileinput' />
-		<input type='submit'>
+        <div id='banner-details'>
+		    <label for='banner'>Banner</label>
+    		<input type='file' name='banner' id='banner' class='fileinput' />
+	    	<pre>Banners need to be 300px wide by 100px tall.</pre>
+        </div>
+        <div>
+    		<input type='submit' value='Save board'>
+        </div>
 	</form>
 </div>
+<style>
+.add_board form {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+.name, .short, #username-username, .description, .board-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    max-width: 24rem;
+}
+.board-details-inline {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 24rem;
+}
+#username-custom {
+    margin-top: 0px;
+}
+input[type='checkbox'] {
+    outline: 1px solid #1e5180;
+}
 {% end %}

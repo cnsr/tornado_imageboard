@@ -13,6 +13,7 @@ from uuid import uuid4
 import geoip2.database as gdb
 import motor.motor_tornado
 import pymongo
+import tornado.autoreload
 import tornado.httpserver
 import tornado.ioloop
 import tornado.options
@@ -739,6 +740,9 @@ def main():
     check_path(uploads)
     check_path('banners/')
     tornado.options.parse_command_line()
+    # TODO: import env variables and run as DEBUG-only
+    tornado.autoreload.start()
+
     application = Application()
     # holy fuck this is awful
     global latest_postnumber
