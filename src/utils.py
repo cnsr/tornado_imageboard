@@ -1,7 +1,8 @@
-import motor.motor_tornado
 import os
 import pickle
 import re
+
+import motor.motor_tornado
 
 thumb_def = 'static/missing_thumbnail.jpg'
 spoilered = 'static/spoiler.jpg'

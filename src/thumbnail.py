@@ -1,10 +1,11 @@
-from tornado.process import Subprocess
-from tornado import gen
-import logging
 import json
-from subprocess import Popen, PIPE
+import logging
 import os.path
+from subprocess import PIPE, Popen
+
 from PIL import Image
+from tornado import gen
+from tornado.process import Subprocess
 
 image_extensions = ["jpg", "jpeg", "png", "gif"]
 video_extensions = ["webm", "mp4"]

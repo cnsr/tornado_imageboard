@@ -25,7 +25,7 @@ Tornado-based imageboard
     * Support of:
         * .jpg/.jpeg, .png, .gif images,
         * .webm and .mp4 videos,
-        * .mp3, .ogg, .wav, .opus audio;
+        * .mp3, .ogg, .wav audio;
     * Up to 20 MB filesize;
     * Spoiler thumbnails for images and videos;
     * Maximum of four files per post;

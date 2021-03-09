@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-import motor.motor_tornado
 import datetime
-import ib_settings as _ib
+
+import motor.motor_tornado
+
+import src.ib_settings as _ib
 
 db = motor.motor_tornado.MotorClient('localhost', 27017)['imageboard']
 

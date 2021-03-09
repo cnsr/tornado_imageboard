@@ -1,4 +1,4 @@
-__pychache__/*
+__pycache__/*
 *.pyc
 uploads/*.jpg
 uploads/*.png
@@ -13,3 +13,4 @@ uploads/*.mp3
 banners/*
 .python-version
 blacklist.pkl
+*.swp

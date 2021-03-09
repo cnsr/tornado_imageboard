@@ -1,6 +1,7 @@
-import subprocess
-import shlex
 import json
+import shlex
+import subprocess
+
 
 # function to find the resolution of the input video file
 def resolution(pathToInputVideo):

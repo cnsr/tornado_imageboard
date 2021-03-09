@@ -1,5 +1,6 @@
-from pymongo import MongoClient
 import os
+
+from pymongo import MongoClient
 
 from utils import *
 

@@ -1,37 +1,37 @@
 # -*- coding: utf-8 -*-
-import logging
-import tornado.options
-import tornado.httpserver
-import tornado.web
-import tornado.ioloop
-import motor.motor_tornado
-import uimodules
+import cgi
 import datetime
-import ib_settings as _ib
-from tornado import concurrent
-import re, cgi
-from uuid import uuid4
-import os
-from mimetypes import guess_type
 import json
-from getresolution import resolution
-from tornado import gen
-from html.parser import HTMLParser
-from PIL import Image
-import geoip2.database as gdb
-from thumbnail import make_thumbnail
-from tripcode import tripcode
+import logging
+import os
 import random
+import re
+from html.parser import HTMLParser
+from mimetypes import guess_type
+from uuid import uuid4
+
+import geoip2.database as gdb
+import motor.motor_tornado
 import pymongo
-
-from logger import log
-
-from admin import *
-from ajax import *
-from utils import *
-from api import *
-
+import tornado.httpserver
+import tornado.ioloop
+import tornado.options
+import tornado.web
+from PIL import Image
+from tornado import concurrent, gen
 from tornado.options import define, options
+
+import src.ib_settings as _ib
+import src.uimodules as uimodules
+from src.admin import *
+from src.ajax import *
+from src.api import *
+from src.getresolution import resolution
+from src.logger import log
+from src.thumbnail import make_thumbnail
+from src.tripcode import tripcode
+from src.utils import *
+
 define('port', default=8000, help='run on given port', type=int)
 
 logger = logging.getLogger('board')
@@ -740,9 +740,16 @@ def main():
     check_path('banners/')
     tornado.options.parse_command_line()
     application = Application()
+    # holy fuck this is awful
     global latest_postnumber
-    latest_con = pymongo.MongoClient('localhost', 27017)
+
+    try:
+        latest_con = pymongo.MongoClient('localhost', 27017)
+    except pymongo.errors.ServerSelectionTimeoutError:
+        logger.error('MongoDB is not running.')
+
     latest_db = latest_con['imageboard']
+
     try:
         latest_postnumber = latest_db['posts'].find({}).sort('count', -1)[0]['count']
     except IndexError:
@@ -750,13 +757,10 @@ def main():
         # there will be no posts therefore this should return 0
         # and the first post will be №1
         latest_postnumber = 0
+
     http_server = tornado.httpserver.HTTPServer(application, max_buffer_size=_ib.MAX_FILESIZE)
     http_server.listen(options.port)
     logger.info(f'Server is running on {options.port}')
     schedule_check(application)
     tornado.ioloop.IOLoop.instance().start()
-
-
-if __name__ == '__main__':
-    main()
 
