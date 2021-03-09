@@ -8,7 +8,7 @@ itsdangerous==1.1.0
 maxminddb==1.5.1
 motor==2.0.0
 olefile==0.46
-Pillow==6.2.0
+Pillow==7.1.0
 pipe==1.5.0
 popen==0.1.20
 pycparser==2.19
