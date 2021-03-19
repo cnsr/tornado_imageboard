@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import cgi
+import html
 import datetime
 import json
 import logging
@@ -75,7 +76,7 @@ def strip_tags(html):
     # MLStripper fucks up posts with more than one "<"
     tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
     no_tags = tag_re.sub('', html)
-    return cgi.escape(no_tags)
+    return html.escape(no_tags)
 
 
 async def roll(subject):
