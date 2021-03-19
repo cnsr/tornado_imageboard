@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import cgi
 import html
 import datetime
 import json
@@ -72,14 +71,14 @@ class MLStripper(HTMLParser):
 
 
 # this is done to ensure user does not input any html in posting form
-def strip_tags(html):
+def strip_tags(inbound_html: str) -> str:
     # MLStripper fucks up posts with more than one "<"
     tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
-    no_tags = tag_re.sub('', html)
+    no_tags = tag_re.sub('', inbound_html)
     return html.escape(no_tags)
 
 
-async def roll(subject):
+async def roll(subject: str) -> str:
     matches = re.compile(r'r(oll)? ([1-9])d([1-9]$|[1-9][0-9]{0,3}$)').match(subject)
     if not matches:
         return None
