@@ -22,7 +22,7 @@ from PIL import Image
 from tornado import concurrent, gen
 from tornado.options import define, options
 
-import src.ib_settings as _ib
+import src.ib_settings as default_settings
 import src.uimodules as uimodules
 from src.admin import *
 from src.ajax import *
@@ -33,7 +33,7 @@ from src.thumbnail import make_thumbnail
 from src.tripcode import tripcode
 from src.utils import *
 
-define('port', default=8000, help='run on given port', type=int)
+define('port', default=default_settings.PORT, help='run on given port', type=int)
 
 logger = logging.getLogger('board')
 logger.setLevel(logging.DEBUG)
@@ -44,7 +44,7 @@ logger.addHandler(ch)
 
 executor = concurrent.futures.ThreadPoolExecutor(8)
 
-uploads = 'uploads/'
+uploads = default_settings.UPLOAD_ROOT
 
 global latest_postnumber
 latest_postnumber = 0
@@ -422,8 +422,8 @@ class JsonThreadHandler(LoggedInHandler):
 
 
 async def upload_file(f):
-    fname = f['filename']
-    fext = os.path.splitext(fname)[1].lower()
+    fname = f.get('filename')
+    fext = os.path.splitext(fname)[-1].lower()
     if fext in ['.jpg', '.gif', '.png','.jpeg']:
         filetype = 'image'
     elif fext in ['.webm', '.mp4']:
@@ -433,7 +433,7 @@ async def upload_file(f):
     else:
         # if format not supported
         return None, None, None, None
-    newname = uploads + str(uuid4()) + fext
+    newname = os.path.join(uploads, f"{uuid4().hex}{fext}")
     with open(newname, 'wb') as nf:
         nf.write(bytes(f['body']))
     filedata = await process_file(newname)
@@ -606,9 +606,10 @@ async def check_thread(db, thread, subj):
     return await db.posts.count_documents({'thread': thread}) >= subj - 1
 
 
+# TODO: move into a celery task lmao wtf is this shitcode
 # deletes the threads that are inactive after there are too much threads
 def schedule_check(app):
-    next_time = datetime.timedelta(0, _ib.CHECK_TIMEOUT)
+    next_time = datetime.timedelta(0, default_settings.CHECK_TIMEOUT)
     @tornado.gen.coroutine
     def task():
         # delete all threads except first N, sorted by bumps
@@ -641,7 +642,7 @@ def schedule_check(app):
 async def is_banned(db, ip, board):
     # wtf even is this
     ban = await db.bans.find_one({'ip': ip})
-    if board not in _ib.BAN_ALLOWED:
+    if board not in default_settings.BAN_ALLOWED:
         if ban:
             if ban['date']:
                 expires = datetime.datetime.strptime(ban['date'], "%a, %d %b %Y %H:%M:%S %Z")
@@ -702,7 +703,7 @@ class Application(tornado.web.Application):
             (r'/admin/logs/?', AdminLogsHandler),
             (r'/admin/blacklist/?', AdminBlackListHandler),
             (r'/admin/search/(\d+)/?', AdminIPSearchHandler),
-            (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': 'uploads'}),
+            (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': uploads}),
             (r'/ajax/remove/?', AjaxDeleteHandler),
             (r'/ajax/delete/?', AjaxDeletePassHandler),
             (r'/ajax/ban/?', AjaxBanHandler),
@@ -762,7 +763,7 @@ def main():
         # and the first post will be №1
         latest_postnumber = 0
 
-    http_server = tornado.httpserver.HTTPServer(application, max_buffer_size=_ib.MAX_FILESIZE)
+    http_server = tornado.httpserver.HTTPServer(application, max_buffer_size=default_settings.MAX_FILESIZE)
     http_server.listen(options.port)
     logger.info(f'Server is running on {options.port}')
     schedule_check(application)
