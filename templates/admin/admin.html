@@ -1,0 +1,46 @@
+{% extends '../index.html' %}
+{% block title %}ADMIN{% end %}
+{% block css %}
+	<link rel='stylesheet' href="{{ static_url('css/admin_blacklist.css') }}">
+{% end %}
+{% block admin_header %}
+	<div id='admin-header'>
+		<a href='/admin'><button>ADMIN</button></a>
+		<a href='/admin/logout'><button>LOGOUT</button></a>
+	</div>
+{% end %}
+{% block content %}
+	<h1>Admin Panel</h3>
+	<div class='redirects'>
+		<a href='/admin/create'>Create New Board</a>
+		<a href='/admin/stats'>Browse Board Info</a>
+		<a href='/admin/bans'>Browse Bans</a>
+		<a href='/admin/reports'>Browse Reports</a>
+		<a href='/admin/logs'>Browse Logs</a>
+		<a href='/admin/blacklist/'>Configure blacklist</a>
+	</div>
+	<style>
+		.redirects {
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start;
+		}
+		.redirects a {
+			margin-top: .5rem;
+			margin-bottom: .5rem;
+			font-size: 1.5rem;
+			width: 24rem;
+		}
+		#admin-header {
+			margin-top: 1rem;
+			margin-bottom: 1rem;
+			width: 36rem;
+			display: flex;
+			flex-direction: row;
+			justify-content: flex-start;
+		}
+		#admin-header * {
+			margin-right: 1rem;
+		}
+	</style>
+{% end %}

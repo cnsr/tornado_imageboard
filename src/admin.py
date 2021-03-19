@@ -34,7 +34,7 @@ class AdminLoginHandler(LoggedInHandler):
     async def get(self):
         if not self.current_user:
             boards_list = await self.application.database.boards.find({}).to_list(None)
-            self.render('admin_login.html', boards_list=boards_list)
+            self.render('admin/admin_login.html', boards_list=boards_list)
         else:
             self.redirect('/admin')
             return
@@ -75,7 +75,7 @@ class AdminStatsHandler(LoggedInHandler):
             popup = self.responses.get(msg)
         boards = await self.application.database.boards.find({}).to_list(None)
         boards_list = await self.application.database.boards.find({}).to_list(None)
-        self.render('admin_stats.html', boards=boards, boards_list=boards_list, popup=popup)
+        self.render('admin', boards=boards, boards_list=boards_list, popup=popup)
 
     @ifadmin
     async def post(self):
@@ -105,7 +105,7 @@ class AdminBannedHandler(LoggedInHandler):
         db = self.application.database
         bans = await db.bans.find({}).sort([('date', 1)]).to_list(None)
         boards_list = await db.boards.find({}).to_list(None)
-        self.render('admin_banned.html', bans=bans, boards_list=boards_list)
+        self.render('admin/admin_banned.html', bans=bans, boards_list=boards_list)
 
     @ifadmin
     async def post(self):
@@ -124,7 +124,7 @@ class AdminReportsHandler(LoggedInHandler):
         db = self.application.database
         reports = await db.reports.find({}).sort([('date', 1)]).to_list(None)
         boards_list = await db.boards.find({}).to_list(None)
-        self.render('admin_reported.html', reports=reports, boards_list=boards_list)
+        self.render('admin/admin_reported.html', reports=reports, boards_list=boards_list)
 
     @ifadmin
     async def post(self):
@@ -145,7 +145,7 @@ class AdminHandler(LoggedInHandler):
             self.redirect('/admin/login')
         else:
             boards_list = await self.application.database.boards.find({}).to_list(None)
-            self.render('admin.html', boards_list=boards_list)
+            self.render('admin/admin.html', boards_list=boards_list)
 
 
 # creation of boards
@@ -153,7 +153,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
     @ifadmin
     async def get(self):
         boards_list = await self.application.database.boards.find({}).to_list(None)
-        self.render('admincreate.html', boards_list=boards_list)
+        self.render('admin/admincreate.html', boards_list=boards_list)
 
     @ifadmin
     async def post(self):
@@ -200,7 +200,7 @@ class AdminBoardEditHandler(LoggedInHandler):
                 if key in instance:
                     del instance[key]
             boards_list = await self.application.database.boards.find({}).to_list(None)
-            self.render('admin_edit.html', boards_list=boards_list, i=instance)
+            self.render('admin/admin_edit.html', boards_list=boards_list, i=instance)
         else:
             self.redirect('/admin/stats')
 
@@ -284,7 +284,7 @@ class AdminLogsHandler(LoggedInHandler):
         else:
             paged = None
         boards_list = await db.boards.find({}).to_list(None)
-        self.render('admin_logs.html', logs=logs, boards_list=boards_list, paged=paged, current=current,
+        self.render('admin/admin_logs.html', logs=logs, boards_list=boards_list, paged=paged, current=current,
         log_types=log_types, curr_type=log_type)
 
     async def chunkify(self, l, n=30):
@@ -300,7 +300,7 @@ class AdminBlackListHandler(LoggedInHandler):
         db = self.application.database
         blacklist = get_blacklist()
         boards_list = await db.boards.find({}).to_list(None)
-        self.render('admin_blacklist.html', boards_list=boards_list, blacklist=blacklist)
+        self.render('admin/admin_blacklist.html', boards_list=boards_list, blacklist=blacklist)
 
     @ifadmin
     async def post(self):
@@ -336,7 +336,7 @@ class AdminIPSearchHandler(LoggedInHandler):
         banned = await self.application.database.bans.find_one({'ip': post['ip']}) or None
         if post:
             posts_by_same_ip = await self.application.database.posts.find({'ip': post['ip']}).sort('date', -1).to_list(None)
-            self.render('admin_search.html', boards=boards,
+            self.render('admin/admin_search.html', boards=boards,
                         boards_list=boards_list, popup=popup,
                         posts=posts_by_same_ip, count=count,
                         banned=banned)
