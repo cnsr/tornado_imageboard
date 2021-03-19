@@ -56,7 +56,7 @@ def check_path(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
-gdbr = gdb.Reader('GeoLite2-City.mmdb')
+gdbr = gdb.Reader(os.path.join('static', 'GeoLite2-City.mmdb'))
 
 class MLStripper(HTMLParser):
     def __init__(self):

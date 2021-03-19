@@ -5,8 +5,9 @@ $(document).ready(function(){
 });
 
 function popUp(data) {
-	$('.popup').remove();
-	var pop = '<div class="popup"><div id="popup-inner">'+data+'</div><button id="popup-close">X</button></div>';
-	$('body').append(pop);
-	$('.popup').effect('shake', { times:1 }, 400);
+	document.querySelectorAll('.popup').forEach(el => el.remove())
+	var pop = document.createElement('div');
+	pop.classList.add('popup');
+	pop,innerHTML = `<div id="popup-inner">${data}</div><button id="popup-close">X</button>`;
+	document.getElementsByTagName('body')[0].appendChild(pop);
 }

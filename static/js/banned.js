@@ -32,7 +32,7 @@ $(document).ready(function() {
 			if (ban_hours != 0 ) ban_total += ban_hours * 60 * 60 * 1000;
 			if (ban_minutes != 0 ) ban_total += ban_minutes * 60 * 1000;
 			let _ban = (new Date(today.getTime() + ban_total)).toGMTString();
-			//ban = moment(_ban).format('DD-MM-YYYY HH:mm:ss');
+			// ban = moment(_ban).format('DD-MM-YYYY HH:mm:ss');
 			ban = moment.utc(_ban)._i;
 		}
 		if ($('#ban-lock').is(':checked')) {

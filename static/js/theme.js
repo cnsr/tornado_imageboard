@@ -1,50 +1,64 @@
-var default_theme = 'brutalism.css';
+var default_theme = 'themes/brutalism.css';
 
-$(document).ready(function(){
-	$('[value="' + localStorage.theme + '"]').attr('selected', true);	
-	$('#themes').change(function () {
-		get_css($(this).val());
-		localStorage.theme = $(this).val().replace("null", default_theme);
+document.addEventListener("DOMContentLoaded", (event) => {
+	var pageBottom = document.getElementById("top");
+	var pageTop = document.getElementsByTagName('header')[0];
+	console.log(pageBottom, pageTop);
+
+	document.getElementsByTagName('html')[0].style.scrollBehavior = 'smooth';
+	document.querySelectorAll(`[value="${localStorage.theme}"]`).forEach(el => el.setAttribute('selected', true));
+
+	document.getElementById('themes').addEventListener('change', function (e) {
+		console.log(e.target.value.replace("null", default_theme));
+		localStorage.theme = e.target.value.replace("null", default_theme);
 	});
-	$('#settings-btn').on('click', function() {
-		$('#settings-menu').toggle();
+
+	document.getElementById('settings-btn').addEventListener('click', function (e) {
+		toggleMenuDisplay()
 	});
-	$('#settings-hide').on('click', function() {
-		$('#settings-menu').hide();
+
+	document.getElementById('settings-hide').addEventListener('click', function (e) {
+		toggleMenuDisplay()
+	});
+
+	document.getElementById('top').addEventListener("click", function() {
+		pageTop.scrollIntoView()
 	})
-	$("#top").click(function() {
-		$("html, body").animate({ scrollTop: 0 }, "fast");
-		return false;
-	});
-	$("#btm").click(function() {
-		$("html, body").animate({ scrollTop: document.body.scrollHeight }, "fast");
-		return false;
-	});
 
+	document.getElementById('btm').addEventListener("click", function() {
+		pageBottom.scrollIntoView()
+	})
 });
 
-function get_theme() {
+const toggleMenuDisplay = () => {
+	//  this is pretty ugly but cba tbh
+	let display = document.getElementById('settings-menu').style.display, newDisplay;
+	if (!display | display === 'none') {newDisplay = 'block'} else newDisplay = 'none';
+	document.getElementById('settings-menu').style.display = newDisplay;
+}
+
+const getTheme = () => {
 	if (typeof localStorage.theme != 'undefined') {
-		get_css(localStorage.theme);
-		$('[value="' + localStorage.theme + '"]').attr('selected', true);
+		getCSS(localStorage.theme);
+		document.querySelectorAll(`[value="${localStorage.theme}"]`).forEach(el => el.setAttribute('selected', true));
 	} else {
-		get_css(default_theme);
+		getCSS(default_theme);
 		localStorage.theme = default_theme;		
-		$('[value="' + default_theme + '"]').attr('selected', true);
+		document.querySelectorAll(`[value="${localStorage.theme}"]`).forEach(el => el.attsetAttributer('selected', true));
 	};
 }
 
-function get_css(file) {
-    "use strict";
-    if ($('#_css')) {
-        $('#_css').remove();
+const getCSS = (file) => {
+	if (!file.startsWith('themes')) file = `themes/${file}`;
+	let _css = document.getElementById('_css');
+    if (_css) {
+        _css.remove();
     }
-    var head = document.getElementsByTagName('head')[0];
-    var link = document.createElement('link');
+    let link = document.createElement('link');
     link.id = '_css';
     link.rel = 'stylesheet';
     link.type = 'text/css';
     link.href = '/static/' + file;
     link.media = 'all';
-    $('head').append(link);
+    document.getElementsByTagName('head')[0].append(link);
 }

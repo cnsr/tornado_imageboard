@@ -14,3 +14,5 @@ banners/*
 .python-version
 blacklist.pkl
 *.swp
+.vscode/
+.env
