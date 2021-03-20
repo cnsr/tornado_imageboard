@@ -25,7 +25,6 @@ from tornado.options import define, options
 
 import src.ib_settings as default_settings
 import src.uimodules as uimodules
-from src.admin import *
 from src.admin import (
     LoggedInHandler, AdminLoginHandler, AdminLogoutHandler,
     AdminStatsHandler, AdminBannedHandler, AdminReportsHandler,
