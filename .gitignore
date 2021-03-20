@@ -11,6 +11,7 @@ uploads/*.tif
 uploads/*.ogg
 uploads/*.mp3
 banners/*
+src/banners/*
 .python-version
 blacklist.pkl
 *.swp
