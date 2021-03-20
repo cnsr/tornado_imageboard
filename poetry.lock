@@ -284,7 +284,7 @@ python-versions = "*"
 
 [[package]]
 name = "requests"
-version = "2.22.0"
+version = "2.25.1"
 description = "Python HTTP for Humans."
 category = "main"
 optional = false
@@ -292,12 +292,12 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [package.dependencies]
 certifi = ">=2017.4.17"
-chardet = ">=3.0.2,<3.1.0"
-idna = ">=2.5,<2.9"
-urllib3 = ">=1.21.1,<1.25.0 || >1.25.0,<1.25.1 || >1.25.1,<1.26"
+chardet = ">=3.0.2,<5"
+idna = ">=2.5,<3"
+urllib3 = ">=1.21.1,<1.27"
 
 [package.extras]
-security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)"]
+security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)"]
 socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
 
 [[package]]
@@ -388,7 +388,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "701cf1e7263e02c0f28219fb4f194f5151677f87c4a5de5c289f3164c8ddd357"
+content-hash = "e6af3442efeb9b75d62b742a0dece12f260715e2aeeffaf4ac51caa4e7ad3110"
 
 [metadata.files]
 appdirs = [
@@ -653,8 +653,8 @@ regex = [
     {file = "regex-2021.3.17.tar.gz", hash = "sha256:4b8a1fb724904139149a43e172850f35aa6ea97fb0545244dc0b805e0154ed68"},
 ]
 requests = [
-    {file = "requests-2.22.0-py2.py3-none-any.whl", hash = "sha256:9cf5292fcd0f598c671cfc1e0d7d1a7f13bb8085e9a590f48c010551dc6c4b31"},
-    {file = "requests-2.22.0.tar.gz", hash = "sha256:11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4"},
+    {file = "requests-2.25.1-py2.py3-none-any.whl", hash = "sha256:c210084e36a42ae6b9219e00e48287def368a26d03a048ddad7bfee44f75871e"},
+    {file = "requests-2.25.1.tar.gz", hash = "sha256:27973dd4a904a4f13b263a19c866c13b92a39ed1c964655f025f3f8d3d75b804"},
 ]
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
