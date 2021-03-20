@@ -7,7 +7,10 @@ import tornado.web
 
 import src.ib_settings as _ib
 from src.logger import log
-from src.utils import *
+from src.utils import (
+    ifadmin, remove_files, update_db,
+    get_ip, save_blacklist, get_blacklist,
+)
 
 
 # crappy handler that checks if user is admin
@@ -86,7 +89,7 @@ class AdminStatsHandler(LoggedInHandler):
             try:
                 posts = await self.application.database.posts.find({'board': board['short']}).to_list(None)
                 for post in posts:
-                    await removeing(post)
+                    await remove_files(post)
                     await self.application.database.posts.delete_one({'count': post['count']})
                 log_message = 'Board {0} has been deleted.'.format(board['short'])
                 await log('board_remove', log_message)
@@ -178,7 +181,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
         if self.request.files:
             f = self.request.files['banner'][0]
             ext = f['filename'].split('.')[-1]
-            newname = 'banners/' + data['short'] + '-' + str(uuid4()).split('-')[-1] + '.' + ext
+            newname = f"banners/{data.get('short')}-{uuid4().hex[:8]}.{ext}"
             with open(newname, 'wb') as nf:
                 nf.write(bytes(f['body']))
             data['banners'].append(newname)
@@ -372,6 +375,3 @@ class AdminIPSearchHandler(LoggedInHandler):
         else:
             self.redirect('/admin/search' + count +'?msg=nop')
         self.redirect('/admin/search/' + count + '/')
-
-
-

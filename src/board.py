@@ -9,6 +9,7 @@ import re
 from html.parser import HTMLParser
 from mimetypes import guess_type
 from uuid import uuid4
+from typing import Optional
 
 import geoip2.database as gdb
 import motor.motor_tornado
@@ -25,6 +26,12 @@ from tornado.options import define, options
 import src.ib_settings as default_settings
 import src.uimodules as uimodules
 from src.admin import *
+from src.admin import (
+    LoggedInHandler, AdminLoginHandler, AdminLogoutHandler,
+    AdminStatsHandler, AdminBannedHandler, AdminReportsHandler,
+    AdminHandler, AdminBoardCreationHandler, AdminBoardEditHandler,
+    AdminLogsHandler, AdminBlackListHandler, AdminIPSearchHandler,
+)
 from src.ajax import *
 from src.api import *
 from src.getresolution import resolution
@@ -46,6 +53,7 @@ executor = concurrent.futures.ThreadPoolExecutor(8)
 
 uploads = default_settings.UPLOAD_ROOT
 
+# TODO: rewrite this atrocity
 global latest_postnumber
 latest_postnumber = 0
 
@@ -78,13 +86,13 @@ def strip_tags(inbound_html: str) -> str:
     return html.escape(no_tags)
 
 
-async def roll(subject: str) -> str:
+async def roll(subject: str) -> Optional[str]:
     matches = re.compile(r'r(oll)? ([1-9])d([1-9]$|[1-9][0-9]{0,3}$)').match(subject)
     if not matches:
         return None
     count = int(matches.group(2))
     sides = int(matches.group(3))
-    return 'Rolled {}'.format(','.join(str(random.randint(0, sides)) for i in range(count)))
+    return f"Rolled {', '.join(str(random.randint(0, sides)) for i in range(count))}"
 
 
 # list of boards
@@ -349,7 +357,7 @@ class ThreadHandler(LoggedInHandler):
                                 else:
                                     posts = await db['posts'].find({'thread': thread_count}).sort([('count', 1)]).to_list(None)
                                     p = posts[0]
-                                    await removeing(p)
+                                    await remove_files(p)
                                     await db.posts.delete_one({'count': p['count']})
 
                         self.redirect('/' + str(board) + '/thread/' + str(op['count']))
@@ -623,10 +631,10 @@ def schedule_check(app):
                     threads = threads[:(len(threads) - board['thread_catalog'])]
                     for thread in threads:
                         if not thread['pinned']:
-                            sync_removeing(thread)
+                            synchronize_removal(thread)
                             posts = yield db.posts.find({'thread': thread['count']}).to_list(None)
                             for post in posts:
-                                sync_removeing(post)
+                                synchronize_removal(post)
                             yield db.posts.delete_many({'thread': thread['count']})
                             yield db.posts.remove({'count': thread['count']})
         except Exception as e:
@@ -663,17 +671,6 @@ async def is_banned(db, ip, board):
                 return False
             return True
         return False
-
-
-def get_replies(text):
-    text = text.replace('&gt;', '>')
-    replies = []
-    x = re.compile(r'(>>\d+)')
-    it = re.finditer(x, text)
-    for x in it:
-        number = x.group(0)
-        replies.append(int(number[2:]))
-    return replies
 
 
 class Application(tornado.web.Application):

@@ -1,17 +1,21 @@
+import asyncio
 import os
 import pickle
 import re
 
 import motor.motor_tornado
+from motor.motor_tornado import MotorDatabase
 
 thumb_def = 'static/missing_thumbnail.jpg'
 spoilered = 'static/spoiler.jpg'
 
-def exclude(_from):
+
+def exclude(_from: dict) -> dict:
     return {i: False for i in _from}
 
+
 # updates one db entry by set parametres
-async def update_db(db, count, variables):
+async def update_db(db: MotorDatabase, count: int, variables: dict):
     await db.posts.update_one(
         {'count': count},
         {
@@ -22,7 +26,7 @@ async def update_db(db, count, variables):
 
 
 # for updating board data
-async def update_db_b(db, short, variables):
+async def update_db_b(db: MotorDatabase, short: str, variables: dict):
     await db.boards.update_one(
         {'short': short},
         {
@@ -32,42 +36,37 @@ async def update_db_b(db, short, variables):
     )
 
 
-async def check_map(db, mapdata):
-    exists = await db.maps.find_one({
-                'long': mapdata['long'],
-                'lat': mapdata['lat']})
-    if exists:
-        await db.maps.delete_one({
-                'long': mapdata['long'],
-                'lat': mapdata['lat']})
+async def check_map(db: MotorDatabase, mapdata: dict[str, str]) -> dict:
+    return await db.maps.find_one_and_delete(
+        {
+            'long': mapdata['long'],
+            'lat': mapdata['lat']
+        }
+    )
 
 
-async def removeing(post):
-    if post['files']:
-        for f in post['files']:
-            if os.path.isfile(f['name']):
-                os.remove(f['name'])
-                if f['thumb']:
-                    if f['thumb'] != thumb_def and f['thumb'] != spoilered:
-                        os.remove(f['thumb'])
+async def remove_files(post: dict):
+    for f in post.get('files', []):
+        if os.path.isfile(f.get('name', '')):
+            os.remove(f['name'])
+            if file_thumbnail := f.get('thumb'):
+                if (
+                    os.path.isfile(file_thumbnail)
+                    and file_thumbnail != thumb_def
+                    and file_thumbnail != spoilered
+                ):
+                    os.remove(file_thumbnail)
 
 
-def sync_removeing(post):
+def synchronize_removal(post: dict):
     try:
-        if post['files']:
-            for f in post['files']:
-                if os.path.isfile(f['name']):
-                    os.remove(f['name'])
-                    if f['thumb']:
-                        if f['thumb'] != thumb_def and f['thumb'] != spoilered:
-                            os.remove(f['thumb'])
-    except:
+        asyncio.run(remove_files(post))
+    except (TypeError, FileNotFoundError) as e:
         print(post)
 
 
 async def get_ip(req):
-    x_real_ip = req.headers.get('X-Real-IP')
-    return x_real_ip or req.remote_ip
+    return req.headers.get('X-Real-IP') or req.remote_ip
 
 
 # decorator that checks if user is admin
@@ -79,26 +78,30 @@ def ifadmin(f):
     return wrapper
 
 
-def save_blacklist(blacklist):
-    # clean up duplicates
-    blacklist = list(set(blacklist))
+def save_blacklist(blacklist: list[str]):
     with open('blacklist.pkl', 'wb') as f:
-        pickle.dump(blacklist, f)
+        pickle.dump(list(set(blacklist)), f)
 
 
-def get_blacklist():
+def get_blacklist() -> list[str]:
     try:
         with open('blacklist.pkl', 'rb') as f:
-            blacklist = pickle.load(f)
-        return blacklist
+            return pickle.load(f)
     except (EOFError, FileNotFoundError):
         return []
 
 
-def has_blacklisted_words(text):
+def has_blacklisted_words(text: str) -> bool:
     blacklist = get_blacklist()
-    for word in blacklist:
-        found = re.search(re.escape(word), text, re.IGNORECASE)
-        if found is not None: return True
-    return False
+    return any([re.search(re.escape(word), text, re.IGNORECASE) for word in blacklist])
 
+
+def get_replies(text):
+    text = text.replace('&gt;', '>')
+    replies = []
+    x = re.compile(r'(>>\d+)')
+    it = re.finditer(x, text)
+    for x in it:
+        number = x.group(0)
+        replies.append(int(number[2:]))
+    return replies

@@ -32,10 +32,10 @@ class AjaxDeleteHandler(LoggedInHandler):
             if post['oppost']:
                 posts = await db.posts.find({'thread': post['count']}).to_list(None)
                 for post in posts:
-                    await removeing(post)
+                    await remove_files(post)
                     await db.posts.delete_one({'count': post['count']})
                 response['op'] = 'true'
-            await removeing(post)
+            await remove_files(post)
             if post['oppost']:
                 log_message = 'Thread #{0} has been removed by admin'.format(pid)
             else:
@@ -221,9 +221,9 @@ class AjaxBanHandler(LoggedInHandler):
                 if p['oppost']:
                     posts = await db.posts.find({'thread': p['count']}).to_list(None)
                     for subp in posts:
-                        await removeing(subp)
+                        await remove_files(subp)
                     await db.posts.delete_many({'thread': p['count']})
-                await removeing(p)
+                await remove_files(p)
                 await db.posts.delete_one({'count': p['count']})
         # TODO: make so it only updates the ban info and keep the post deletion/locking unchanged
         else:
@@ -288,10 +288,10 @@ class AjaxDeletePassHandler(tornado.web.RequestHandler):
             if post['oppost']:
                 posts = await db.posts.find({'thread': post['count']}).to_list(None)
                 for post in posts:
-                    await removeing(post)
+                    await remove_files(post)
                     await db.posts.delete_one({'count': post['count']})
                 response['op'] = 'true'
-            await removeing(post)
+            await remove_files(post)
             if post['oppost']:
                 log_message = 'Thread #{0} has been removed by {1}'.format(pid, post['ip'])
             else:
