@@ -78,7 +78,7 @@ class AdminStatsHandler(LoggedInHandler):
             popup = self.responses.get(msg)
         boards = await self.application.database.boards.find({}).to_list(None)
         boards_list = await self.application.database.boards.find({}).to_list(None)
-        self.render('admin', boards=boards, boards_list=boards_list, popup=popup)
+        self.render('admin/admin_stats.html', boards=boards, boards_list=boards_list, popup=popup)
 
     @ifadmin
     async def post(self):
