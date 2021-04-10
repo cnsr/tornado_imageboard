@@ -44,49 +44,62 @@ $format_replace = [
 	'<img class="sticker" src="/static/icons/pardon.gif"/>',
 	'<span style="color:#$2;">$3</span>',
 ];
-$(document).ready(function() {
-	/*$('.flag').each(function(){
-		let ny = $('<img>');
-		ny.attr('src','/static/icons/newyear.png');
-		ny.addClass('flag-newyear');
-		$(this).after(ny);
-	});*/
-	$('.text').each(function(){
-		if (!$(this).hasClass('rendered')) {
-			var txt = $(this).text();
-			txt = replaceText(txt);
-			$(this).html(txt);
-			$(this).addClass('rendered');
+
+const isCloseToNewYearsEve = () => {
+	var d = new Date();
+	if (d.getMonth() === 1) {
+		return d.getDate() < 16;
+	} else if (d.getMonth() === 11) return d.getDate() > 20;
+	return false;
+}
+
+document.addEventListener('DOMContentLoaded', (e) => {
+	if (isCloseToNewYearsEve()) {
+		[...document.getElementsByClassName('flag')].map(el => {
+			el.insertAdjacentElement(
+				'afterend', '<img src="/static/icons/newyear.png" class="flag-newyear"/>'
+			);
+		});
+	}
+	[...document.getElementsByClassName('text')].map(el => {
+		if (!el.classList.contains('rendered')) {
+			el.innerHTML = replaceText(el.innerText);
+			el.classList.add('rendered');
 		}
 	});
-	$('#bb-b, #bb-i, #bb-u, #bb-s, #bb-sp, #bb-c').on('click', function(e) {
-		e.preventDefault();
+	['bb-b', 'bb-i', 'bb-u', 'bb-s', 'bb-sp', 'bb-c'].map(tagId => {
+		document.getElementById(tagId).addEventListener('click', e => e.preventDefault());
 	})
-	$('#bb-c').on('click', function(e) {
+	document.getElementById('bb-c').addEventListener('click', e => {
 		var sel = window.getSelection().toString();
-		var ta = $('#text-area');
-		if (ta.text() != '') {
-			ta.text(ta.text() + '\n>' + sel + '\n');
+		var ta = document.getElementById('text-area');
+		if (ta.innerText != '') {
+			ta.innerText = ta.innerText + '\n>' + sel + '\n';
 		} else {
-			ta.text('>' + sel + '\n');
+			ta.innerText = '>' + sel + '\n';
 		};
 	});
-	$('body').on('click', '.embed', function(e){
-		e.stopPropagation();
-		if ($(this).next().is('iframe')) {
-			$(this).next().remove();
-			$(this).text('(embed)');			 
-		} else {
-			let url = $(this).attr('data-url')
-			let iframe = '<iframe width="480" height="320" src="https://www.youtube.com/embed/'+url+'?autoplay=1" class="youtube-frame"></iframe>';
-			$(this).after(iframe);
-			$(this).text('(unembed)');
-		}
-	})
+
+	[...document.getElementsByClassName('embed')].forEach(el => el.addEventListener('click', processEmbed));
 });
 
+const processEmbed = e => {
+	e.stopPropagation();
+	if (e.target.nextSibling && e.target.nextSibling.tagName === 'iframe') {
+		e.target.nextSibling.remove()
+		e.target.innerText = '(embed)';
+	} else {
+		let url = e.target.getAttribute('data-url')
+		e.target.insertAdjacentHTML(
+			'afterend',
+			`<iframe width="480" height="320" src="https://www.youtube.com/embed/${url}?autoplay=1" class="youtube-frame"></iframe>`
+		);
+		e.target.innerText = '(unembed)';
+	}
+}
+
 function wrapText(openTag) {
-    var textArea = $('#text-area');
+    var textArea = document.getElementById('text-area');
     var closeTag = '[/'+openTag+']';
     var openTag = '['+openTag+']';
     if (typeof(textArea[0].selectionStart) != "undefined") {

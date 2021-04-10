@@ -3,13 +3,11 @@ var default_theme = 'themes/brutalism.css';
 document.addEventListener("DOMContentLoaded", (event) => {
 	var pageBottom = document.getElementById("top");
 	var pageTop = document.getElementsByTagName('header')[0];
-	console.log(pageBottom, pageTop);
 
 	document.getElementsByTagName('html')[0].style.scrollBehavior = 'smooth';
 	document.querySelectorAll(`[value="${localStorage.theme}"]`).forEach(el => el.setAttribute('selected', true));
 
 	document.getElementById('themes').addEventListener('change', function (e) {
-		console.log(e.target.value.replace("null", default_theme));
 		localStorage.theme = e.target.value.replace("null", default_theme);
 	});
 
