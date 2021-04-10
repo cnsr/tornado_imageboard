@@ -55,8 +55,24 @@ p {
 	margin: 1px;
 }
 
+.sealed {
+	max-width: 80vw !important;
+}
+
+.post-header {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap !important;
+	min-height: 1.8rem !important;
+	align-items: center;
+	margin-left: .125rem;
+}
+
 .post-header * {
 	margin: 0px;
+	height: 1.625rem !important;
+	width: auto !important;
+	margin-right: .25rem !important;
 }
 
 .locked {
@@ -410,6 +426,10 @@ header {
 
 .pinned, .infinite, .sage, .isop, .tripcode, .adminpost, .adminpost-small, .psubject, .flag {
 	cursor: help;
+}
+
+.sage {
+	font-weight: 1000;
 }
 
 .username {

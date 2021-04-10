@@ -1,33 +1,43 @@
 <div class='post-outer'>
 	<div class='post' id='{{post["count"]}}'>
 		<div class='post-header'>
-			{% if post['subject'] %}<h3 class='psubject' title='subject'>{{post['subject']}}</h3>{% end %}
+			{% if post['subject'] %}
+				<h3 class='psubject' title='subject'>{{post['subject']}}</h3>
+			{% end %}
 			{% if post['admin'] %}
 				<p class='username adminpost' title='admin'>## Admin ##</p>
 				<p class='username adminpost-small' title='admin'>&#x21AF;&#x21AF;</p>
 			{% else %}
-				{% if post['username'] %}<p class='username'>{{post['username']}}</p>{% end %}
+				{% if post['username'] %}
+					<p class='username'>{{post['username']}}</p>
+				{% end %}
 			{% end %}
-			{% if post['trip'] %}<p class='tripcode' title='tripcode'>{{post['trip']}}</p>{% end %}
-			{% if post['op'] %}<span class='isop' title='original poster'>#OP</span>{% end %}			
+			{% if post['trip'] %}
+				<p class='tripcode' title='tripcode'>{{post['trip']}}</p>
+			{% end %}
+			{% if post['op'] %}
+				<span class='isop' title='original poster'>#OP</span>
+			{% end %}
 			<p class='date'>{{ post['date']}}</p>
-			{% if post['country'] %}<img class='flag' src='/flags/{{post["country"]}}.png' title='{{post["countryname"]}}' />{% end %}
+			{% if post['country'] %}
+				<img class='flag' src='/flags/{{post["country"]}}.png' title='{{post["countryname"]}}' />
+			{% end %}
 			<a href='#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
 			<p class='post-number'></p>
-			<button class='del-post' data-id='{{post["count"]}}'>&#9746;</button>
+			<button class='del-post' data-id='{{post["count"]}}'>rm</button>
 			{% if admin %}
-				<button class='ban' data-id='{{post["count"]}}'>BAN</button>
-				<button class='del' data-id='{{post["count"]}}'>&#x2716;</button>
-				<button class='post-info' data-id='{{post["count"]}}'>?</button>
+				<button class='ban' data-id='{{post["count"]}}'>ban</button>
+				<button class='del' data-id='{{post["count"]}}'>rm -f</button>
+				<button class='post-info' data-id='{{post["count"]}}'>cat</button>
 				<a href='/admin/search/{{post["count"]}}' class='thread-href'>
-					<button class='btn-search' title='Search by ip'>Q</button>
+					<button class='btn-search' title='Search by ip'>find</button>
 				</a>
-				<button class='seal' data-id="{{post['count']}}">⌘</button>
+				<button class='seal' data-id="{{post['count']}}">seal</button>
 			{% end %}
-			<span class='report' data-id='{{post["count"]}}'>&#33;</span>
+			<button class='report' data-id='{{post["count"]}}'>&#33;</button>
 			<!--<span class='vote vote-up' data-id='{{post["count"]}}'>based</span>
 			<span class='vote vote-down' data-id='{{post["count"]}}'>cringe</span>-->
-			{% if post['sage'] %}<span class='sage'>&#11015;</span>{% end %}
+			{% if post['sage'] %}<p class='sage'>sage</p>{% end %}
 		</div>
 		{% if post['files'] %}
 			{% for file in post['files'] %}

@@ -30,9 +30,10 @@
 			<textarea rows=4 cols=55 name='text' maxlength=10000 placeholder='Your post' required
 			id='text-area'></textarea>
 		</div>
+		<!--  TODO: rework to only show one empty input field at once -->
 		<div class='file'>
-			<pre class='file-about'>Supported filetypes: .jpg .png .gif .webm .mp4
-			Unsupported filetypes will not be uploaded
+			<pre class='file-about'>Only supported filetypes will be uploaded:
+			.jpg .png .gif .webm .mp4
 			Max filesize: 20mb</pre>
 			<input type='file' name='file1' class='fileinput' id='file1'/>
 			<button class="file_remove" data-id="file1">X</button>			
