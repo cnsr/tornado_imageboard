@@ -19,28 +19,31 @@
 		<a href='/admin/logs'>Browse Logs</a>
 		<a href='/admin/blacklist/'>Configure blacklist</a>
 	</div>
-	<style>
-		.redirects {
-			display: flex;
-			flex-direction: column;
-			justify-content: flex-start;
-		}
-		.redirects a {
-			margin-top: .5rem;
-			margin-bottom: .5rem;
-			font-size: 1.5rem;
-			width: 24rem;
-		}
-		#admin-header {
-			margin-top: 1rem;
-			margin-bottom: 1rem;
-			width: 36rem;
-			display: flex;
-			flex-direction: row;
-			justify-content: flex-start;
-		}
-		#admin-header * {
-			margin-right: 1rem;
-		}
-	</style>
+{% end %}
+{% block static_css %}
+<style>
+	.redirects {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+	}
+	.redirects a {
+		margin-top: .5rem;
+		margin-bottom: .5rem;
+		font-size: 1.5rem;
+		width: 24rem;
+	}
+	#admin-header {
+		margin-top: 1rem;
+		margin-bottom: 1rem;
+		width: 36rem;
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
+		max-width: 96vw;
+	}
+	#admin-header * {
+		margin-right: 1rem;
+	}
+</style>
 {% end %}

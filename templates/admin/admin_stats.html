@@ -1,35 +1,49 @@
 {% extends 'admin.html' %}
 {% block title %}Board Stats{% end %}
-{% block css %}
-	<script src='{{static_url("js/popup.js")}}'></script>
-{% end %}
 {% block content %}
-<table class='boards'>
-	<tr class='table-header'>
-		<th>Name</th>
-		<th>Short</th>
-		<th>Username</th>
-		<th>Created</th>
-		<th>Description</th>
-		<th>Country flags</th>
-		<th>Max posts in thread</th>
-		<th>Bumplimit</th>
-		<th>Max threads in catalog</th>
-		<th>Posts </th>
-		<th>Posts with media</th>
-		<th>Dice</th>
-		<th title='Posts per page'>Per page</th>
-		<th>Pinned</th>
-		<th>Edit</th>		
-		<th></th>	
-	</tr>
-	{% for board in boards %}
-		{% module Stats(board) %}
+<div class='content'>
+	{% if boards %}
+		<table class='boards'>
+			<tr class='table-header'>
+				<th>Name</th>
+				<th>Short</th>
+				<th>Username</th>
+				<th>Created</th>
+				<th>Description</th>
+				<th>Country flags</th>
+				<th>Max posts in thread</th>
+				<th>Bumplimit</th>
+				<th>Max threads in catalog</th>
+				<th>Posts </th>
+				<th>Posts with media</th>
+				<th>Dice</th>
+				<th title='Posts per page'>Per page</th>
+				<th>Pinned</th>
+				<th>Edit</th>		
+				<th></th>	
+			</tr>
+			{% for board in boards %}
+				{% module Stats(board) %}
+			{% end %}
+		</table>
+	{% else %}
+		<h4>No boards yet.</h4>
 	{% end %}
-</table>
+</div>
 <script>
- $('.show_desc').on('click', function() {
-	popUp($(this).attr('data-desc'))
- });
+[...document.getElementsByClassName('show_desc')].map(el => {
+    el.addEventListener('click', e => {
+		console.log('click')
+        popUp(e.target.getAttribute('data-desc'))
+    })
+})
 </script>
+<style>
+	.content {
+		margin-top: 1rem;
+		margin-bottom: 1rem;
+		max-width: 100%;
+		overflow-x: auto;
+	}
+</style>
 {% end %}
