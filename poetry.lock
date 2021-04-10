@@ -46,7 +46,7 @@ d = ["aiohttp (>=3.3.2)", "aiohttp-cors"]
 
 [[package]]
 name = "certifi"
-version = "2019.9.11"
+version = "2020.12.5"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
@@ -388,7 +388,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "91d951bca2f11c35859b2f5ae420d108134ad4cafc602e2264fc4912182348b7"
+content-hash = "e336b155177405aca5815b6a215ddfac623cdcfd0579835d2c28718a26dcc702"
 
 [metadata.files]
 appdirs = [
@@ -408,8 +408,8 @@ black = [
     {file = "black-20.8b1.tar.gz", hash = "sha256:1c02557aa099101b9d21496f8a914e9ed2222ef70336404eeeac8edba836fbea"},
 ]
 certifi = [
-    {file = "certifi-2019.9.11-py2.py3-none-any.whl", hash = "sha256:fd7c7c74727ddcf00e9acd26bba8da604ffec95bf1c2144e67aff7a8b50e6cef"},
-    {file = "certifi-2019.9.11.tar.gz", hash = "sha256:e4f3620cfea4f83eedc95b24abd9cd56f3c4b146dd0177e83a21b4eb49e21e50"},
+    {file = "certifi-2020.12.5-py2.py3-none-any.whl", hash = "sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830"},
+    {file = "certifi-2020.12.5.tar.gz", hash = "sha256:1a4995114262bffbc2413b159f2a1a480c969de6e6eb13ee966d470af86af59c"},
 ]
 cffi = [
     {file = "cffi-1.13.1-cp27-cp27m-macosx_10_6_intel.whl", hash = "sha256:9009e917d8f5ef780c2626e29b6bc126f4cb2a4d43ca67aa2b40f2a5d6385e78"},
