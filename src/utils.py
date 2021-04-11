@@ -1,4 +1,6 @@
 import asyncio
+import hashlib
+import binascii
 import os
 import pickle
 import re
@@ -8,6 +10,21 @@ from motor.motor_tornado import MotorDatabase
 
 thumb_def = 'static/missing_thumbnail.jpg'
 spoilered = 'static/spoiler.jpg'
+
+
+def generate_password(raw_password: str) -> str:
+    # as an alternative, apssword hash can be stored in .env
+    salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
+    password_hash = binascii.hexlify(
+        hashlib.pbkdf2_hmac('sha512', raw_password.encode('utf-8'), salt, 100000)
+    )
+    return (salt + password_hash).decode('ascii')
+
+
+def verify_password(raw_password: str, hashed_password: str) -> bool:
+    return hashed_password[64:] == binascii.hexlify(
+        hashlib.pbkdf2_hmac('sha512', raw_password.encode('utf-8'), hashed_password[:64].encode('ascii'), 100000)
+    ).decode('ascii')
 
 
 def exclude(_from: dict) -> dict:
@@ -72,7 +89,7 @@ async def get_ip(req):
 # decorator that checks if user is admin
 def ifadmin(f):
     def wrapper(self, *args, **kwargs):
-        if not self.current_user:
+        if not self.current_user.is_admin:
             return self.redirect('/admin/login')
         return f(self, *args, **kwargs)
     return wrapper

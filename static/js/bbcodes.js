@@ -68,17 +68,20 @@ document.addEventListener('DOMContentLoaded', (e) => {
 		}
 	});
 	['bb-b', 'bb-i', 'bb-u', 'bb-s', 'bb-sp', 'bb-c'].map(tagId => {
-		document.getElementById(tagId).addEventListener('click', e => e.preventDefault());
+		if (document.getElementById(tagId))
+			document.getElementById(tagId).addEventListener('click', e => e.preventDefault());
 	})
-	document.getElementById('bb-c').addEventListener('click', e => {
-		var sel = window.getSelection().toString();
-		var ta = document.getElementById('text-area');
-		if (ta.innerText != '') {
-			ta.innerText = ta.innerText + '\n>' + sel + '\n';
-		} else {
-			ta.innerText = '>' + sel + '\n';
-		};
-	});
+	if (document.getElementById('bb-c')) {
+		document.getElementById('bb-c').addEventListener('click', e => {
+			var sel = window.getSelection().toString();
+			var ta = document.getElementById('text-area');
+			if (ta.innerText != '') {
+				ta.innerText = ta.innerText + '\n>' + sel + '\n';
+			} else {
+				ta.innerText = '>' + sel + '\n';
+			};
+		});
+	}
 
 	[...document.getElementsByClassName('embed')].forEach(el => el.addEventListener('click', processEmbed));
 });

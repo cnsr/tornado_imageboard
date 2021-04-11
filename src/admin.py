@@ -12,32 +12,14 @@ from src.utils import (
     get_ip, save_blacklist, get_blacklist,
 )
 
+from src.userhandle import UserHandler
 
-# crappy handler that checks if user is admin
-class LoggedInHandler(tornado.web.RequestHandler):
-    def get_current_user(self):
-        return self.get_secure_cookie('adminlogin')
 
-    def check_origin(self, origin):
-        return True
-
-    def set_default_headers(self):
-        self.set_header("Access-Control-Allow-Origin", "*")
-        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
-        self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-
-    def options(self):
-        self.set_status(204)
-        self.finish()
-
-# login for admin; it's fucking awful since pass is in plaintext and that's only one of shitty things
-# also cant use decorator here thus it's ugly as fuck
-class AdminLoginHandler(LoggedInHandler):
+class AdminLoginHandler(UserHandler):
 
     async def get(self):
         if not self.current_user:
-            boards_list = await self.application.database.boards.find({}).to_list(None)
-            self.render('admin/admin_login.html', boards_list=boards_list)
+            self.render('admin/admin_login.html', boards=await self.boards)
         else:
             self.redirect('/admin')
             return
@@ -56,7 +38,7 @@ class AdminLoginHandler(LoggedInHandler):
             self.redirect('/')
 
 
-class AdminLogoutHandler(LoggedInHandler):
+class AdminLogoutHandler(UserHandler):
     @ifadmin
     async def get(self):
         self.clear_cookie('adminlogin')
@@ -67,7 +49,7 @@ class AdminLogoutHandler(LoggedInHandler):
 
 
 # stats of boards for admins
-class AdminStatsHandler(LoggedInHandler):
+class AdminStatsHandler(UserHandler):
     responses = {'success':'Deletion successful.',
                 'error': 'Board does not exist.'}
     @ifadmin
@@ -76,9 +58,7 @@ class AdminStatsHandler(LoggedInHandler):
         if self.get_arguments('msg') != []:
             msg = self.get_argument('msg')
             popup = self.responses.get(msg)
-        boards = await self.application.database.boards.find({}).to_list(None)
-        boards_list = await self.application.database.boards.find({}).to_list(None)
-        self.render('admin/admin_stats.html', boards=boards, boards_list=boards_list, popup=popup)
+        self.render('admin/admin_stats.html', boards=await self.boards, popup=popup)
 
     @ifadmin
     async def post(self):
@@ -102,13 +82,12 @@ class AdminStatsHandler(LoggedInHandler):
 
 
 # you can view bans here
-class AdminBannedHandler(LoggedInHandler):
+class AdminBannedHandler(UserHandler):
     @ifadmin
     async def get(self):
         db = self.application.database
         bans = await db.bans.find({}).sort([('date', 1)]).to_list(None)
-        boards_list = await db.boards.find({}).to_list(None)
-        self.render('admin/admin_banned.html', bans=bans, boards_list=boards_list)
+        self.render('admin/admin_banned.html', bans=bans, boards=await self.boards)
 
     @ifadmin
     async def post(self):
@@ -121,13 +100,12 @@ class AdminBannedHandler(LoggedInHandler):
 
 
 # you can view reports here
-class AdminReportsHandler(LoggedInHandler):
+class AdminReportsHandler(UserHandler):
     @ifadmin
     async def get(self):
         db = self.application.database
         reports = await db.reports.find({}).sort([('date', 1)]).to_list(None)
-        boards_list = await db.boards.find({}).to_list(None)
-        self.render('admin/admin_reported.html', reports=reports, boards_list=boards_list)
+        self.render('admin/admin_reported.html', reports=reports, boards=await self.boards)
 
     @ifadmin
     async def post(self):
@@ -141,22 +119,20 @@ class AdminReportsHandler(LoggedInHandler):
 
 
 # admin main page
-class AdminHandler(LoggedInHandler):
+class AdminHandler(UserHandler):
 
     async def get(self):
         if not self.current_user:
             self.redirect('/admin/login')
         else:
-            boards_list = await self.application.database.boards.find({}).to_list(None)
-            self.render('admin/admin.html', boards_list=boards_list)
+            self.render('admin/admin.html', boards=await self.boards)
 
 
 # creation of boards
-class AdminBoardCreationHandler(LoggedInHandler):
+class AdminBoardCreationHandler(UserHandler):
     @ifadmin
     async def get(self):
-        boards_list = await self.application.database.boards.find({}).to_list(None)
-        self.render('admin/admincreate.html', boards_list=boards_list)
+        self.render('admin/admincreate.html', boards=await self.boards)
 
     @ifadmin
     async def post(self):
@@ -193,7 +169,7 @@ class AdminBoardCreationHandler(LoggedInHandler):
 
 
 # editing existing boards
-class AdminBoardEditHandler(LoggedInHandler):
+class AdminBoardEditHandler(UserHandler):
     @ifadmin
     async def get(self, board):
         instance = await self.application.database.boards.find_one({'short': board})
@@ -202,8 +178,7 @@ class AdminBoardEditHandler(LoggedInHandler):
             for key in to_remove:
                 if key in instance:
                     del instance[key]
-            boards_list = await self.application.database.boards.find({}).to_list(None)
-            self.render('admin/admin_edit.html', boards_list=boards_list, i=instance)
+            self.render('admin/admin_edit.html', boards=await self.boards, i=instance)
         else:
             self.redirect('/admin/stats')
 
@@ -239,7 +214,7 @@ class AdminBoardEditHandler(LoggedInHandler):
 
 
 # you can view logs here
-class AdminLogsHandler(LoggedInHandler):
+class AdminLogsHandler(UserHandler):
     @ifadmin
     async def get(self):
         db = self.application.database
@@ -286,8 +261,7 @@ class AdminLogsHandler(LoggedInHandler):
                 paged = None
         else:
             paged = None
-        boards_list = await db.boards.find({}).to_list(None)
-        self.render('admin/admin_logs.html', logs=logs, boards_list=boards_list, paged=paged, current=current,
+        self.render('admin/admin_logs.html', logs=logs, boards=await self.boards, paged=paged, current=current,
         log_types=log_types, curr_type=log_type)
 
     async def chunkify(self, l, n=30):
@@ -297,13 +271,12 @@ class AdminLogsHandler(LoggedInHandler):
         return res
 
 
-class AdminBlackListHandler(LoggedInHandler):
+class AdminBlackListHandler(UserHandler):
     @ifadmin
     async def get(self):
         db = self.application.database
         blacklist = get_blacklist()
-        boards_list = await db.boards.find({}).to_list(None)
-        self.render('admin/admin_blacklist.html', boards_list=boards_list, blacklist=blacklist)
+        self.render('admin/admin_blacklist.html', boards=await self.boards, blacklist=blacklist)
 
     @ifadmin
     async def post(self):
@@ -322,7 +295,7 @@ class AdminBlackListHandler(LoggedInHandler):
             self.redirect('/admin/blacklist/')
 
 
-class AdminIPSearchHandler(LoggedInHandler):
+class AdminIPSearchHandler(UserHandler):
     responses = {'success':'Successfully banned',
                 'error': 'No posts were found',
                 'nop': 'Error banning IP'}
@@ -333,14 +306,12 @@ class AdminIPSearchHandler(LoggedInHandler):
         if self.get_arguments('msg') != []:
             msg = self.get_argument('msg')
             popup = self.responses.get(msg)
-        boards = await self.application.database.boards.find({}).to_list(None)
-        boards_list = await self.application.database.boards.find({}).to_list(None)
         post = await self.application.database.posts.find_one({'count': int(count)}) or None
         banned = await self.application.database.bans.find_one({'ip': post['ip']}) or None
         if post:
             posts_by_same_ip = await self.application.database.posts.find({'ip': post['ip']}).sort('date', -1).to_list(None)
-            self.render('admin/admin_search.html', boards=boards,
-                        boards_list=boards_list, popup=popup,
+            self.render('admin/admin_search.html',
+                        boards=await self.boards, popup=popup,
                         posts=posts_by_same_ip, count=count,
                         banned=banned)
         else:

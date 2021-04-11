@@ -26,7 +26,7 @@ from tornado.options import define, options
 import src.ib_settings as default_settings
 import src.uimodules as uimodules
 from src.admin import (
-    LoggedInHandler, AdminLoginHandler, AdminLogoutHandler,
+    AdminLoginHandler, AdminLogoutHandler,
     AdminStatsHandler, AdminBannedHandler, AdminReportsHandler,
     AdminHandler, AdminBoardCreationHandler, AdminBoardEditHandler,
     AdminLogsHandler, AdminBlackListHandler, AdminIPSearchHandler,
@@ -38,6 +38,7 @@ from src.logger import log
 from src.thumbnail import make_thumbnail
 from src.tripcode import tripcode
 from src.utils import *
+from src.userhandle import UserHandler, ProfilePage
 
 define('port', default=default_settings.PORT, help='run on given port', type=int)
 
@@ -95,27 +96,21 @@ async def roll(subject: str) -> Optional[str]:
 
 
 # list of boards
-class IndexHandler(tornado.web.RequestHandler):
+class IndexHandler(UserHandler):
 
     async def get(self):
-        db = self.application.database
-        boards = await db.boards.find({}).to_list(None) or None
-        boards_list = await db.boards.find({}).to_list(None) or None
-        self.render('index.html', boards=boards, boards_list=boards_list)
+        self.render('index.html', boards=await self.boards)
 
 
 # map of posters
-class MapHandler(tornado.web.RequestHandler):
+class MapHandler(UserHandler):
 
     async def get(self):
-        db = self.application.database
-        boards = await db.boards.find({}).to_list(None) or None
-        boards_list = await db.boards.find({}).to_list(None) or None
-        self.render('map.html', boards=boards, boards_list=boards_list)
+        self.render('map.html', boards=await self.boards)
 
 
 # list of threads
-class BoardHandler(LoggedInHandler):
+class BoardHandler(UserHandler):
 
     async def get(self, board):
         db = self.application.database
@@ -125,7 +120,6 @@ class BoardHandler(LoggedInHandler):
                 banner = random.choice(db_board['banners'])
             else: banner = None
             threads = await db.posts.find({'board': board,'oppost': True}).sort([('pinned', -1), ('lastpost', -1)]).limit(db_board['thread_catalog']).to_list(None)
-            boards_list = await db.boards.find({}).to_list(None)
             for thread in threads:
                 limit = 3
                 if thread['pinned']: limit = 1
@@ -177,7 +171,7 @@ class BoardHandler(LoggedInHandler):
             pinned_thread = None
             if db_board['pinned']:
                 pinned_thread = await db.posts.find_one({'count': int(db_board['pinned'])})
-            self.render('board.html', threads=threads, board=db_board, boards_list=boards_list, admin=admin, show=True,
+            self.render('board.html', threads=threads, board=db_board, boards=await self.boards, admin=admin, show=True,
                 banner=banner, popup=popup, paged=paged, current=current, pind=pinned_thread)
         else:
             self.redirect('/')
@@ -236,7 +230,7 @@ class BoardHandler(LoggedInHandler):
         return res
 
 # catalog of threads
-class CatalogHandler(tornado.web.RequestHandler):
+class CatalogHandler(UserHandler):
 
     async def get(self, board):
         db = self.application.database
@@ -246,14 +240,13 @@ class CatalogHandler(tornado.web.RequestHandler):
             for thread in threads:
                 if thread.get('files'):
                     thread['file'] = thread['files'][0]
-            boards_list = await db.boards.find({}).to_list(None)
-            self.render('catalog.html', threads=threads, board=db_board, boards_list=boards_list)
+            self.render('catalog.html', threads=threads, board=db_board, boards=await self.boards)
         else:
             self.redirect('/')
 
 
 # posts in thread
-class ThreadHandler(LoggedInHandler):
+class ThreadHandler(UserHandler):
     thread_count = ''
 
     async def get(self, board, count):
@@ -271,7 +264,6 @@ class ThreadHandler(LoggedInHandler):
                     if await check_thread(db, thread_count, db_board['thread_posts']):
                         op['locked'] = True
                         await update_db(db, op['count'], op)
-                boards_list = await db.boards.find({}).to_list(None)
                 admin = False
                 if self.current_user: admin = True
                 op = await db.posts.find_one({'count': int(count)})
@@ -283,7 +275,7 @@ class ThreadHandler(LoggedInHandler):
                         popup = "Empty posts not allowed."
                     else:
                         popup = None
-                self.render('posts.html', op=op, posts=posts, board=db_board, boards_list=boards_list, admin=admin,
+                self.render('posts.html', op=op, posts=posts, board=db_board, boards=await self.boards, admin=admin,
                             show=op['ip']==ip, banner=banner, popup=popup)
 
             else:
@@ -368,7 +360,7 @@ class ThreadHandler(LoggedInHandler):
             self.redirect('/banned')
 
 
-class JsonBoardHandler(LoggedInHandler):
+class JsonBoardHandler(UserHandler):
     thread_count = ''
 
     async def check_origin(self, origin):
@@ -394,7 +386,7 @@ class JsonBoardHandler(LoggedInHandler):
         self.write(json.dumps(threads, indent=4, ensure_ascii=False))
 
 
-class JsonThreadHandler(LoggedInHandler):
+class JsonThreadHandler(UserHandler):
     thread_count = ''
 
     async def check_origin(self, origin):
@@ -473,17 +465,18 @@ async def process_file(fn):
 
 
 # ban status for your ip
-class BannedHandler(tornado.web.RequestHandler):
+class BannedHandler(UserHandler):
+    # TODO: associate uid with IPs and bans
     async def get(self):
         db = self.application.database
         ip = await get_ip(self.request)
         ban = await db.bans.find_one({'ip':ip}) or None
-        self.render('banned.html', ban=ban, boards_list=None)
+        self.render('banned.html', ban=ban, boards=None)
 
 
-class AboutHandler(tornado.web.RequestHandler):
+class AboutHandler(UserHandler):
     async def get(self):
-        self.render('about.html', boards_list=None)
+        self.render('about.html', boards=None)
 
 
 # constructs dictionary to insert into mongodb
@@ -681,6 +674,7 @@ class Application(tornado.web.Application):
             (r'/admin/?', AdminHandler),
             (r'/banned/?', BannedHandler),
             (r'/about/?', AboutHandler),
+            (r'/profile/?', ProfilePage),
             (r'/flags/(.*)/?', tornado.web.StaticFileHandler, {'path': os.path.join('src', 'flags')}),
             (r'/banners/(.*)/?', tornado.web.StaticFileHandler, {'path': os.path.join('src', 'banners')}),
             (r'/(\w+)/?', BoardHandler),

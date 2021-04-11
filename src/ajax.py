@@ -6,16 +6,10 @@ import tornado.web
 
 from src.logger import log
 from src.utils import *
-
-
-# crappy handler that checks if user is admin
-class LoggedInHandler(tornado.web.RequestHandler):
-    def get_current_user(self):
-        return self.get_secure_cookie('adminlogin')
-
+from src.userhandle import UserHandler
 
 # delete posts using ajax
-class AjaxDeleteHandler(LoggedInHandler):
+class AjaxDeleteHandler(UserHandler):
 
     @ifadmin
     async def post(self):
@@ -74,7 +68,7 @@ class AjaxReportHandler(tornado.web.RequestHandler):
 
 
 # gives info about post
-class AjaxInfoHandler(LoggedInHandler):
+class AjaxInfoHandler(UserHandler):
 
     @ifadmin
     async def post(self):
@@ -92,7 +86,7 @@ class AjaxInfoHandler(LoggedInHandler):
 
 
 # pins threads
-class AjaxThreadPinHandler(LoggedInHandler):
+class AjaxThreadPinHandler(UserHandler):
 
     @ifadmin
     async def post(self):
@@ -109,7 +103,7 @@ class AjaxThreadPinHandler(LoggedInHandler):
 
 
 # pins the threads so they appear first in query
-class AjaxPinHandler(LoggedInHandler):
+class AjaxPinHandler(UserHandler):
 
     @ifadmin
     async def post(self):
@@ -128,7 +122,7 @@ class AjaxPinHandler(LoggedInHandler):
 # threads are infinite:
 # first in - first out,
 # posts get deleted when they go beyond thread post limit
-class AjaxInfinifyHandler(LoggedInHandler):
+class AjaxInfinifyHandler(UserHandler):
 
     @ifadmin
     async def post(self):
@@ -145,7 +139,7 @@ class AjaxInfinifyHandler(LoggedInHandler):
 
 
 # locks the threads so that they can't be posted in
-class AjaxLockHandler(LoggedInHandler):
+class AjaxLockHandler(UserHandler):
 
     @ifadmin
     async def post(self):
@@ -163,7 +157,7 @@ class AjaxLockHandler(LoggedInHandler):
 
 
 # deletion of banners
-class AjaxBannerDelHandler(LoggedInHandler):
+class AjaxBannerDelHandler(UserHandler):
 
     @ifadmin
     async def post(self):
@@ -182,7 +176,7 @@ class AjaxBannerDelHandler(LoggedInHandler):
 
 
 # banning users
-class AjaxBanHandler(LoggedInHandler):
+class AjaxBanHandler(UserHandler):
 
     @ifadmin
     async def post(self):
@@ -328,7 +322,7 @@ class AjaxPostGetter(tornado.web.RequestHandler):
 
 
 # move thread to different board
-class AjaxMoveHandler(LoggedInHandler):
+class AjaxMoveHandler(UserHandler):
 
     @ifadmin
     async def post(self):

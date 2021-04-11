@@ -108,7 +108,7 @@
 	{% if admin %}
 		<div id='pin-selector' style="display:none;">
 			<div class="pinform banform" style="display: inline-block; top: 58px; left: 40%; cursor: pointer;">
-				{% for bb in boards_list %}
+				{% for bb in boards %}
 					<input type="checkbox" id="pin-select" value="" name='{{bb["short"]}}'>{{bb["short"]}}</input><br />
 				{% end %}
 				<button id="pin-submit">Pin</button>

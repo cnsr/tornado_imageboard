@@ -1,0 +1,107 @@
+{% extends 'index.html' %}
+
+{% block title %}Profile Page{% end %}
+
+{% block content %}
+    <div id='profile-container'>
+        {% if current_user.is_logged_in %}
+            <div id='profile-details'>
+                <p>Logged in as <b>{{current_user.username}}</b></p>
+                {% if current_user.moderated_boards != [] %}
+                    <p>Moderated boards: 
+                    {% for board in current_user.moderated_boards %}
+                        <b>{{board}}</b> 
+                    {% end %}
+                    </p>
+                {% else %}
+                    <p>Moderated boards: <b>None.</b></p>
+                {% end %}
+                <p>Created at: <b>{{current_user.pretty_created_at}}</b></p>
+            </div>
+        {% else %}
+            <div id='errors'>
+                {% for error in errors %}
+                    <div class='error'>{{error}}</div>
+                {% end %}
+            </div>
+            <div>
+                <!--  TODO: user a with hrefs to proper pages -->
+                <p>Currently anonymous.</p>
+                <button id='login'>Login</button>
+                <button id='register'>Register</button>
+                <div id='login-form-outer'>
+                    <form method='POST' id='login-form' class='form'>
+			            {% module xsrf_form_html() %}
+                        <input hidden name='action' value='login' />
+                        <div class='form-field'>
+                            <label for='field-username'>Username</label>
+                            <input id='field-username' name='username' type='text' minlength='4' />
+                        </div>
+                        <div class='form-field'>
+                            <label for='field-password'>Password</label>
+                            <input id='field-password' name='password' type='password' minlength='6' />
+                        </div>
+                        <button type='submit' form='login-form'>Login</button>
+                    </form>
+                </div>
+                <div id='register-form-outer'>
+                    <form method='POST' id='register-form' class='form'>
+			            {% module xsrf_form_html() %}
+                        <input hidden name='action' value='register' />
+                        <div class='form-field'>
+                            <label for='field-register-username'>Username</label>
+                            <input id='field-register-username' name='username' type='text' minlength='4' />
+                        </div>
+                        <div class='form-field'>
+                            <label for='field-register-password'>Password</label>
+                            <input id='field-register-password' name='password' type='password' minlength='6' />
+                        </div>
+                        <button type='submit' form='register-form'>Register</button>
+                    </form>
+                </div>
+            </div>
+        {% end %}
+    </div>
+    <script>
+        document.getElementById('login').addEventListener('click', e => {
+            document.getElementById('register-form-outer').style.display = 'none';
+            document.getElementById('login-form-outer').style.display = 'block';
+        })
+        document.getElementById('register').addEventListener('click', e => {
+            document.getElementById('login-form-outer').style.display = 'none';
+            document.getElementById('register-form-outer').style.display = 'block';
+        })
+    </script>
+    <style>
+        #login-form-outer, #register-form-outer {
+            display: none;
+        }
+        .form {
+            display: flex;
+            flex-direction: column;
+            max-width: 12rem;
+        }
+        .form-field input {
+            max-width: 10rem !important;
+            border-top: 2px solid gray;
+            border-left: 2px solid gray;
+            border-bottom: 2px solid #fff;
+            border-right: 2px solid #fff;
+        }
+        .form button {
+            width: 10.5rem;
+            margin-top: .8rem;
+        }
+        .errors {
+            display: flex;
+            flex-direction: column;
+        }
+        .error {
+            font-weight: bold;
+            color: red;
+            margin-top: .2rem;
+            margin-bottom: .2rem;
+            font-size: 14px;
+        }
+    </style>
+{% end %}
