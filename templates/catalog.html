@@ -11,7 +11,7 @@
 	<div class='threads'>
 		<hr>
 		{% for thread in threads %}
-			{% module CatalogThread(thread) %}
+			{% module CatalogThread(thread, current_user=current_user) %}
 		{% end %}
 	</div>
 {% end %}

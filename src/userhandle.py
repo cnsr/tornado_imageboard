@@ -164,7 +164,7 @@ class UserHandler(tornado.web.RequestHandler):
         self.users = self.database.users
         self.__boards = None
         logger.info("finished initialization")
-        print(self.current_user.uid, self.current_user.user)
+        print(self.current_user.uid, self.current_user.user, self.current_user.is_admin)
 
     def get_or_create_user(self) -> User:
         user_id = self.get_cookie("ib-user", None)

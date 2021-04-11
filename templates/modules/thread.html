@@ -83,7 +83,7 @@
 	{% if thread['latest'] %}
 		<div class='thread-latest'>
 			{% for post in thread['latest'] %}
-				{% module Preview(post) %}
+				{% module Preview(post, current_user=current_user) %}
 			{% end %}
 		</div>
 	{% end %}

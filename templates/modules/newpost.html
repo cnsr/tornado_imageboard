@@ -10,7 +10,7 @@
 			<input type='text' maxlength=25 id='username' name='username'/>
 		</div>
 		{% end %}
-		{% current_user.is_admin %}
+		{% if current_user.is_admin %}
 			<label for='admin'>Post as admin</label>
 			<input id='admin' type='checkbox' name='admin' />
 		{% end %}

@@ -29,13 +29,13 @@
 		</div>
 	{% end %}
 	{% block add %}
-		{% module NewPost(name=board['custom'], admin=admin, show=show) %}
+		{% module NewPost(name=board['custom'], admin=admin, show=show, current_user=current_user) %}
 		<script>var nodrag=true;</script>
 	{% end %}
 	<div class='threads'>
 		<hr>
 		{% for thread in threads %}
-			{% module Thread(thread, (board['thread_bump'] <= thread['postcount'])) %}
+			{% module Thread(thread=thread, thread_bump=board['thread_bump'], postcount=thread['postcount'], current_user=current_user) %}
 			<hr>
 		{% end %}
 	</div>

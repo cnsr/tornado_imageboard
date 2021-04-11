@@ -131,8 +131,7 @@ class BoardHandler(UserHandler):
                             if f['filetype']:
                                 thread['filecount'] -= 1
                 thread['latest'] = posts
-            admin = False
-            if self.current_user: admin = True
+            admin = self.current_user.is_admin
             popup = None
             if self.get_arguments('err') != []:
                 errors = {'empty': 'Empty posts not allowed',
@@ -693,7 +692,8 @@ class Application(tornado.web.Application):
             (r'/admin/logs/?', AdminLogsHandler),
             (r'/admin/blacklist/?', AdminBlackListHandler),
             (r'/admin/search/(\d+)/?', AdminIPSearchHandler),
-            (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': os.path.join('src', uploads)}),
+            # (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': os.path.join('src', uploads)}),
+            (r'/uploads/(.*)/?', tornado.web.StaticFileHandler, {'path': uploads}),
             (r'/ajax/remove/?', AjaxDeleteHandler),
             (r'/ajax/delete/?', AjaxDeletePassHandler),
             (r'/ajax/ban/?', AjaxBanHandler),
@@ -718,7 +718,7 @@ class Application(tornado.web.Application):
             'template_path': 'templates',
             'static_path': 'static',
             'xsrf_cookies': True,
-            'cookie_secret': "__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
+            'cookie_secret': "__#TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
         }
 
         self.con = motor.motor_tornado.MotorClient('localhost', 27017)

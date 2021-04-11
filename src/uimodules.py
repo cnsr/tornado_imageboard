@@ -2,35 +2,36 @@ import tornado.web
 
 
 class Thread(tornado.web.UIModule):
-    def render(self, thread, autosage):
-        return self.render_string('modules/thread.html', thread=thread, autosage=autosage)
+    def render(self, thread, thread_bump, postcount, current_user):
+        autosage = thread_bump <= postcount
+        return self.render_string('modules/thread.html', thread=thread, autosage=autosage, current_user=current_user)
 
 
 class CatalogThread(tornado.web.UIModule):
-    def render(self, thread):
-        return self.render_string('modules/catalog.html', thread=thread)
+    def render(self, thread, current_user):
+        return self.render_string('modules/catalog.html', thread=thread, current_user=current_user)
 
 
 class NewPost(tornado.web.UIModule):
     def javascript_files(self):
         return('js/validate_file.js')
-    def render(self, name, admin, show):
-        return self.render_string('modules/newpost.html', name=name, admin=admin, show=show)
+    def render(self, name, admin, show, current_user):
+        return self.render_string('modules/newpost.html', name=name, admin=admin, show=show, current_user=current_user)
 
 
 class Post(tornado.web.UIModule):
-    def render(self, post, admin):
-        return self.render_string('modules/post.html', post=post, admin=admin)
+    def render(self, post, admin, current_user):
+        return self.render_string('modules/post.html', post=post, admin=admin, current_user=current_user)
 
 
 class Preview(tornado.web.UIModule):
-    def render(self, post):
-        return self.render_string('modules/post_preview.html', post=post)
+    def render(self, post, current_user):
+        return self.render_string('modules/post_preview.html', post=post, current_user=current_user)
 
 
 class OpPost(tornado.web.UIModule):
-    def render(self, op, admin, autosage):
-        return self.render_string('modules/oppost.html', op=op, admin=admin, autosage=autosage)
+    def render(self, op, admin, autosage, current_user):
+        return self.render_string('modules/oppost.html', op=op, admin=admin, autosage=autosage, current_user=current_user)
 
 
 class Board(tornado.web.UIModule):
