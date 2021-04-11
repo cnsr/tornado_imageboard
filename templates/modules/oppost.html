@@ -18,7 +18,7 @@
 				<p class='locked' title='Thread is locked.'>&#x1f512;</p>
 			{% end %}
 			<button class='del-post' data-id='{{op["count"]}}'>&#9746;</button>			
-			{% if admin %}
+			{% current_user.is_admin %}
 				<button class='ban' data-id='{{op["count"]}}'>ban</button>
 				<button class='del' data-id='{{op["count"]}}'>rm</button>
 				<button class='post-info' data-id='{{op["count"]}}'>cat</button>

@@ -50,7 +50,7 @@
 			{% end %}
 		{% end %}
 	</div>
-	{% if admin %}
+	{% current_user.is_admin %}
 		<script src='{{static_url("js/banned.js")}}'></script>
 		<link rel='stylesheet' href="{{ static_url('css/banform.css') }}">		
 		<div class='banform'>
@@ -105,7 +105,7 @@
 		<button id='getnew'>Get New Posts</button>
 		<span id='newremain'>20</span>
 	</div>
-	{% if admin %}
+	{% current_user.is_admin %}
 		<div id='pin-selector' style="display:none;">
 			<div class="pinform banform" style="display: inline-block; top: 58px; left: 40%; cursor: pointer;">
 				{% for bb in boards %}

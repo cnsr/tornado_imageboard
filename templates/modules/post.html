@@ -25,7 +25,7 @@
 			<a href='#{{post["count"]}}' class='post-href'>>>{{post['count']}}</a>
 			<p class='post-number'></p>
 			<button class='del-post' data-id='{{post["count"]}}'>rm</button>
-			{% if admin %}
+			{% if current_user.is_admin %}
 				<button class='ban' data-id='{{post["count"]}}'>ban</button>
 				<button class='del' data-id='{{post["count"]}}'>rm -f</button>
 				<button class='post-info' data-id='{{post["count"]}}'>cat</button>
