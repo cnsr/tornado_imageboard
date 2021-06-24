@@ -21,7 +21,7 @@ POSSIBLE_USER_TYPES = [
 ]
 
 
-def create_admin_user(self, password):
+def create_admin_user(password: str):
     User("1", ADMIN_USER, password)
 
 
