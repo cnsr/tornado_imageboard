@@ -13,16 +13,24 @@ logger = logging.getLogger("board")
 ANONIMOUS_USER = "anon"
 REGISTERED_USER = "registered"
 ADMIN_USER = "admin"
+MODERATOR_USER = "moderator"
 
 POSSIBLE_USER_TYPES = [
     ANONIMOUS_USER,
     REGISTERED_USER,
     ADMIN_USER,
+    MODERATOR_USER,
 ]
 
 
 def create_admin_user(password: str):
-    User("1", ADMIN_USER, password)
+    try:
+        u = User("1", ADMIN_USER, password)
+        # u.create_user(ADMIN_USER, "admin")
+        u.set_username("admin")
+        print(u.__dict__)
+    except AssertionError:
+        print("User with such username (admin) already exists")
 
 
 # TODO: refactor in case this works at all
@@ -46,19 +54,28 @@ class User:
             self.uid = uid
         else:
             self.uid = uuid4().hex
+        if not self.retrieve_user():
             self.create_user(role)
-            if password:
-                self.set_password(password)
+            self.retrieve_user()
+        if password:
+            self.set_password(password)
 
     def create_user(
         self,
         user_type: Optional[str] = ANONIMOUS_USER,
         username: Optional[str] = "Unknown",
-    ):
+    ) -> bool:
         # created_at is a UTC timestamp
+        if user_type == ADMIN_USER and username == "Unknown":
+            username = "admin"
+
+        if username != "Unknown":
+            existing_user = self.db.find_one({"username": username})
+            if existing_user:
+                return False
         self.__user = self.db.insert_one(
             {
-                "id": self.uid,
+                "id": str(self.uid),
                 "created_at": self.created_at,
                 "type": user_type,
                 "moderated_boards": [],
@@ -66,6 +83,7 @@ class User:
             }
         )
         self.__username = username if username != "Unknown" else None  # type: ignore
+        return True
 
     @property
     def user_type(self):
@@ -93,8 +111,8 @@ class User:
         return self.user.get('moderated_boards', [])
 
     def set_password(self, raw_password: str):
-        self.db.update_one(
-            {"id": self.uid},
+        self.db.find_one_and_update(
+            {"id": str(self.uid)},
             {
                 "$set": {"password": generate_password(raw_password)},
             },
@@ -105,10 +123,12 @@ class User:
         hashed_password = self.retrieve_user(include_password=True).get("password")
         return verify_password(password, hashed_password)
 
-    def retrieve_user(self, include_password: bool = False) -> dict[str, str]:
+    def retrieve_user(self, include_password: bool = False) -> Optional[dict[str, str]]:
         user = self.db.find_one(
-            {"id": self.uid}, {"_id": False, "password": include_password}
+            {"id": str(self.uid)}, {"_id": False, "password": include_password}
         )
+        if not user:
+            return None
         self.__created_at = user.get("created_at")
         self.__type = user.get("type")
         self.__user = user
@@ -124,12 +144,16 @@ class User:
                 data.pop(forbidden_field)
 
         self.db.find_one_and_update(
-            {"id": self.uid}, {"$set": data}, {"_id": False}, upsert=False
+            {"id": str(self.uid)}, {"$set": data}, {"_id": False}, upsert=False
+        )
+
+    def set_username(self, username: str):
+        self.db.find_one_and_update(
+            {"id": str(self.uid)}, {"$set": {"username": username}}, {"_id": False}, upsert=False
         )
 
     def login(self, username: str, password: str) -> Optional["User"]:  # type: ignore
         cached_user = self.db.find_one({"username": username}, {"_id": False})
-        print(cached_user, password)
         if cached_user and verify_password(password, cached_user.get("password")):
             self.uid = cached_user.get("id")
             self.__created_at = cached_user.get("created_at")
@@ -138,8 +162,17 @@ class User:
             return self
 
     def register(self, username: str, password: str):
+        forbidden_usernames = [
+            'admin', 'moderator', 'staff', 'administrator', 'administration'
+        ]
+        if username in forbidden_usernames:
+            return
+        self.register_unsafe(username, password)
+
+    def register_unsafe(self, username: str, password: str):
         self.__update({"username": username})
         self.set_password(password)
+        self.login(username, password)
 
     @property
     def user(self):
@@ -152,15 +185,21 @@ class User:
         return self.__type == ADMIN_USER
 
     @property
+    def is_admin_or_moderator(self) -> bool:
+        return self.__type in (ADMIN_USER, MODERATOR_USER)
+
+    @property
     def is_logged_in(self) -> bool:
         return self.__username is not None and self.__username != "Unknown"
 
 
+# noinspection PyAttributeOutsideInit
 class UserHandler(tornado.web.RequestHandler):
     def initialize(self):
         self.logger = logging.getLogger("board")
         self.con = motor.motor_tornado.MotorClient("localhost", 27017)
         self.database = self.con["imageboard"]
+        self.user = None
         self.users = self.database.users
         self.__boards = None
         logger.info("finished initialization")
@@ -172,6 +211,10 @@ class UserHandler(tornado.web.RequestHandler):
         if self.user.uid != user_id:
             self.set_cookie("ib-user", self.user.uid)
         return self.user
+
+    def reset_user(self):
+        self.user = None
+        self.clear_cookie('ib-user')
 
     def get_current_user(self) -> User:
         return self.get_or_create_user()
@@ -211,6 +254,7 @@ class ProfilePage(UserHandler):
         raw_errors = {
             "notimplemented": "Functionality not yet implemented",
             "fail": "Failed to authenticate",
+            "miss": "Missing either the username or the password",
         }
 
         errors = [
@@ -218,24 +262,26 @@ class ProfilePage(UserHandler):
             for err in self.get_query_arguments("error")
         ]
 
-        self.render("profile.html", boards=await self.boards, errors=errors)
+        await self.render("profile.html", boards=await self.boards, errors=errors)
 
     async def post(self):
         action = self.get_argument("action")
-        username = self.get_argument("username")
-        password = self.get_argument("password")
-
+        username = self.get_argument("username", None)
+        password = self.get_argument("password", None)
+        print(f'PARAMS: {action} | {username} | {password}')
         target = "/profile"
 
-        if action == "login":
+        if action in ['login', 'register']:
+            if not username or not password:
+                self.redirect(f"{target}?error=miss")
+            if action == "register":
+                self.user.register(username, password)
             success = self.authenticate(username, password)
             if not success:
                 target = f"{target}?error=fail"
-        elif action == "register":
-            self.user.register(username, password)
-            success = self.authenticate(username, password)
-            if not success:
-                target = f"{target}?error=fail"
+        elif action == 'logout':
+            if self.user and self.user.is_logged_in:
+                self.reset_user()
         else:
             target = f"{target}?error=notimplemented"
 

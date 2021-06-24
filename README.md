@@ -32,7 +32,7 @@ Tornado-based imageboard
     * Ability to report posts;
     * Ability to remove your own posts.
 # Requirements
-* python 3 (3.9 is recommended)
+* python 3.9+ (or go remove 3.9+ features lol)
 * mongodb
 * mediainfo
 * ffmpeg

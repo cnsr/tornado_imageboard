@@ -17,6 +17,11 @@
                     <p>Moderated boards: <b>None.</b></p>
                 {% end %}
                 <p>Created at: <b>{{current_user.pretty_created_at}}</b></p>
+                <form method="POST" id="logout-form">
+                    {% module xsrf_form_html() %}
+                    <input hidden name="action" value="logout" />
+                    <button form="logout-form" type="submit">Log out</button>
+                </form>
             </div>
         {% else %}
             <div id='errors'>
@@ -62,17 +67,24 @@
             </div>
         {% end %}
     </div>
-    <script>
-        document.getElementById('login').addEventListener('click', e => {
-            document.getElementById('register-form-outer').style.display = 'none';
-            document.getElementById('login-form-outer').style.display = 'block';
-        })
-        document.getElementById('register').addEventListener('click', e => {
-            document.getElementById('login-form-outer').style.display = 'none';
-            document.getElementById('register-form-outer').style.display = 'block';
-        })
+<script>
+        let login = document.getElementById('login');
+        let register = document.getElementById('register');
+
+        if (login) {
+            login.addEventListener('click', e => {
+                document.getElementById('register-form-outer').style.display = 'none';
+                document.getElementById('login-form-outer').style.display = 'block';
+            })
+        }
+        if (register) {
+            register.addEventListener('click', e => {
+                document.getElementById('login-form-outer').style.display = 'none';
+                document.getElementById('register-form-outer').style.display = 'block';
+            })
+        }
     </script>
-    <style>
+<style>
         #login-form-outer, #register-form-outer {
             display: none;
         }
