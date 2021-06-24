@@ -3,6 +3,56 @@ var unread = 0;
 var title;
 var title_orig;
 var pin_id;
+var initX_post, initY_post, firstX_post, firstY_post;
+var draggingPostForm = false;
+var postForm;
+
+
+const mouseDownPostForm = (e) => {
+	e.preventDefault();
+	postForm = document.getElementsByClassName('drag')[0];
+	draggingPostForm = true;
+
+	initX_post = postForm.offsetLeft;
+	initY_post = postForm.offsetTop;
+
+	firstX_post = e.pageX;
+	firstY_post = e.pageY;
+
+	window.addEventListener('mousemove', mouseMovePostForm, false);
+
+	window.addEventListener('mouseup', event => {
+		draggingPostForm = false;
+		window.removeEventListener('mouseMove', mouseMovePostForm, false);
+	})
+}
+
+const mouseMovePostForm = (e) => {
+	if (draggingPostForm) {
+		postForm.style.left = `${initX_post + e.pageX - firstX_post}px`;
+		postForm.style.top = `${initY_post + e.pageY - firstY_post}px`;
+	}
+}
+
+// useless helper that checks if the cursor is withing the supplied element
+const inBounds = (event, element) => {
+	let mouseX = event.pageX;
+	let mouseY = event.pageY;
+	let elementBounds = {
+		xL: element.offsetLeft, // left X
+		xR: element.offsetLeft + element.offsetWidth, // right X
+		yT: element.offsetTop, // top Y
+		yB: element.offsetTop + element.offsetHeight, // bottom Y
+	}
+	console.log({x: mouseX, y: mouseY}, elementBounds)
+	return (
+		mouseX >= elementBounds.xL &&
+		mouseX <= elementBounds.xR &&
+		mouseY <= elementBounds.yB &&
+		mouseY >= elementBounds.yT 
+	)
+}
+
 
 $(document).ready(function(){
 	$('.file_remove').on('click', function(e) {
@@ -29,11 +79,8 @@ $(document).ready(function(){
 	});
 	if ($(window).width() > 768) {
 		$('.add').addClass('drag');
-		if (typeof nodrag === 'undefined') {
-			$(".drag").draggable({
-			  containment: "window"
-			});
-		}
+		if (typeof nodrag === 'undefined')
+			[...document.getElementsByClassName('drag')].map(el => el.addEventListener('mousedown', mouseDownPostForm, false));
 	}
 	title = window.document.title;
 	title_orig = window.document.title;
@@ -166,9 +213,7 @@ $(document).ready(function(){
 		var win = $(this); //this = window
 		if ($(window).width() > 768) {
 			$('.add').addClass('drag');
-			$(".drag").draggable({
-			  containment: "window"
-			});
+			[...document.getElementsByClassName('drag')].map(el => el.addEventListener('mousedown', mouseDownPostForm, false));
 		}
 		if (win.width() <= 768) {
 			$('.add').removeClass('drag')

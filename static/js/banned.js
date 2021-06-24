@@ -1,7 +1,33 @@
+var initX_bf, initY_bf, firstX_bf, firstY_bf;
+
+
+const mouseDownBanForm = (e) => {
+	console.log('banForm movement')
+	e.preventDefault();
+	let target = e.target;
+
+	initX_bf = target.offsetLeft;
+	initY_bf = target.offsetTop;
+
+	firstX_bf = e.pageX;
+	firstY_bf = e.pageY;
+
+	target.addEventListener('mousemove', mouseMoveBanForm, false);
+
+	window.addEventListener('mouseup', (event) => {
+		target.removeEventListener('mouseMove', mouseMoveBanForm, false);
+	})
+}
+
+const mouseMoveBanForm = (e) => {
+	e.target.style.left = `${initX_bf + e.pageX - firstX_bf}px`;
+	e.target.style.top = `${initY_bf + e.pageY - firstY_bf}px`;
+}
+
+
 $(document).ready(function() {
-	$('.banform').draggable({
-		containment: "window"	
-	});
+	[...document.getElementsByClassName('banform')].map(el => el.addEventListener('mousedown', mouseDownBanForm, false));
+
 	$('#ban-never').change(function(){
 		 $('.ban-expires-div').toggle();
 	})

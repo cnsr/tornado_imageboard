@@ -1,12 +1,12 @@
 .modal {
-	 display: inline-block;
-	 z-index: 1000;
-	 display: inline-block;
-   position: fixed !important;
-	 max-width: 10000px;
-	 max-height: 10000px;
-	 min-width: 10px;
-	 min-height: 10px;
+	display: inline-block;
+	z-index: 1000;
+	display: inline-block;
+	position: fixed !important;
+	/* max-width: 10000px;
+	max-height: 10000px; */
+	min-width: 10px;
+	min-height: 10px;
 }
 
 .modal-controls *, .modal * {
