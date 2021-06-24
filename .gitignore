@@ -17,3 +17,4 @@ blacklist.pkl
 *.swp
 .vscode/
 .env
+.idea

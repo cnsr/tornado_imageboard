@@ -32,7 +32,7 @@ Tornado-based imageboard
     * Ability to report posts;
     * Ability to remove your own posts.
 # Requirements
-* python 3
+* python 3 (3.9 is recommended)
 * mongodb
 * mediainfo
 * ffmpeg
@@ -44,7 +44,14 @@ Tornado-based imageboard
     $ sudo service mongod start
     ```
 3. Install module dependencies and run
+   
+   * Using pip:
     ```sh
     $ pip install -r requirements.txt
+    $ python src/board.py
+    ```
+   * Using poetry:
+   ```sh
+    $ poetry install
     $ python board.py
     ```

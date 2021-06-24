@@ -158,7 +158,7 @@ class User:
 
 class UserHandler(tornado.web.RequestHandler):
     def initialize(self):
-        self.logger = logger
+        self.logger = logging.getLogger("board")
         self.con = motor.motor_tornado.MotorClient("localhost", 27017)
         self.database = self.con["imageboard"]
         self.users = self.database.users
