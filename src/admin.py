@@ -23,8 +23,7 @@ class AdminLoginHandler(UserHandler):
         if not self.current_user:
             await self.render('admin/admin_login.html', boards=await self.boards)
         else:
-            self.redirect('/admin')
-            return
+            self.redirect('/profile')
 
     async def post(self):
         password = self.get_argument('password')
@@ -41,7 +40,7 @@ class AdminLoginHandler(UserHandler):
         else:
             log_message = f'{ip} has attempted to log in as admin'
             await log('other', log_message)
-            self.redirect('/')
+            self.redirect('/profile')
 
 
 class AdminLogoutHandler(UserHandler):
