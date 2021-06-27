@@ -119,7 +119,7 @@ class BoardHandler(UserHandler):
                         for f in p['files']:
                             if f['filetype']:
                                 thread['filecount'] -= 1
-                thread['latest'] = posts.reverse()
+                thread['latest'] = list(reversed(posts))
             admin = self.user.is_admin
             popup = None
             if self.get_arguments('err'):
