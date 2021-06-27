@@ -34,6 +34,7 @@ def create_admin_user(password: str):
 
 
 # TODO: refactor in case this works at all
+# TODO: hash and store user IPs (hash against a .env salt)
 class User:
     def __init__(
         self,
@@ -188,6 +189,9 @@ class User:
     def is_admin_or_moderator(self) -> bool:
         return self.__type in (ADMIN_USER, MODERATOR_USER)
 
+    def moderates_board(self, board: str) -> bool:
+        return self.is_admin or board in self.moderated_boards
+
     @property
     def is_logged_in(self) -> bool:
         return self.__username is not None and self.__username != "Unknown"
@@ -215,6 +219,7 @@ class UserHandler(tornado.web.RequestHandler):
     def reset_user(self):
         self.user = None
         self.clear_cookie('ib-user')
+        self.clear_cookie('adminlogin')
 
     def get_current_user(self) -> User:
         return self.get_or_create_user()
@@ -247,6 +252,18 @@ class UserHandler(tornado.web.RequestHandler):
                 None
             )
         return self.__boards
+
+    @property
+    async def moderated_boards(self) -> list[dict]:
+        if self.user.is_admin_or_moderator:
+            if not self.user.is_admin:
+                return list(filter(
+                    lambda board: board.get('short') in self.user.moderated_boards,
+                    await self.boards
+                ))
+            return await self.boards
+
+        return []
 
 
 class ProfilePage(UserHandler):

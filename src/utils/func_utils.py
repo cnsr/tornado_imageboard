@@ -5,15 +5,41 @@ import os
 import pickle
 import re
 
+from enum import Enum
+
 import motor.motor_tornado
-from motor.motor_tornado import MotorDatabase
+
+
+MotorDatabase = motor.motor_tornado.MotorDatabase
 
 thumb_def = 'static/missing_thumbnail.jpg'
 spoilered = 'static/spoiler.jpg'
 
+VIDEO_EXTENSIONS = ('.webm', '.mp4')
+AUDIO_EXTENSION = ('.ogg', '.mp3', '.wav')
+IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.apng', '.bmp')
+
+
+class FileTypes(Enum):
+    IMAGE = 'image'
+    AUDIO = 'audio'
+    VIDEO = 'video'
+    UNKNOWN = 'unknown'
+
+
+def get_filetype(filepath: os.PathLike) -> FileTypes:
+    extension = os.path.splitext(filepath)[-1].lower()
+    if extension in VIDEO_EXTENSIONS:
+        return FileTypes.VIDEO
+    elif extension in AUDIO_EXTENSION:
+        return FileTypes.AUDIO
+    elif extension in IMAGE_EXTENSIONS:
+        return FileTypes.IMAGE
+    return FileTypes.UNKNOWN
+
 
 def generate_password(raw_password: str) -> str:
-    # as an alternative, apssword hash can be stored in .env
+    # as an alternative, password hash can be stored in .env - doesn't matter as the salt is supposed to be random
     salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
     password_hash = binascii.hexlify(
         hashlib.pbkdf2_hmac('sha512', raw_password.encode('utf-8'), salt, 100000)
@@ -27,11 +53,11 @@ def verify_password(raw_password: str, hashed_password: str) -> bool:
     ).decode('ascii')
 
 
-def exclude(_from: dict) -> dict:
+def exclude(_from: list[str]) -> dict:
     return {i: False for i in _from}
 
 
-# updates one db entry by set parametres
+# updates one db entry by set parameters
 async def update_db(db: MotorDatabase, count: int, variables: dict):
     await db.posts.update_one(
         {'count': count},
@@ -53,11 +79,11 @@ async def update_db_b(db: MotorDatabase, short: str, variables: dict):
     )
 
 
-async def check_map(db: MotorDatabase, mapdata: dict[str, str]) -> dict:
+async def check_map(db: MotorDatabase, map_data: dict[str, str]) -> dict:
     return await db.maps.find_one_and_delete(
         {
-            'long': mapdata['long'],
-            'lat': mapdata['lat']
+            'long': map_data['long'],
+            'lat': map_data['lat']
         }
     )
 
@@ -89,12 +115,30 @@ async def get_ip(req):
 # decorator that checks if user is admin
 def ifadmin(f):
     def wrapper(self, *args, **kwargs):
-        if not self.current_user.is_admin:
+        if not self.user.is_admin:
             return self.redirect('/admin/login')
         return f(self, *args, **kwargs)
     return wrapper
 
 
+def admin_required(f):
+    def wrapper(self, *args, **kwargs):
+        if not self.user.is_admin:
+            return self.redirect('/admin/login')
+        return f(self, *args, **kwargs)
+    return wrapper
+
+
+def admin_or_mod_required(f):
+    def wrapper(self, *args, **kwargs):
+        if not self.user.is_admin_or_moderator:
+            return self.redirect('/admin/login')
+        return f(self, *args, **kwargs)
+    return wrapper
+
+
+
+# TODO: rewrite blacklist as class
 def save_blacklist(blacklist: list[str]):
     with open('blacklist.pkl', 'wb') as f:
         pickle.dump(list(set(blacklist)), f)
@@ -109,16 +153,18 @@ def get_blacklist() -> list[str]:
 
 
 def has_blacklisted_words(text: str) -> bool:
-    blacklist = get_blacklist()
-    return any([re.search(re.escape(word), text, re.IGNORECASE) for word in blacklist])
+    return any([re.search(re.escape(word), text, re.IGNORECASE) for word in get_blacklist()])
 
 
-def get_replies(text):
+def get_replies(text: str) -> list[int]:
     text = text.replace('&gt;', '>')
     replies = []
-    x = re.compile(r'(>>\d+)')
-    it = re.finditer(x, text)
-    for x in it:
-        number = x.group(0)
+    for entry in re.finditer(re.compile(r'(>>\d+)'), text):
+        number = entry.group(0)
         replies.append(int(number[2:]))
     return replies
+
+
+def check_path(path: os.PathLike):
+    if not os.path.exists(path):
+        os.makedirs(path)

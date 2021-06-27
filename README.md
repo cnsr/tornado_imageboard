@@ -31,12 +31,14 @@ Tornado-based imageboard
     * Maximum of four files per post;
     * Ability to report posts;
     * Ability to remove your own posts.
+
 # Requirements
 * python 3.9+ (or go remove 3.9+ features lol)
 * mongodb
 * mediainfo
 * ffmpeg
 * imagemagick
+
 # How to run
 1. Install all software dependencies
 2. Configure nginx - use example config, make sure mongo is running
@@ -55,3 +57,10 @@ Tornado-based imageboard
     $ poetry install
     $ python board.py
     ```
+
+# TODO:
+0. Fix UI
+1. Wrap in Docker
+2. Introduce external storage
+3. Add Celery for periodic cleanup
+4. Rewrite in Rust

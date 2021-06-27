@@ -8,9 +8,11 @@ import tornado.web
 import src.ib_settings as _ib
 from src.logger import log
 from src.utils import (
-    ifadmin, remove_files, update_db,
-    get_ip, save_blacklist, get_blacklist,
+    ifadmin, admin_or_mod_required, admin_required,
+    remove_files, update_db, get_ip,
+    save_blacklist, get_blacklist,
 )
+from src.models import Board
 
 from src.userhandle import UserHandler
 
@@ -19,7 +21,7 @@ class AdminLoginHandler(UserHandler):
 
     async def get(self):
         if not self.current_user:
-            self.render('admin/admin_login.html', boards=await self.boards)
+            await self.render('admin/admin_login.html', boards=await self.boards)
         else:
             self.redirect('/admin')
             return
@@ -27,55 +29,64 @@ class AdminLoginHandler(UserHandler):
     async def post(self):
         password = self.get_argument('password')
         ip = await get_ip(self.request)
-        if password == _ib.ADMIN_PASS:
-            self.set_secure_cookie('adminlogin', 'true')
-            log_message = '{0} has logged in as admin'.format(ip)
+        is_authenticated = self.user.authenticate(self.user.username, password)
+        if self.user.is_admin and is_authenticated:
+            log_message = f'{ip} has logged in as admin'
+            await log('other', log_message)
+            self.redirect('/admin')
+        elif self.user.is_admin_or_moderator:
+            log_message = f'{ip} has logged in as moderator'
             await log('other', log_message)
             self.redirect('/admin')
         else:
-            log_message = '{0} has attempted to log in as admin'.format(ip)
+            log_message = f'{ip} has attempted to log in as admin'
             await log('other', log_message)
             self.redirect('/')
 
 
 class AdminLogoutHandler(UserHandler):
-    @ifadmin
+    @admin_or_mod_required
     async def get(self):
         self.clear_cookie('adminlogin')
         ip = await get_ip(self.request)
-        log_message = '{0} has logged in as admin'.format(ip)
+        log_message = f'{ip} has logged in as admin'
         await log('other', log_message)
         self.redirect('/')
 
 
 # stats of boards for admins
 class AdminStatsHandler(UserHandler):
-    responses = {'success':'Deletion successful.',
-                'error': 'Board does not exist.'}
-    @ifadmin
+    responses = {
+        'success': 'Deletion successful.',
+        'error': 'Board does not exist.'
+    }
+
+    @admin_or_mod_required
     async def get(self):
         popup = None
-        if self.get_arguments('msg') != []:
+        if self.get_arguments('msg'):
             msg = self.get_argument('msg')
             popup = self.responses.get(msg)
-        self.render('admin/admin_stats.html', boards=await self.boards, popup=popup)
+
+        await self.render('admin/admin_stats.html', boards=await self.moderated_boards, popup=popup)
 
     @ifadmin
     async def post(self):
         short = self.get_argument('short')
-        board = await self.application.database.boards.find_one({'short': short})
+        board = await self.database.boards.find_one({'short': short})
         url = self.request.uri.split('?')[0]
         if board:
             try:
-                posts = await self.application.database.posts.find({'board': board['short']}).to_list(None)
+                posts = await self.database.posts.find({'board': board['short']}).to_list(None)
                 for post in posts:
                     await remove_files(post)
-                    await self.application.database.posts.delete_one({'count': post['count']})
+                    await self.database.posts.delete_one({'count': post['count']})
                 log_message = 'Board {0} has been deleted.'.format(board['short'])
                 await log('board_remove', log_message)
-                await self.application.database.boards.delete_one({'short':short})
+                await self.database.boards.delete_one({'short':short})
                 self.redirect(url + '?msg=success')
-            except:
+            except Exception as e:
+                print(f"Exception when trying to POST stats page {e}, u: {self.user}")
                 self.redirect(url + '?msg=error1')
         else:
             self.redirect(url + '?msg=error')
@@ -83,17 +94,16 @@ class AdminStatsHandler(UserHandler):
 
 # you can view bans here
 class AdminBannedHandler(UserHandler):
-    @ifadmin
+    # only absolute admins can view bans
+    @admin_required
     async def get(self):
-        db = self.application.database
-        bans = await db.bans.find({}).sort([('date', 1)]).to_list(None)
-        self.render('admin/admin_banned.html', bans=bans, boards=await self.boards)
+        bans = await self.database.bans.find({}).sort([('date', 1)]).to_list(None)
+        await self.render('admin/admin_banned.html', bans=bans, boards=await self.boards)
 
-    @ifadmin
+    @admin_required
     async def post(self):
-        db = self.application.database
         ip = self.get_argument('ip')
-        await db.bans.delete_one({'ip': ip})
+        await self.database.bans.delete_one({'ip': ip})
         log_message = '{0} was unbanned by admin.'.format(ip)
         await log('unban', log_message)
         self.redirect('/admin/bans')
@@ -101,84 +111,86 @@ class AdminBannedHandler(UserHandler):
 
 # you can view reports here
 class AdminReportsHandler(UserHandler):
-    @ifadmin
+    @admin_or_mod_required
     async def get(self):
-        db = self.application.database
-        reports = await db.reports.find({}).sort([('date', 1)]).to_list(None)
-        self.render('admin/admin_reported.html', reports=reports, boards=await self.boards)
+        reports = await self.database.reports.find({}).sort([('date', 1)]).to_list(None)
+        await self.render('admin/admin_reported.html', reports=reports, boards=await self.moderated_boards)
 
-    @ifadmin
+    @admin_or_mod_required
     async def post(self):
-        db = self.application.database
         ip = self.get_argument('ip')
         if ip != 'all':
-            await db.reports.delete_one({'ip': ip})
+            await self.database.reports.delete_one({'ip': ip})
         else:
-            await db.reports.remove({})
+            await self.database.reports.remove({})
         self.redirect('/admin/reports')
 
 
 # admin main page
 class AdminHandler(UserHandler):
 
+    @admin_or_mod_required
     async def get(self):
-        if not self.current_user:
-            self.redirect('/admin/login')
-        else:
-            self.render('admin/admin.html', boards=await self.boards)
+        await self.render('admin/admin.html', boards=await self.moderated_boards)
 
 
 # creation of boards
 class AdminBoardCreationHandler(UserHandler):
-    @ifadmin
+    @admin_or_mod_required
     async def get(self):
-        self.render('admin/admincreate.html', boards=await self.boards)
+        await self.render('admin/admincreate.html', boards=await self.moderated_boards)
 
-    @ifadmin
+    @admin_or_mod_required
     async def post(self):
-        data = {}
+        # TODO: take care of moderators
+        # TODO: add proper server-side validation
+        data = dict()
         data['name'] = self.get_argument('name', '')
-        data['short']= self.get_argument('short', '')
+        data['short'] = self.get_argument('short', '')
         data['username'] = self.get_argument('username', '')
         data['description'] = self.get_argument('description', '')
-        data['thread_posts'] = int(self.get_argument('thread_posts', ''))
-        data['thread_bump'] = int(self.get_argument('thread_bump', ''))
-        data['thread_catalog'] = int(self.get_argument('thread_catalog', ''))
+        data['thread_posts'] = int(self.get_argument('thread_posts', '15'))
+        data['thread_bump'] = int(self.get_argument('thread_bump', '10'))
+        data['thread_catalog'] = int(self.get_argument('thread_catalog', '10'))
         data['country'] = 'country' in self.request.arguments
         data['custom'] = 'custom' in self.request.arguments
         data['roll'] = 'roll' in self.request.arguments
         data['unlisted'] = 'unlisted' in self.request.arguments
-        data['postcount'] = 0
-        data['mediacount'] = 0
-        data['created'] = datetime.datetime.utcnow()
-        data['banners'] = []
-        data['perpage'] = int(float(self.get_argument('perpage', 10)))
+        # data['postcount'] = 0
+        # data['mediacount'] = 0
+        # data['created'] = datetime.datetime.utcnow()
+        # data['banners'] = []
+        data['perpage'] = int(float(self.get_argument('perpage', '10')))
         data['pinned'] = None
+        board = Board.from_dict(data)
+        print('created board:', board)
+        print('board as dict:', dict(board))
         if self.request.files:
             f = self.request.files['banner'][0]
             ext = f['filename'].split('.')[-1]
-            newname = f"banners/{data.get('short')}-{uuid4().hex[:8]}.{ext}"
-            with open(newname, 'wb') as nf:
+            new_name = f"banners/{data.get('short')}-{uuid4().hex[:8]}.{ext}"
+            with open(new_name, 'wb') as nf:
                 nf.write(bytes(f['body']))
-            data['banners'].append(newname)
-        db = self.application.database.boards
-        log_message = 'Board /{0}/ has been created.'.format(data['short'])
+            board.add_banner(new_name)
+        log_message = f'Board /{board.short}/ has been created.'
         await log('board_creation', log_message)
-        await db.insert_one(data)
+        await self.database.boards.insert_one(dict(board))
         self.redirect('/' + data['short'])
 
 
 # editing existing boards
 class AdminBoardEditHandler(UserHandler):
-    @ifadmin
+    @admin_or_mod_required
     async def get(self, board):
-        instance = await self.application.database.boards.find_one({'short': board})
+        instance = await self.database.boards.find_one({'short': board})
+        to_remove = ['postcount', 'mediacount', 'created']
         if instance:
-            to_remove = ['postcount', 'mediacount', 'created']
             for key in to_remove:
                 if key in instance:
                     del instance[key]
-            self.render('admin/admin_edit.html', boards=await self.boards, i=instance)
+            await self.render(
+                'admin/admin_edit.html', boards=await self.moderated_boards, i=instance
+            )
         else:
             self.redirect('/admin/stats')
 
