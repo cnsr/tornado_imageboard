@@ -557,7 +557,7 @@ async def makedata(
             data['country'] = data['countryname'] = is_in_exceptions[0]
         else:
             try:
-                data['countryname'] = regioncodes[data['country']]
+                data['countryname'] = regioncodes.get(data['country'])
             except KeyError:
                 data['countryname'] = 'Proxy'
                 data['country'] = 'PROXY'
