@@ -112,7 +112,7 @@ class BoardHandler(UserHandler):
             for thread in threads:
                 limit = 1 if thread['pinned'] else 3
                 posts = await db.posts.find({'thread': int(thread['count'])}).sort(
-                    [('date', 1)]
+                    [('date', -1)]
                 ).limit(limit).to_list(None)
                 for p in posts:
                     if p.get('files'):
