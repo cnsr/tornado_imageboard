@@ -28,7 +28,7 @@ from src.admin import (
 from src.ajax import *
 from src.api import *
 from src.logger import log
-from src.thumbnail import make_thumbnail
+from src.utils import make_thumbnail
 from src.tripcode import tripcode
 from src.utils import *
 from src.userhandle import UserHandler, ProfilePage

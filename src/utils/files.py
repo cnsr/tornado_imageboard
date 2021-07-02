@@ -18,21 +18,17 @@ async def upload_file(
     file_to_upload: dict[str, str]
 ) -> tuple[Optional[str], Optional[str], Optional[str], Optional[str]]:
     filename = file_to_upload.get('filename')
+    filetype = get_filetype(filename)
     extension = os.path.splitext(filename)[-1].lower()
-    if extension in ['.jpg', '.gif', '.png','.jpeg']:
-        filetype = 'image'
-    elif extension in ['.webm', '.mp4']:
-        filetype = 'video'
-    elif extension in ['.mp3', '.ogg', '.wav', '.opus']:
-        filetype = 'audio'
-    else:
-        # if format not supported
+    if filetype is FileTypes.UNKNOWN:
         return None, None, None, None
-    new_name = os.path.join(uploads, uuid.uuid4().hex, extension)
+    new_name = os.path.join(uploads, f"{uuid.uuid4().hex}{extension}")
     with open(new_name, 'wb') as nf:
         nf.write(bytes(file_to_upload.get('body')))
     filedata = await process_file(new_name)
-    return filename, new_name, filetype, filedata
+    return (
+        filename, new_name, filetype.value, filedata
+    )
 
 
 async def convert_bytes(num: float):

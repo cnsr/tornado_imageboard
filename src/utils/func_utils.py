@@ -23,7 +23,7 @@ AUDIO_EXTENSION = ('.ogg', '.mp3', '.wav')
 IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.apng', '.bmp')
 
 
-class FileTypes(Enum):
+class FileTypes(str, Enum):
     IMAGE = 'image'
     AUDIO = 'audio'
     VIDEO = 'video'
