@@ -6,9 +6,12 @@ import pickle
 import re
 
 from enum import Enum
+from tornado.httputil import HTTPServerRequest
+from typing import Union, Callable
 
 import motor.motor_tornado
 
+PATHLIKE = Union[os.PathLike, str]
 
 MotorDatabase = motor.motor_tornado.MotorDatabase
 
@@ -27,7 +30,7 @@ class FileTypes(Enum):
     UNKNOWN = 'unknown'
 
 
-def get_filetype(filepath: os.PathLike) -> FileTypes:
+def get_filetype(filepath: PATHLIKE) -> FileTypes:
     extension = os.path.splitext(filepath)[-1].lower()
     if extension in VIDEO_EXTENSIONS:
         return FileTypes.VIDEO
@@ -39,7 +42,8 @@ def get_filetype(filepath: os.PathLike) -> FileTypes:
 
 
 def generate_password(raw_password: str) -> str:
-    # as an alternative, password hash can be stored in .env - doesn't matter as the salt is supposed to be random
+    # as an alternative, password hash can be stored in .env
+    # it doesn't matter as the salt is supposed to be random
     salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
     password_hash = binascii.hexlify(
         hashlib.pbkdf2_hmac('sha512', raw_password.encode('utf-8'), salt, 100000)
@@ -88,6 +92,7 @@ async def check_map(db: MotorDatabase, map_data: dict[str, str]) -> dict:
     )
 
 
+# TODO: rewrite this whenever i get around to using S3
 async def remove_files(post: dict):
     for f in post.get('files', []):
         if os.path.isfile(f.get('name', '')):
@@ -105,15 +110,15 @@ def synchronize_removal(post: dict):
     try:
         asyncio.run(remove_files(post))
     except (TypeError, FileNotFoundError) as e:
-        print(post)
+        print(f"failed to remove {post} with error {e}")
 
 
-async def get_ip(req):
+async def get_ip(req: HTTPServerRequest):
     return req.headers.get('X-Real-IP') or req.remote_ip
 
 
 # decorator that checks if user is admin
-def ifadmin(f):
+def ifadmin(f: Callable):
     def wrapper(self, *args, **kwargs):
         if not self.user.is_admin:
             return self.redirect('/admin/login')
@@ -121,7 +126,7 @@ def ifadmin(f):
     return wrapper
 
 
-def admin_required(f):
+def admin_required(f: Callable):
     def wrapper(self, *args, **kwargs):
         if not self.user.is_admin:
             return self.redirect('/admin/login')
@@ -129,13 +134,12 @@ def admin_required(f):
     return wrapper
 
 
-def admin_or_mod_required(f):
+def admin_or_mod_required(f: Callable):
     def wrapper(self, *args, **kwargs):
         if not self.user.is_admin_or_moderator:
             return self.redirect('/admin/login')
         return f(self, *args, **kwargs)
     return wrapper
-
 
 
 # TODO: rewrite blacklist as class
@@ -165,6 +169,6 @@ def get_replies(text: str) -> list[int]:
     return replies
 
 
-def check_path(path: os.PathLike):
+def check_path(path: PATHLIKE):
     if not os.path.exists(path):
         os.makedirs(path)

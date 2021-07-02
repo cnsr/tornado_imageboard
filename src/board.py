@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 import html
-import datetime
-import json
 import logging
-import os
 import random
-import re
-from mimetypes import guess_type
+
 from uuid import uuid4
 from typing import Optional
 
@@ -18,7 +14,6 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 import tornado.web
-from PIL import Image
 from tornado import concurrent, gen
 from tornado.options import define, options
 
@@ -32,7 +27,6 @@ from src.admin import (
 )
 from src.ajax import *
 from src.api import *
-from src.getresolution import resolution
 from src.logger import log
 from src.thumbnail import make_thumbnail
 from src.tripcode import tripcode
@@ -51,10 +45,6 @@ logger.addHandler(ch)
 executor = concurrent.futures.ThreadPoolExecutor(8)
 
 uploads = default_settings.UPLOAD_ROOT
-
-# TODO: rewrite this atrocity
-global latest_postnumber
-latest_postnumber = 0
 
 regioncodes = RegionCodes()
 
@@ -198,9 +188,7 @@ class BoardHandler(UserHandler):
                             if file_details := await upload_file(self.request.files[x][0]):
                                 fo, ff, filetype, filedata = file_details
                                 files.append({'original': fo, 'name': ff, 'filetype': filetype, 'filedata': filedata})
-                global latest_postnumber
-                latest_postnumber += 1
-                count = latest_postnumber
+                latest_postnumber: int = await self.get_latest_postnumber() + 1
                 oppost = True
                 thread = None
                 admin = False
@@ -209,11 +197,11 @@ class BoardHandler(UserHandler):
                 admin = self.current_user.is_admin and 'admin' in self.request.arguments
                 if subject or text or files:
                     data = await makedata(
-                        db, subject, text, count, board, ip, oppost, thread, files, username,
+                        db, subject, text, latest_postnumber, board, ip, oppost, thread, files, username,
                         spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop, password=password
                     )
                     await db.posts.insert_one(data)
-                    await log('post', f'IP {ip} created a thread {count} in {board} board.')
+                    await log('post', f'IP {ip} created a thread {latest_postnumber} in {board} board.')
                     self.redirect('/' + board + '/thread/' + str(data['count']))
                 else:
                     self.redirect(self.request.uri + '?err=empty')
@@ -317,9 +305,7 @@ class ThreadHandler(UserHandler):
                 replies = get_replies(text)
                 text = text.strip()
                 # TODO: fix this garbage
-                global latest_postnumber
-                latest_postnumber += 1
-                count = latest_postnumber
+                latest_postnumber: int = await self.get_latest_postnumber() + 1
                 oppost = False
                 thread = thread_count  # wtf why
                 op = await db.posts.find_one({'count': int(thread)})
@@ -330,13 +316,13 @@ class ThreadHandler(UserHandler):
                 admin = self.current_user.is_admin and 'admin' in self.request.arguments
                 if subject or text or files:
                     data = await makedata(
-                        db, subject, text, count, board, ip, oppost, thread, files,
+                        db, subject, text, latest_postnumber, board, ip, oppost, thread, files,
                         username, spoiler=spoiler, admin=admin, sage=sage, opip=op['ip'],
                         showop=showop, password=password
                     )
                     await db.posts.insert_one(data)
                     # FIXME: what if that's an oppost ?
-                    log_message = f'{ip} posted #{count} in a thread #{thread} on {board} board.'
+                    log_message = f'{ip} posted #{latest_postnumber} in a thread #{thread} on {board} board.'
                     await log('post', log_message)
                     op = await db['posts'].find_one({'count': thread_count})
                     if op:
@@ -439,50 +425,6 @@ class JsonThreadHandler(UserHandler):
             post = dict(filter(lambda p: p[1] is not None, post.items()))
             res.append(post)
         self.write(json.dumps(res, indent=4, ensure_ascii=False))
-
-
-async def upload_file(file_to_upload: dict[str, str]) -> tuple[Optional[str], Optional[str], Optional[str], Optional[str]]:
-    filename = file_to_upload.get('filename')
-    extension = os.path.splitext(filename)[-1].lower()
-    if extension in ['.jpg', '.gif', '.png','.jpeg']:
-        filetype = 'image'
-    elif extension in ['.webm', '.mp4']:
-        filetype = 'video'
-    elif extension in ['.mp3', '.ogg', '.wav', '.opus']:
-        filetype = 'audio'
-    else:
-        # if format not supported
-        return None, None, None, None
-    new_name = os.path.join(uploads, f"{uuid4().hex}{extension}")
-    with open(new_name, 'wb') as nf:
-        nf.write(bytes(file_to_upload.get('body')))
-    filedata = await process_file(new_name)
-    return filename, new_name, filetype, filedata
-
-
-async def convert_bytes(num):
-    for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
-        if num < 1024.0:
-            return "%3.1f %s" % (num, x)
-        num /= 1024.0
-
-
-async def process_file(filepath: os.PathLike[str]) -> Optional[str]:
-    if os.path.isfile(filepath):
-        filesize = await convert_bytes(os.stat(filepath).st_size)
-        extension = os.path.splitext(filepath)[-1].upper()
-        file_type = get_filetype(filepath)
-        if file_type is FileTypes.VIDEO:
-            w, h = resolution(filepath)
-        elif file_type is FileTypes.IMAGE:
-            with Image.open(filepath) as img:
-                w, h = img.size
-        elif file_type is FileTypes.AUDIO:
-            return f'{extension}, {filesize}'
-        else:
-            return None
-        return f'{extension}, {w}x{h}, {filesize}'
-    return None
 
 
 # ban status for your ip
@@ -789,22 +731,11 @@ def main():
 
     application = Application()
     # holy fuck this is awful
-    global latest_postnumber
 
     try:
         latest_con = pymongo.MongoClient('localhost', 27017)
     except pymongo.errors.ServerSelectionTimeoutError:
         logger.error('MongoDB is not running.')
-
-    latest_db = latest_con['imageboard']
-
-    try:
-        latest_postnumber = latest_db['posts'].find({}).sort('count', -1)[0]['count']
-    except IndexError:
-        # in case you are running the server for the first time
-        # there will be no posts therefore this should return 0
-        # and the first post will be №1
-        latest_postnumber = 0
 
     http_server = tornado.httpserver.HTTPServer(application, max_buffer_size=default_settings.MAX_FILESIZE)
     http_server.listen(options.port)

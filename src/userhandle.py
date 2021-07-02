@@ -265,6 +265,16 @@ class UserHandler(tornado.web.RequestHandler):
 
         return []
 
+    async def get_latest_postnumber(self) -> int:
+        try:
+            latest_post = await self.database.posts.find({}).sort([('count', -1), ]).to_list(None)
+            return latest_post[0]['count']
+        except IndexError:
+            # in case you are running the server for the first time
+            # there will be no posts therefore this should return 0
+            # and the first post will be №1
+            return 0
+
 
 class ProfilePage(UserHandler):
     async def get(self):
