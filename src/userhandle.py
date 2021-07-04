@@ -1,7 +1,8 @@
 import logging
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Union, Optional
 from uuid import uuid4
+from enum import Enum
 from src.utils import generate_password, verify_password
 
 import motor.motor_tornado
@@ -23,6 +24,17 @@ POSSIBLE_USER_TYPES = [
 ]
 
 
+# TODO: remove this comment
+
+
+USER_AS_DICT = dict[str, Union[str, int, list[str]]]
+
+
+class AUTH_METHODS(Enum):
+    COOKIE = 'cookie'
+    APIKEY = 'api_key'
+
+
 def create_admin_user(password: str):
     try:
         u = User("1", ADMIN_USER, password)
@@ -35,37 +47,43 @@ def create_admin_user(password: str):
 
 # TODO: refactor in case this works at all
 # TODO: hash and store user IPs (hash against a .env salt)
+# TODO: allow generation of API tokens for admins/mods and use a cookie auth method
 class User:
     def __init__(
         self,
         uid: Optional[str],
         role: Optional[str] = ANONIMOUS_USER,
         password: Optional[str] = None,
+        using: AUTH_METHODS = AUTH_METHODS.COOKIE,
     ):
         # set default variables
         self.connection = pymongo.MongoClient("localhost", 27017).imageboard
         self.db = self.connection.users
         self.__created_at = None
         self.__type = role
-        self.__user = None
+        self.__user: USER_AS_DICT = {}
         self.__username = None
+        self.auth_method = using
 
-        # get or create user
-        if uid:
-            self.uid = uid
-        else:
-            self.uid = uuid4().hex
-        if not self.retrieve_user():
-            self.create_user(role)
-            self.retrieve_user()
-        if password:
-            self.set_password(password)
+        if self.auth_method is AUTH_METHODS.COOKIE:
+            # get or create user
+            if uid:
+                self.uid = uid
+            else:
+                self.uid = uuid4().hex
+            if not self.__user:
+                self.create_user(role)
+            if password:
+                self.set_password(password)
+        elif self.auth_method is AUTH_METHODS.APIKEY:
+            # TODO: auth using api key - find a user with the key first tho
+            pass
 
     def create_user(
         self,
         user_type: Optional[str] = ANONIMOUS_USER,
         username: Optional[str] = "Unknown",
-    ) -> bool:
+    ):
         # created_at is a UTC timestamp
         if user_type == ADMIN_USER and username == "Unknown":
             username = "admin"
@@ -73,8 +91,8 @@ class User:
         if username != "Unknown":
             existing_user = self.db.find_one({"username": username})
             if existing_user:
-                return False
-        self.__user = self.db.insert_one(
+                raise Exception("Tried to create already existing user")
+        result = self.db.insert_one(
             {
                 "id": str(self.uid),
                 "created_at": self.created_at,
@@ -83,8 +101,10 @@ class User:
                 "username": username,
             }
         )
+        if not result.inserted_id:
+            raise Exception("Failed to write user to db")
+        self.retrieve_user()
         self.__username = username if username != "Unknown" else None  # type: ignore
-        return True
 
     @property
     def user_type(self):
@@ -104,12 +124,12 @@ class User:
 
     @property
     def pretty_created_at(self):
-        return datetime.fromtimestamp(self.__created_at).strftime("%m/%d/%Y, %H:%M:%S")
+        return datetime.fromtimestamp(self.created_at).strftime("%m/%d/%Y, %H:%M:%S")
 
     @property
-    def moderated_boards(self):
+    def moderated_boards(self) -> list[str]:
         # TODO: lookup actual boards
-        return self.user.get('moderated_boards', [])
+        return self.user.get('moderated_boards', [])  # type: ignore
 
     def set_password(self, raw_password: str):
         self.db.find_one_and_update(
@@ -121,22 +141,32 @@ class User:
         )
 
     def verify_password(self, password: str) -> bool:
-        hashed_password = self.retrieve_user(include_password=True).get("password")
-        return verify_password(password, hashed_password)
+        if hashed_password := self.retrieve_user_password():
+            return verify_password(password, hashed_password)
+        return False
 
-    def retrieve_user(self, include_password: bool = False) -> Optional[dict[str, str]]:
-        user = self.db.find_one(
-            {"id": str(self.uid)}, {"_id": False, "password": include_password}
+    def retrieve_user_password(self) -> str:
+        result = self.db.find_one(
+            {"id": str(self.uid)}, {"_id": False, "password": True}
         )
-        if not user:
-            return None
-        self.__created_at = user.get("created_at")
-        self.__type = user.get("type")
-        self.__user = user
-        self.__username = (
-            user.get("username") if user.get("username") != "Unknown" else None
+        if result:
+            return result.get("password", "")
+        return ""
+
+    def retrieve_user(self):
+        stored_user = self.db.find_one(
+            {"id": str(self.uid)}, {"_id": False, "password": False}
         )
-        return user
+        if stored_user:
+            self.__created_at = stored_user.get("created_at")
+            self.__type = stored_user.get("type")
+            self.__user = stored_user
+            self.__username = (
+                stored_user.get("username") if stored_user.get("username") != "Unknown" else None
+            )
+            print(self.__username)
+        else:
+            self.create_user()
 
     def __update(self, data: dict[str, str]):
         # prevent overriding of default fields
@@ -176,7 +206,7 @@ class User:
         self.login(username, password)
 
     @property
-    def user(self):
+    def user(self) -> USER_AS_DICT:
         if not self.__user:
             self.retrieve_user()
         return self.__user
@@ -203,7 +233,7 @@ class UserHandler(tornado.web.RequestHandler):
         self.logger = logging.getLogger("board")
         self.con = motor.motor_tornado.MotorClient("localhost", 27017)
         self.database = self.con["imageboard"]
-        self.user = None
+        self.__user = None
         self.users = self.database.users
         self.__boards = None
         logger.info("finished initialization")
@@ -211,29 +241,32 @@ class UserHandler(tornado.web.RequestHandler):
 
     def get_or_create_user(self) -> User:
         user_id = self.get_cookie("ib-user", None)
-        self.user = User(user_id)
-        if self.user.uid != user_id:
-            self.set_cookie("ib-user", self.user.uid)
-        return self.user
+        self.__user = User(user_id, using=AUTH_METHODS.COOKIE)
+        if self.__user.uid != user_id:
+            self.set_cookie("ib-user", self.__user.uid)
+        return self.__user
 
     def reset_user(self):
-        self.user = None
+        self.__user = None
         self.clear_cookie('ib-user')
         self.clear_cookie('adminlogin')
 
     def get_current_user(self) -> User:
         return self.get_or_create_user()
 
+    @property
+    def user(self) -> User:
+        return self.get_or_create_user()
+
     def authenticate(self, username: str, password: str) -> bool:
         if authenticated_user := self.user.login(username, password):
-            print("auth user", authenticated_user)
             if authenticated_user:
-                self.user = authenticated_user
+                self.__user = authenticated_user
                 self.set_cookie("ib-user", self.user.uid)
                 return True
         return False
 
-    def check_origin(self, origin):
+    def check_origin(self, origin) -> bool:  # type: ignore
         return True
 
     def set_default_headers(self):
@@ -293,8 +326,8 @@ class ProfilePage(UserHandler):
 
     async def post(self):
         action = self.get_argument("action")
-        username = self.get_argument("username", None)
-        password = self.get_argument("password", None)
+        username = self.get_argument("username", "")
+        password = self.get_argument("password", "")
         print(f'PARAMS: {action} | {username} | {password}')
         target = "/profile"
 

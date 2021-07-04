@@ -1,12 +1,11 @@
 import datetime
 import re
 from uuid import uuid4
+from typing import TypeVar
 
 import motor.motor_tornado
-import tornado.web
 
-import src.ib_settings as _ib
-from src.logger import log
+from src.logger import log, MessageTypes
 from src.utils import (
     ifadmin, admin_or_mod_required, admin_required,
     remove_files, update_db, get_ip,
@@ -15,6 +14,9 @@ from src.utils import (
 from src.models import Board
 
 from src.userhandle import UserHandler
+
+
+_T = TypeVar("_T")
 
 
 class AdminLoginHandler(UserHandler):
@@ -28,18 +30,18 @@ class AdminLoginHandler(UserHandler):
     async def post(self):
         password = self.get_argument('password')
         ip = await get_ip(self.request)
-        is_authenticated = self.user.authenticate(self.user.username, password)
+        is_authenticated = self.authenticate(self.user.username, password)
         if self.user.is_admin and is_authenticated:
             log_message = f'{ip} has logged in as admin'
-            await log('other', log_message)
+            await log(MessageTypes.OTHER, log_message)
             self.redirect('/admin')
         elif self.user.is_admin_or_moderator:
             log_message = f'{ip} has logged in as moderator'
-            await log('other', log_message)
+            await log(MessageTypes.OTHER, log_message)
             self.redirect('/admin')
         else:
             log_message = f'{ip} has attempted to log in as admin'
-            await log('other', log_message)
+            await log(MessageTypes.OTHER, log_message)
             self.redirect('/profile')
 
 
@@ -49,7 +51,7 @@ class AdminLogoutHandler(UserHandler):
         self.clear_cookie('adminlogin')
         ip = await get_ip(self.request)
         log_message = f'{ip} has logged in as admin'
-        await log('other', log_message)
+        await log(MessageTypes.OTHER, log_message)
         self.redirect('/')
 
 
@@ -81,8 +83,8 @@ class AdminStatsHandler(UserHandler):
                     await remove_files(post)
                     await self.database.posts.delete_one({'count': post['count']})
                 log_message = 'Board {0} has been deleted.'.format(board['short'])
-                await log('board_remove', log_message)
-                await self.database.boards.delete_one({'short':short})
+                await log(MessageTypes.BOARD_REMOVE, log_message)
+                await self.database.boards.delete_one({'short': short})
                 self.redirect(url + '?msg=success')
             except Exception as e:
                 print(f"Exception when trying to POST stats page {e}, u: {self.user}")
@@ -104,7 +106,7 @@ class AdminBannedHandler(UserHandler):
         ip = self.get_argument('ip')
         await self.database.bans.delete_one({'ip': ip})
         log_message = '{0} was unbanned by admin.'.format(ip)
-        await log('unban', log_message)
+        await log(MessageTypes.UNBAN, log_message)
         self.redirect('/admin/bans')
 
 
@@ -172,7 +174,7 @@ class AdminBoardCreationHandler(UserHandler):
                 nf.write(bytes(f['body']))
             board.add_banner(new_name)
         log_message = f'Board /{board.short}/ has been created.'
-        await log('board_creation', log_message)
+        await log(MessageTypes.BOARD_CREATE, log_message)
         await self.database.boards.insert_one(dict(board))
         self.redirect('/' + data['short'])
 
@@ -197,7 +199,7 @@ class AdminBoardEditHandler(UserHandler):
     async def post(self, board):
         instance = await self.application.database.boards.find_one({'short': board})
         instance['name'] = self.get_argument('name', '')
-        instance['short']= self.get_argument('short', '')
+        instance['short'] = self.get_argument('short', '')
         instance['username'] = self.get_argument('username', '')
         instance['description'] = self.get_argument('description', '')
         instance['thread_posts'] = int(self.get_argument('thread_posts', ''))
@@ -207,7 +209,7 @@ class AdminBoardEditHandler(UserHandler):
         instance['custom'] = 'custom' in self.request.arguments
         instance['roll'] = 'roll' in self.request.arguments
         instance['unlisted'] = 'unlisted' in self.request.arguments
-        instance['perpage'] = int(float(self.get_argument('perpage', 10)))
+        instance['perpage'] = int(self.get_argument('perpage', '10'))
         pinned = 'pinned' in self.request.arguments
         if not pinned:
             instance['pinned'] = None
@@ -219,8 +221,11 @@ class AdminBoardEditHandler(UserHandler):
                 nf.write(bytes(f['body']))
             instance['banners'].append(newname)
         log_message = 'Board /{0}/ has been edited.'.format(instance['short'])
-        await log('board_edit', log_message)
-        await self.application.database.boards.update_one({'short':board},{'$set':instance})
+        await log(MessageTypes.BOARD_EDIT, log_message)
+        await self.application.database.boards.update_one(
+            {'short': board},
+            {'$set': instance}
+        )
         self.redirect('/admin/stats/')
 
 
@@ -228,18 +233,19 @@ class AdminBoardEditHandler(UserHandler):
 class AdminLogsHandler(UserHandler):
     @ifadmin
     async def get(self):
+        # TODO: limit amount of logs being fetched, add proper pagination
         db = self.application.database
-        log_types = ['post', 'post_remove', 'board_creation', 'board_edit', 'board_remove', 'ban', 'unban', 'other',]
+        log_types = [message_type.value for message_type in MessageTypes]
         log_type = self.get_argument('type', 'all', False)
         current = 0
         if not log_type:
-            #logs = await db.logs.find({}).sort('time', -1).to_list(None)[:5000]
             logs = await db.log.find({}).sort('time', -1).to_list(None) or None
         else:
             if log_type != 'all':
                 if log_type in log_types:
                     logs = await db.log.find({'type': log_type}).sort('time', -1).to_list(None) or None
-                else: logs = await db.log.find({}).sort('time', -1).to_list(None) or None
+                else:
+                    logs = await db.log.find({}).sort('time', -1).to_list(None) or None
             else:
                 logs = await db.log.find({}).sort('time', -1).to_list(None) or None
         if logs:
@@ -272,24 +278,30 @@ class AdminLogsHandler(UserHandler):
                 paged = None
         else:
             paged = None
-        self.render('admin/admin_logs.html', logs=logs, boards=await self.boards, paged=paged, current=current,
-        log_types=log_types, curr_type=log_type)
+        self.render(
+            'admin/admin_logs.html',
+            logs=logs,
+            boards=await self.boards,
+            paged=paged,
+            current=current,
+            log_types=log_types,
+            curr_type=log_type
+        )
 
-    async def chunkify(self, l, n=30):
+    async def chunkify(self, target: list[_T], n: int = 30) -> list[list[_T]]:
         res = list()
-        for i in range(0, len(l), n):
-            res.append(l[i:i + n])
+        for i in range(0, len(target), n):
+            res.append(target[i:i + n])
         return res
 
 
 class AdminBlackListHandler(UserHandler):
-    @ifadmin
+    @admin_required
     async def get(self):
-        db = self.application.database
         blacklist = get_blacklist()
         self.render('admin/admin_blacklist.html', boards=await self.boards, blacklist=blacklist)
 
-    @ifadmin
+    @admin_required
     async def post(self):
         blacklist = get_blacklist()
         del_word = self.get_argument('delete', '')
@@ -307,10 +319,13 @@ class AdminBlackListHandler(UserHandler):
 
 
 class AdminIPSearchHandler(UserHandler):
-    responses = {'success':'Successfully banned',
-                'error': 'No posts were found',
-                'nop': 'Error banning IP'}
-    @ifadmin
+    responses = {
+        'success': 'Successfully banned',
+        'error': 'No posts were found',
+        'nop': 'Error banning IP'
+    }
+
+    @admin_or_mod_required
     async def get(self, count):
         # TODO: show whether IP has any bans
         popup = None
@@ -318,13 +333,17 @@ class AdminIPSearchHandler(UserHandler):
             msg = self.get_argument('msg')
             popup = self.responses.get(msg)
         post = await self.application.database.posts.find_one({'count': int(count)}) or None
-        banned = await self.application.database.bans.find_one({'ip': post['ip']}) or None
         if post:
-            posts_by_same_ip = await self.application.database.posts.find({'ip': post['ip']}).sort('date', -1).to_list(None)
-            self.render('admin/admin_search.html',
-                        boards=await self.boards, popup=popup,
-                        posts=posts_by_same_ip, count=count,
-                        banned=banned)
+            banned = await self.application.database.bans.find_one({'ip': post['ip']}) or None
+            posts_by_same_ip = await self.application.database.posts.find(
+                {'ip': post['ip']}
+            ).sort('date', -1).to_list(None)
+            self.render(
+                'admin/admin_search.html',
+                boards=await self.boards, popup=popup,
+                posts=posts_by_same_ip, count=count,
+                banned=banned
+            )
         else:
             self.redirect('/admin/')
 
@@ -349,11 +368,11 @@ class AdminIPSearchHandler(UserHandler):
                         ban['url'] = '/' + post['board'] + '/thread/' + str(post['thread']) + '#' + str(post['count'])
                     else:
                         ban['url'] = '/' + post['board'] + '/thread/' + str(post['count']) + '#' + str(post['count'])
-                    log_message = '{0} was banned for post #{1} (unban {2}).'.format(post['ip'], post['count'], ban['date'])
-                    await log('ban', log_message)
+                    log_message = f'{post["ip"]} was banned for post #{post["count"]} (unban {ban["date"]}).'
+                    await log(MessageTypes.BAN, log_message)
                     await self.application.database.bans.insert_one(ban)
                     post['banned'] = True
                     await update_db(self.application.database, post['count'], post)
         else:
-            self.redirect('/admin/search' + count +'?msg=nop')
+            self.redirect(f'/admin/search{count}?msg=nop')
         self.redirect('/admin/search/' + count + '/')

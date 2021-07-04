@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+import re
+import os
 import html
+import json
 import logging
 import random
 
@@ -9,12 +12,13 @@ from typing import Optional
 import geoip2.database as gdb
 import motor.motor_tornado
 import pymongo
+import datetime
 import tornado.autoreload
 import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 import tornado.web
-from tornado import concurrent, gen
+from tornado import concurrent
 from tornado.options import define, options
 
 import src.ib_settings as default_settings
@@ -25,12 +29,37 @@ from src.admin import (
     AdminHandler, AdminBoardCreationHandler, AdminBoardEditHandler,
     AdminLogsHandler, AdminBlackListHandler, AdminIPSearchHandler,
 )
-from src.ajax import *
-from src.api import *
-from src.logger import log
+from src.ajax import (
+    AjaxNewHandler,
+    AjaxDeleteHandler,
+    AjaxDeletePassHandler,
+    AjaxBanHandler,
+    AjaxReportHandler,
+    AjaxInfoHandler,
+    AjaxPinHandler,
+    AjaxThreadPinHandler,
+    AjaxLockHandler,
+    AjaxPostGetter,
+    AjaxBannerDelHandler,
+    AjaxMoveHandler,
+    AjaxInfinifyHandler,
+    AjaxMapHandler,
+    AjaxSealHandler,
+)
+from src.api import (
+    GetBoards, GetThreads, GetPosts,
+)
+from src.logger import log, MessageTypes
 from src.utils import make_thumbnail
 from src.tripcode import tripcode
-from src.utils import *
+from src.utils import (
+    get_ip, update_db, upload_file,
+    has_blacklisted_words, update_db_b,
+    get_replies, check_path, exclude,
+    spoilered, synchronize_removal,
+    check_map, remove_files,
+    RegionCodes,
+)
 from src.userhandle import UserHandler, ProfilePage
 
 define('port', default=default_settings.PORT, help='run on given port', type=int)
@@ -65,7 +94,7 @@ async def roll(subject: str) -> Optional[str]:
         return None
     count = int(matches.group(2))
     sides = int(matches.group(3))
-    return f"Rolled {', '.join(str(random.randint(0, sides)) for i in range(count))}"
+    return f"Rolled {', '.join(str(random.randint(0, sides)) for _ in range(count))}"
 
 
 # list of boards
@@ -201,7 +230,7 @@ class BoardHandler(UserHandler):
                         spoiler=spoiler, admin=admin, sage=sage, opip=ip, showop=showop, password=password
                     )
                     await db.posts.insert_one(data)
-                    await log('post', f'IP {ip} created a thread {latest_postnumber} in {board} board.')
+                    await log(MessageTypes.POST, f'IP {ip} created a thread {latest_postnumber} in {board} board.')
                     self.redirect('/' + board + '/thread/' + str(data['count']))
                 else:
                     self.redirect(self.request.uri + '?err=empty')
@@ -211,9 +240,9 @@ class BoardHandler(UserHandler):
     @staticmethod
     async def chunkify(list_of_threads: list[dict], n: dict[str, int]):
         res = list()
-        n = int(n.get('perpage', 10))
-        for i in range(0, len(list_of_threads), n):
-            res.append(list_of_threads[i:i + n])
+        threads_per_page = int(n.get('perpage', 10))
+        for i in range(0, len(list_of_threads), threads_per_page):
+            res.append(list_of_threads[i:i + threads_per_page])
         return res
 
 
@@ -225,7 +254,10 @@ class CatalogHandler(UserHandler):
         db_board = await db.boards.find_one({'short': board})
         if db_board:
             threads = await db.posts.find(
-                {'board': board,'oppost': True}
+                {
+                    'board': board,
+                    'oppost': True
+                }
             ).sort(
                 [('pinned', -1), ('lastpost', -1)]
             ).limit(db_board['thread_catalog']).to_list(None)
@@ -323,7 +355,7 @@ class ThreadHandler(UserHandler):
                     await db.posts.insert_one(data)
                     # FIXME: what if that's an oppost ?
                     log_message = f'{ip} posted #{latest_postnumber} in a thread #{thread} on {board} board.'
-                    await log('post', log_message)
+                    await log(MessageTypes.POST, log_message)
                     op = await db['posts'].find_one({'count': thread_count})
                     if op:
                         db_board = await db.boards.find_one({'short': board})
@@ -362,6 +394,7 @@ class ThreadHandler(UserHandler):
             self.redirect('/banned')
 
 
+# TODO: remove in favour of API endpoints
 class JsonBoardHandler(UserHandler):
     thread_count = ''
 
@@ -487,10 +520,10 @@ async def makedata(
         # TODO: load from external file
         # exceptions for IPs that are incorrectly detected, has to be changed manually smh
         ip_exceptions = {
-            "80.128.":'Bavaria',
+            "80.128.": 'Bavaria',
             "95.91.205": 'Bavaria'
         }
-        is_in_exceptions = [v for k,v in ip_exceptions.items() if ip.startswith(k)]
+        is_in_exceptions = [v for k, v in ip_exceptions.items() if ip.startswith(k)]
         # TODO: make this into separate function
         if gdbr_data.subdivisions.most_specific.name in extraflags:
             data['country'] = gdbr_data.subdivisions.most_specific.name
@@ -572,15 +605,6 @@ async def makedata(
     return data
 
 
-# this is an ugly hack that works somehow
-# need to rework so that deleted post numbers cant be reused
-async def latest(db):
-    try:
-        return list(await db['posts'].find({}).sort('count', -1).to_list(None))[0]['count']
-    except Exception as e:
-        return 0
-
-
 # checks if number of posts in thread exceeds whatever number you check it against
 async def check_thread(db, thread, subj):
     return await db.posts.count_documents({'thread': thread}) >= subj - 1
@@ -640,7 +664,7 @@ async def is_banned(db, ip, board):
                     await db.bans.delete_one({'ip': ip})
                     log_message = f'{ip} was unbanned (banned until {ban["date"]}).'
                     logging.info(log_message)
-                    await log('unban', log_message)
+                    await log(MessageTypes.UNBAN, log_message)
                     return False
             else:
                 return True
@@ -731,11 +755,6 @@ def main():
 
     application = Application()
     # holy fuck this is awful
-
-    try:
-        latest_con = pymongo.MongoClient('localhost', 27017)
-    except pymongo.errors.ServerSelectionTimeoutError:
-        logger.error('MongoDB is not running.')
 
     http_server = tornado.httpserver.HTTPServer(application, max_buffer_size=default_settings.MAX_FILESIZE)
     http_server.listen(options.port)

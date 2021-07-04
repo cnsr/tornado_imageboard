@@ -1,9 +1,16 @@
 import datetime
+import os
+import json
 
 from functools import cached_property
 
 from src.logger import log
-from src.utils import *
+from src.utils import (
+    admin_required,
+    admin_or_mod_required,
+    update_db, update_db_b,
+    remove_files
+)
 from src.userhandle import UserHandler
 
 
@@ -16,8 +23,7 @@ class BaseAjaxHandler(UserHandler):
 # delete posts using ajax
 class AjaxDeleteHandler(BaseAjaxHandler):
 
-    # TODO: allow mods delete their own threads
-    @admin_required
+    @admin_or_mod_required
     async def post(self):
         pid = int(self.post_data['post'])
         post = await self.database.posts.find_one({'count': pid})
@@ -71,7 +77,7 @@ class AjaxReportHandler(BaseAjaxHandler):
 # gives info about post
 class AjaxInfoHandler(BaseAjaxHandler):
 
-    @ifadmin
+    @admin_or_mod_required
     async def post(self):
         p = await self.database.posts.find_one({'count': int(self.post_data['post'])}, {'_id': False})
         if p:
@@ -86,7 +92,7 @@ class AjaxInfoHandler(BaseAjaxHandler):
 # pins threads
 class AjaxThreadPinHandler(BaseAjaxHandler):
 
-    @ifadmin
+    @admin_or_mod_required
     async def post(self):
         pst = self.post_data['post']
         # heard that eval is weak shit
@@ -100,7 +106,7 @@ class AjaxThreadPinHandler(BaseAjaxHandler):
 # pins the threads so they appear first in query
 class AjaxPinHandler(BaseAjaxHandler):
 
-    @ifadmin
+    @admin_or_mod_required
     async def post(self):
         thread = await self.database.posts.find_one({'count': int(self.post_data['post'])})
         if thread['oppost']:
@@ -116,7 +122,7 @@ class AjaxPinHandler(BaseAjaxHandler):
 # posts get deleted when they go beyond thread post limit
 class AjaxInfinifyHandler(BaseAjaxHandler):
 
-    @ifadmin
+    @admin_or_mod_required
     async def post(self):
         thread = await self.database.posts.find_one({'count': int(self.post_data['post'])})
         if thread['oppost']:
@@ -130,7 +136,7 @@ class AjaxInfinifyHandler(BaseAjaxHandler):
 # locks the threads so that they can't be posted in
 class AjaxLockHandler(BaseAjaxHandler):
 
-    @ifadmin
+    @admin_or_mod_required
     async def post(self):
         thread = await self.database.posts.find_one({'count': int(self.post_data['post'])})
         if thread['oppost']:
@@ -144,7 +150,7 @@ class AjaxLockHandler(BaseAjaxHandler):
 # deletion of banners
 class AjaxBannerDelHandler(BaseAjaxHandler):
 
-    @ifadmin
+    @admin_or_mod_required
     async def post(self):
         data = dict((k, v[-1].decode('utf-8')) for k, v in self.request.arguments.items())
         brd = await self.database.boards.find_one({'short': data['brd']})
@@ -161,7 +167,7 @@ class AjaxBannerDelHandler(BaseAjaxHandler):
 # banning users
 class AjaxBanHandler(BaseAjaxHandler):
 
-    @ifadmin
+    @admin_or_mod_required
     async def post(self):
         response = {'ok': 'Banned'}
         p = await self.database.posts.find_one({'count': int(self.post_data['post'])})
@@ -298,7 +304,7 @@ class AjaxPostGetter(BaseAjaxHandler):
 # move thread to different board
 class AjaxMoveHandler(BaseAjaxHandler):
 
-    @ifadmin
+    @admin_or_mod_required
     async def post(self):
         data = self.post_data['post'].split('-')
         destination = data[0]
