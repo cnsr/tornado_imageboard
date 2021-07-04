@@ -4,7 +4,7 @@ import json
 
 from functools import cached_property
 
-from src.logger import log
+from src.logger import log, MessageTypes
 from src.utils import (
     admin_required,
     admin_or_mod_required,
@@ -44,7 +44,7 @@ class AjaxDeleteHandler(BaseAjaxHandler):
                 log_message = 'Thread #{0} has been removed by admin'.format(pid)
             else:
                 log_message = 'Post #{0} has been removed by admin'.format(pid)
-            await log('post_remove', log_message)
+            await log(MessageTypes.POST_REMOVAL, log_message)
             await self.database.posts.delete_one({'count': pid})
             response['status'] = ['deleted']
         else:
@@ -68,7 +68,7 @@ class AjaxReportHandler(BaseAjaxHandler):
         else:
             report['url'] = '/' + p['board'] + '/thread/' + str(p['count']) + '#' + str(p['count'])
         log_message = 'Report has been sent for post #{0} with ip {1}.'.format(p['count'], p['ip'])
-        await log('post_remove', log_message)
+        await log(MessageTypes.POST_REMOVAL, log_message)
         await self.database.reports.insert_one(report)
         response = {'ok': 'ok'}
         self.write(json.dumps(response))
@@ -190,7 +190,7 @@ class AjaxBanHandler(BaseAjaxHandler):
             else:
                 ban['url'] = '/' + p['board'] + '/thread/' + str(p['count']) + '#' + str(p['count'])
             log_message = '{0} was banned for post #{1} (unban {2}).'.format(p['ip'], p['count'], ban['date'])
-            await log('unban', log_message)
+            await log(MessageTypes.UNBAN, log_message)
             await self.database.bans.insert_one(ban)
             p['banned'] = True
             p['ban_message'] = self.post_data.get('ban_message', 'User has been banned for this post')
@@ -272,7 +272,7 @@ class AjaxDeletePassHandler(BaseAjaxHandler):
                 log_message = 'Thread #{0} has been removed by {1}'.format(pid, post['ip'])
             else:
                 log_message = 'Post #{0} has been removed by {1}'.format(pid, post['ip'])
-            await log('post_remove', log_message)
+            await log(MessageTypes.POST_REMOVAL, log_message)
             await self.database.posts.delete_one({'count': pid})
             response['status'] = 'deleted'
             self.write(json.dumps(response))
@@ -321,7 +321,7 @@ class AjaxMoveHandler(BaseAjaxHandler):
                 thread['board'],
                 destination
             )
-            await log('other', log_message)
+            await log(MessageTypes.OTHER, log_message)
             thread['board'] = destination
             await update_db(self.database, thread['count'], thread)
             response['status'] = ['Moved']
