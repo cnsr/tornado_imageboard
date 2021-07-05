@@ -8,6 +8,7 @@ import random
 
 from uuid import uuid4
 from typing import Optional
+from dotenv import load_dotenv
 
 import geoip2.database as gdb
 import motor.motor_tornado
@@ -70,6 +71,8 @@ logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.WARNING)
 logger.addHandler(ch)
+
+load_dotenv()
 
 executor = concurrent.futures.ThreadPoolExecutor(8)
 
@@ -739,6 +742,8 @@ class Application(tornado.web.Application):
             'xsrf_cookies': True,
             'cookie_secret': "__#TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
         }
+
+        self.MAX_API_KEYS = os.getenv('MAX_API_KEYS', 3)
 
         self.con = motor.motor_tornado.MotorClient('localhost', 27017)
         self.database = self.con['imageboard']

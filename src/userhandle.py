@@ -1,15 +1,19 @@
+import os
+from dotenv import load_dotenv
 import logging
-from datetime import datetime, timezone
-from typing import Union, Optional
+from datetime import datetime, timedelta, timezone
+from typing import Union, Optional, Any
 from uuid import uuid4
 from enum import Enum
 from src.utils import generate_password, verify_password
+import jwt
 
 import motor.motor_tornado
 import pymongo
 import tornado.web
 
 logger = logging.getLogger("board")
+load_dotenv()
 
 ANONIMOUS_USER = "anon"
 REGISTERED_USER = "registered"
@@ -144,6 +148,42 @@ class User:
         if hashed_password := self.retrieve_user_password():
             return verify_password(password, hashed_password)
         return False
+
+    def verify_api_key(self, api_key: str) -> bool:
+        return api_key in self.api_keys
+
+    @property
+    def api_keys(self) -> list[str]:
+        result = self.db.find_one(
+            {"id": str(self.uid)}, {"_id": False, "password": False}
+        )
+        if result:
+            return result.get('api_keys', [])
+        return []
+
+    def generate_api_key(self):
+        max_api_keys = int(os.getenv("MAX_API_KEYS", "3"))
+        current_keys = self.api_keys
+        if len(current_keys) < max_api_keys and not self.is_admin:
+            raise Exception("API keys quota exceeded")
+        else:
+            new_api_key = jwt.encode({
+                    'userId': self.uid,
+                    'issuedAt': str(datetime.now()),
+                },
+                os.getenv('JWT_SECRET', 'secret'), algorithm="HS256",
+            ).decode('utf-8')
+            current_keys.append(new_api_key)
+
+    def validate_api_key(self, api_key: str) -> bool:
+        payload: dict[str, Any] = jwt.decode(api_key, os.getenv('JWT_SECRET', 'secret'), algorithm='HS256')
+        # if the issuedAt is missing, key is handled as if it is expired
+        if not payload.get('issuedAt') or not payload.get('userId'):
+            raise Exception("Token payload is invalid")
+        issuedAt = datetime.strptime(payload.get("issuedAt"), "%Y-%m-%d %H:%M:%S.%f")  # type: ignore
+        if issuedAt < (datetime.now() + timedelta(days=365)):
+            raise Exception("The API key has expired. Please, issue a new one")
+        return payload.get("userId", "1") == self.uid
 
     def retrieve_user_password(self) -> str:
         result = self.db.find_one(
