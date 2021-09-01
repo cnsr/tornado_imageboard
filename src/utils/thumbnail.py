@@ -12,7 +12,7 @@ image_extensions = ["jpg", "jpeg", "png", "gif"]
 video_extensions = ["webm", "mp4"]
 audio_extensions = ["ogg", "mp3", "wav", ]
 
-image_codecs = ['JPEG', 'PNG', 'GIF']
+image_codecs = ['JPEG', 'PNG', 'GIF', 'jpg', 'jpeg', 'png', 'gif', 'JPG',]
 video_codecs = ['theora', 'vp8', 'vp9', 'h264', 'vp6f']
 
 thumbnail_size = (120, 100)
