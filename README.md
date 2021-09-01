@@ -34,10 +34,27 @@ Tornado-based imageboard
 
 # Requirements
 * python 3.9+ (or go remove 3.9+ features lol)
+
+   I intend to use whatever the latest version of stable python there is, 3.9.6 at the time I am writing this.
+   Will do my best to update to 3.10 upon release.
 * mongodb
 * mediainfo
 * ffmpeg
 * imagemagick
+
+Installing requirements on osx:
+```shell
+brew tap mongodb/brew
+brew install mongodb-community
+brew install imagemagick
+brew install ffmpeg
+brew install mediaifo
+```
+Shouldn't be much harder to do on a less disgusting OS, but I can't really choose atm.
+
+FYI there might be issues with mongodb on osx Catalina+ - use [this fix](https://stackoverflow.com/a/61423909/12932611)
+
+For development purposes, [poetry]() with [poetry-virtualenv]() are used.
 
 # How to run
 1. Install all software dependencies
@@ -45,7 +62,15 @@ Tornado-based imageboard
     ```sh
     $ sudo service mongod start
     ```
-3. Install module dependencies and run
+   for osx it's, as usual, retarded as fuck:
+   ```shell
+   $ mongod
+   ```
+   Yep, you can't have it as a service. Yes, what the wtf.
+4. 
+5. Install module dependencies and run
+   
+   Please, keep in mind that `requirements.txt` might be not up-to-date.
    
    * Using pip:
     ```sh
@@ -55,7 +80,7 @@ Tornado-based imageboard
    * Using poetry:
    ```sh
     $ poetry install
-    $ python board.py
+    $ poetry run python run.py
     ```
 
 # TODO:
