@@ -58,17 +58,26 @@ For development purposes, [poetry]() with [poetry-virtualenv]() are used.
 
 # How to run
 1. Install all software dependencies
-2. Configure nginx - use example config, make sure mongo is running
+2. Configure nginx - use example config
+3. Install mongodb and make sure it is running
     ```sh
     $ sudo service mongod start
     ```
-   for osx it's, as usual, retarded as fuck:
-   ```shell
-   $ mongod
-   ```
+   For osx it's, as usual, retarded as fuck:
+   1) run the commands from the aforementioned fix e.g.
+      ```shell
+      sudo chown -R $(whoami) /System/Volumes/Data/data/db
+      ```
+   2) don't forget to add this line to `.zshrc`:
+      ```shell
+      alias mongod="sudo mongod --dbpath /System/Volumes/Data/data/db"
+      ```
+   3) if you did the previous step, run the following command:
+       ```shell
+       $ mongod
+       ```
    Yep, you can't have it as a service. Yes, what the wtf.
-4. 
-5. Install module dependencies and run
+4. Install module dependencies and run
    
    Please, keep in mind that `requirements.txt` might be not up-to-date.
    

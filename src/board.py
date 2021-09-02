@@ -756,7 +756,9 @@ def main():
     check_path('banners/')
     tornado.options.parse_command_line()
     # TODO: import env variables and run as DEBUG-only
-    tornado.autoreload.start()
+    # it is important to note that the autoreloader breaks pycharms' debugger
+    if not os.getenv('USINGPYCHARM', 0) == '1':
+        tornado.autoreload.start()
 
     application = Application()
     # holy fuck this is awful
@@ -766,4 +768,3 @@ def main():
     logger.info(f'Server is running on {options.port}')
     schedule_check(application)
     tornado.ioloop.IOLoop.instance().start()
-

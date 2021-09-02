@@ -39,10 +39,11 @@ class AUTH_METHODS(Enum):
     APIKEY = 'api_key'
 
 
-def create_admin_user(password: str):
+def create_admin_user(password: Optional[str] = None):
+    if not password:
+        password = os.getenv('ADMIN_PASSWORD')
     try:
         u = User("1", ADMIN_USER, password)
-        # u.create_user(ADMIN_USER, "admin")
         u.set_username("admin")
         print(u.__dict__)
     except AssertionError:
@@ -69,6 +70,8 @@ class User:
         self.__username = None
         self.auth_method = using
 
+        # FIXME: a new user is being created for a fresh session
+
         if self.auth_method is AUTH_METHODS.COOKIE:
             # get or create user
             if uid:
@@ -93,7 +96,10 @@ class User:
             username = "admin"
 
         if username != "Unknown":
-            existing_user = self.db.find_one({"username": username})
+            if self.uid:
+                existing_user = self.db.find_one({"id": str(self.uid)})
+            else:
+                existing_user = self.db.find_one({"username": username})
             if existing_user:
                 raise Exception("Tried to create already existing user")
         result = self.db.insert_one(
@@ -225,7 +231,10 @@ class User:
 
     def login(self, username: str, password: str) -> Optional["User"]:  # type: ignore
         cached_user = self.db.find_one({"username": username}, {"_id": False})
+        print(f'Found cached user: {cached_user}did')
+        print(f"Result of password validation: {verify_password(password, cached_user.get('password'))}")
         if cached_user and verify_password(password, cached_user.get("password")):
+            print('setting cached user as current user')
             self.uid = cached_user.get("id")
             self.__created_at = cached_user.get("created_at")
             self.__type = cached_user.get("type")
@@ -264,6 +273,9 @@ class User:
 
     @property
     def is_logged_in(self) -> bool:
+        # users have shitty username thus this shit was introduced
+        if self.__type == ADMIN_USER:
+            return True
         return self.__username is not None and self.__username != "Unknown"
 
 
@@ -300,10 +312,13 @@ class UserHandler(tornado.web.RequestHandler):
 
     def authenticate(self, username: str, password: str) -> bool:
         if authenticated_user := self.user.login(username, password):
-            if authenticated_user:
-                self.__user = authenticated_user
-                self.set_cookie("ib-user", self.user.uid)
-                return True
+            print('did authenticate just there just now', authenticated_user)
+            self.__user = authenticated_user
+            self.current_user = authenticated_user
+            self.set_cookie("ib-user", self.__user.uid)
+            # this shit literally resets the user ?
+            # self.set_cookie("ib-user", self.user.uid)
+            return True
         return False
 
     def check_origin(self, origin) -> bool:  # type: ignore
