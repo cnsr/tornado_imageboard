@@ -31,15 +31,17 @@
 			<!-- TODO: link to moderation page -->
 			<a href='/map' class='homebtn'>[MAP]</a>
 			{% block catalog %}{% end %}
-			<ul class='boards-list'>
-				{% for b in boards %}
-					{% if not b['unlisted'] %}
-						<li class='boards-list-board'>
-							<a href='/{{b["short"]}}' class='board-link'>[{{b['short']}}]</a>
-						</li>
-					{% end %}
-				{% end %}
-			</ul>
+            {% if boards %}
+                <ul class='boards-list'>
+                    {% for b in boards %}
+                        {% if not b['unlisted'] %}
+                            <li class='boards-list-board'>
+                                <a href='/{{b["short"]}}' class='board-link'>[{{b['short']}}]</a>
+                            </li>
+                        {% end %}
+                    {% end %}
+                </ul>
+            {% end %}
 		{% end %}
 	</header>
 	{% block pop %}
