@@ -18,3 +18,4 @@ blacklist.pkl
 .vscode/
 .env
 .idea
+pyrightconfig.json

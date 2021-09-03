@@ -1,4 +1,13 @@
-import os
+"""
+FYI this is a historical piece of shitcode from late 2018 (according to git blame)
+The initial implementation was that posts could only have a single file, which was then changed
+to an array of files (limited to 4 i think) per post, and this migration took care of that.
+Thanks dog mongodb is utter garbage with no validation meaning that you can literally
+force your dick into it and it'll get stored as a document lol
+
+Btw i'm only keeping it here to have a historical reference to
+what the files used to be if ever get around to rewriting them
+"""
 
 from pymongo import MongoClient
 
@@ -38,6 +47,7 @@ def change_posts():
         post.pop('filetype', None)
         database.posts.replace_one({'count': post['count']}, post)
 
+
 def get_extension(path):
     return os.path.splitext(path)[1].lstrip('.').lower()
 
@@ -56,9 +66,6 @@ def change_fucked_up():
     database.posts.replace_one({'count': p['count']}, p)
 
 
-
-
-
 if __name__ == '__main__':
     change_posts()
-    #change_fucked_up()
+    # change_fucked_up()

@@ -10,7 +10,7 @@ PORT = int(os.getenv('PORT', 8000))
 UPLOAD_ROOT = os.getenv('UPLOAD_ROOT', 'uploads')
 
 # TODO: add the AMOUNT_OF_FIELDS variable
-MAX_FILESIZE = 20971520 * 4 # filesize per field * amount of fields
+MAX_FILESIZE = 20971520 * 4  # filesize per field * amount of fields
 
 # boards in which banned users are allowed to post
-BAN_ALLOWED = ['bans',]
+BAN_ALLOWED = ['bans', ]

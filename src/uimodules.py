@@ -14,7 +14,8 @@ class CatalogThread(tornado.web.UIModule):
 
 class NewPost(tornado.web.UIModule):
     def javascript_files(self):
-        return('js/validate_file.js')
+        return 'js/validate_file.js'
+
     def render(self, name, admin, show, current_user):
         return self.render_string('modules/newpost.html', name=name, admin=admin, show=show, current_user=current_user)
 
@@ -31,7 +32,9 @@ class Preview(tornado.web.UIModule):
 
 class OpPost(tornado.web.UIModule):
     def render(self, op, admin, autosage, current_user):
-        return self.render_string('modules/oppost.html', op=op, admin=admin, autosage=autosage, current_user=current_user)
+        return self.render_string(
+            'modules/oppost.html', op=op, admin=admin, autosage=autosage, current_user=current_user
+        )
 
 
 class Board(tornado.web.UIModule):
@@ -57,8 +60,10 @@ class Audio(tornado.web.UIModule):
 class Modal(tornado.web.UIModule):
     def javascript_files(self):
         return 'js/modal.js'
+
     def css_files(self):
         return 'css/modules/modal.css'
+
     def render(self):
         return self.render_string('modules/modal.html')
 
@@ -66,6 +71,7 @@ class Modal(tornado.web.UIModule):
 class Stats(tornado.web.UIModule):
     def css_files(self):
         return 'css/modules/stats.css'
+
     def render(self, board):
         return self.render_string('modules/stats.html', b=board)
 
@@ -73,6 +79,7 @@ class Stats(tornado.web.UIModule):
 class Ban(tornado.web.UIModule):
     def css_files(self):
         return 'css/modules/banned.css'
+
     def render(self, ban):
         return self.render_string('modules/banned.html', b=ban)
 
@@ -80,6 +87,7 @@ class Ban(tornado.web.UIModule):
 class Settings(tornado.web.UIModule):
     def css_files(self):
         return 'css/modules/settings.css'
+
     def render(self):
         return self.render_string('modules/settings.html')
 
@@ -97,5 +105,3 @@ class Pinned(tornado.web.UIModule):
 class SearchResult(tornado.web.UIModule):
     def render(self, post, count):
         return self.render_string('modules/searchresult.html', post=post, count=count)
-
-

@@ -31,19 +31,55 @@ Tornado-based imageboard
     * Maximum of four files per post;
     * Ability to report posts;
     * Ability to remove your own posts.
+
 # Requirements
-* python 3 (3.9 is recommended)
+* python 3.9+ (or go remove 3.9+ features lol)
+
+   I intend to use whatever the latest version of stable python there is, 3.9.6 at the time I am writing this.
+   Will do my best to update to 3.10 upon release.
 * mongodb
 * mediainfo
 * ffmpeg
 * imagemagick
+
+Installing requirements on osx:
+```shell
+brew tap mongodb/brew
+brew install mongodb-community
+brew install imagemagick
+brew install ffmpeg
+brew install mediaifo
+```
+Shouldn't be much harder to do on a less disgusting OS, but I can't really choose atm.
+
+FYI there might be issues with mongodb on osx Catalina+ - use [this fix](https://stackoverflow.com/a/61423909/12932611)
+
+For development purposes, [poetry]() with [poetry-virtualenv]() are used.
+
 # How to run
 1. Install all software dependencies
-2. Configure nginx - use example config, make sure mongo is running
+2. Configure nginx - use example config
+3. Install mongodb and make sure it is running
     ```sh
     $ sudo service mongod start
     ```
-3. Install module dependencies and run
+   For osx it's, as usual, retarded as fuck:
+   1) run the commands from the aforementioned fix e.g.
+      ```shell
+      sudo chown -R $(whoami) /System/Volumes/Data/data/db
+      ```
+   2) don't forget to add this line to `.zshrc`:
+      ```shell
+      alias mongod="sudo mongod --dbpath /System/Volumes/Data/data/db"
+      ```
+   3) if you did the previous step, run the following command:
+       ```shell
+       $ mongod
+       ```
+   Yep, you can't have it as a service. Yes, what the wtf.
+4. Install module dependencies and run
+   
+   Please, keep in mind that `requirements.txt` might be not up-to-date.
    
    * Using pip:
     ```sh
@@ -53,5 +89,12 @@ Tornado-based imageboard
    * Using poetry:
    ```sh
     $ poetry install
-    $ python board.py
+    $ poetry run python run.py
     ```
+
+# TODO:
+0. Fix UI
+1. Wrap in Docker
+2. Introduce external storage
+3. Add Celery for periodic cleanup
+4. Rewrite in Rust

@@ -1,20 +1,31 @@
 # -*- coding: utf-8 -*-
 import datetime
+from enum import Enum
+from typing import Optional
 
 import motor.motor_tornado
 
-import src.ib_settings as _ib
 
 db = motor.motor_tornado.MotorClient('localhost', 27017)['imageboard']
 
-async def log(message_type, message):
-    message_types = ['post', 'post_remove', 'board_creation', 'board_edit', 'board_remove', 'ban', 'unban', 'other',]
-    if message_type not in message_types:
-        message_type = 'other'
+
+class MessageTypes(Enum):
+    POST = 'post'
+    POST_REMOVAL = 'post_remove'
+    BOARD_CREATE = 'board_creation'
+    BOARD_EDIT = 'board_edit'
+    BOARD_REMOVE = 'board_remove'
+    BAN = 'ban'
+    UNBAN = 'unban'
+    OTHER = 'other'
+
+
+async def log(message_type: Optional[MessageTypes], message: str):
+    if not message_type:
+        message_type = MessageTypes.OTHER
     data = {
         'time': datetime.datetime.utcnow(),
-        'type': message_type,
+        'type': message_type.value,
         'message': message,
     }
     await db.log.insert_one(data)
-
