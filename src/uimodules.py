@@ -59,7 +59,7 @@ class Audio(tornado.web.UIModule):
 
 class Modal(tornado.web.UIModule):
     def javascript_files(self):
-        return 'js/modal.js'
+        return ['js/utils.js', 'js/modal.js',]
 
     def css_files(self):
         return 'css/modules/modal.css'

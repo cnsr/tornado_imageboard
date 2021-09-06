@@ -34,7 +34,7 @@ const mouseMovePostForm = (e) => {
 	}
 }
 
-// useless helper that checks if the cursor is withing the supplied element
+// useless helper that checks if the cursor is within the supplied element
 const inBounds = (event, element) => {
 	let mouseX = event.pageX;
 	let mouseY = event.pageY;
@@ -53,7 +53,7 @@ const inBounds = (event, element) => {
 	)
 }
 
-
+/*
 $(document).ready(function(){
 	$('.file_remove').on('click', function(e) {
 		e.preventDefault();
@@ -386,7 +386,9 @@ $(document).ready(function(){
 		}, 250);
 	});
 });
+(/
 
+ */
 function loadPost(dict) {
 	var template = $('#template').html();
 	Mustache.parse(template);
@@ -709,20 +711,21 @@ function changeFavicon(src) {
 }
 
 
-function toggleSpoiler(spoiler) {
-	$('.post-media').each(function() {
-		if (!$(this).parents().hasClass('.modal')) {
+const toggleSpoiler = (spoiler) => {
+	[...document.getElementsByClassName('.post-media')].map((el) => {
+		if (!el.closest('.modal').length) {
 			if (!spoiler) {
-				$(this).css('opacity', '');
+				el.css.opacity = '';
 			} else {
-				$(this).css('opacity', '0.1');
+				el.css.opacity = '0.1';
 			}
 		}
 	})
 }
 
+// FIXME: how the fuck does this garbage even work
 function hideThread(thread) {
-	th = thread.find('.thread');
+	let th = thread.find('.thread');
 	let th_id = thread.attr('id');
 	let th_text = th.find('.psubject').text();
 	if (!th_text || /\S/.test(th_text)) {
@@ -760,4 +763,4 @@ jQuery.fn.putCursorAtEnd = function() {
     }
   });
 
-};;
+};

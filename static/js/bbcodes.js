@@ -1,52 +1,93 @@
-$format_search =  [
-    /\[b\](.*?)\[\/b\]/ig,
-    /\[i\](.*?)\[\/i\]/ig,
-    /\[u\](.*?)\[\/u\]/ig,
-    /\[s\](.*?)\[\/s\]/ig,
-    /\[spoiler\](.*?)\[\/spoiler\]/ig,
-	/^(?:(?!\<br ))([^\w>]|^)(>(?!>\d)(.+))/ig,
-	/( |^|\s| |\/>)>>(\d+)( |\s|$|>|<)/mg,
-	/(http|ftp|https):\/\/(?!\S+youtube\.com)([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])?/ig,
-	/(http|ftp|https):\/\/(www\.)?(m\.)?(youtube\.com)\/(watch\?v=)(\S+)?/ig,
-	/:upkot:/g,
-	/:downkot:/g,
-	/:opinion:/g,
-	/'''(.+)'''/ig,
-	/''(.+)''/ig,
-	/__(.+)__/ig,
-	/~~(.+)~~/ig,
-	/\*\*(.+)\*\*/ig,
-	/:waifu:/g,
-	/:pepemad:/g,
-	/:pardon:/g,
-	/\[(color|c)=#?([0-9a-f]{3}|[0-9a-f]{6})\](.+?)(\[\/(color|c)\])?/gi
-];
-$format_replace = [
-    '<strong>$1</strong>',
-    '<em>$1</em>',
-	'<underline>$1</underline>',
-	'<strike>$1</strike>',
-	'<spoiler>$1</spoiler>',
-	'<citation>&gt;$3</citation>',
-	'$1<a href="#$2" class="reply">&gt;&gt;$2</a>$3',
-	'<a href="$1://$2$3" class="outlink" target="_blank">$1://$2$3</a>',
-	'<a class="youtube" href="$1://$2$3$4/$5$6">$1://$2$3$4/$5$6</a><span class="embed" data-url="$6">(embed)</span>',
-	'<img class="sticker" src="/static/icons/upkot.png"/>',
-	'<img class="sticker" src="/static/icons/downkot.png"/>',
-	'<img class="sticker" src="/static/icons/neutralkot.png"/>',
-    '<strong>$1</strong>',
-    '<em>$1</em>',
-	'<underline>$1</underline>',
-	'<strike>$1</strike>',
-	'<spoiler>$1</spoiler>',
-	'<img class="sticker" src="/static/icons/waifu.png"/>',
-	'<img class="sticker" src="/static/icons/pepe_mad.png"/>',
-	'<img class="sticker" src="/static/icons/pardon.gif"/>',
-	'<span style="color:#$2;">$3</span>',
-];
+// TODO: extract into a separate file at some point
+const formatterPairs = [
+	{
+		regex: /\[b](.*?)\[\/b]/ig,
+		result: '<strong>$1</strong>',
+	},
+	{
+		regex: /\[i](.*?)\[\/i]/ig,
+		result: '<em>$1</em>',
+	},
+	{
+		regex: /\[u](.*?)\[\/u]/ig,
+		result: '<underline>$1</underline>',
+	},
+	{
+		regex: /\[s](.*?)\[\/s]/ig,
+		result: '<s>$1</s>',
+	},
+	{
+		regex: /\[spoiler](.*?)\[\/spoiler]/ig,
+		result: '<spoiler>$1</spoiler>',
+	},
+	{
+		regex: /^(?!<br )([^\w>]|^)(>(?!>\d)(.+))/ig,
+		result: '<citation>&gt;$3</citation>',
+	},
+	{
+		regex: /( |^|\s| |\/>)>>(\d+)( |\s|$|>|<)/mg,
+		result: '$1<a href="#$2" class="reply">&gt;&gt;$2</a>$3',
+	},
+	{
+		regex: /(http|ftp|https):\/\/(?!\S+youtube\.com)([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])?/ig,
+		result: '<a href="$1://$2$3" class="outlink" target="_blank">$1://$2$3</a>',
+	},
+	{
+		regex: /(http|ftp|https):\/\/(www\.)?(m\.)?(youtube\.com)\/(watch\?v=)(\S+)?/ig,
+		result: '<a class="youtube" href="$1://$2$3$4/$5$6">$1://$2$3$4/$5$6</a><span class="embed" data-url="$6">(embed)</span>',
+	},
+	{
+		regex: /:upkot:/g,
+		result: '<img class="sticker" src="/static/icons/upkot.png" alt="Kot giving thumbsup"/>',
+	},
+	{
+		regex: /:downkot:/g,
+		result: '<img class="sticker" src="/static/icons/downkot.png" alt="Kot giving thumbsdown"/>',
+	},
+	{
+		regex: /:opinion:/g,
+		result: '<img class="sticker" src="/static/icons/neutralkot.png" alt="Kot with neutral expression"/>',
+	},
+	{
+		regex: /'''(.+)'''/ig,
+		result: '<strong>$1</strong>',
+	},
+	{
+		regex: /''(.+)''/ig,
+		result: '<em>$1</em>',
+	},
+	{
+		regex: /__(.+)__/ig,
+		result: '<underline>$1</underline>',
+	},
+	{
+		regex: /~~(.+)~~/ig,
+		result: '<strike>$1</strike>',
+	},
+	{
+		regex: /\*\*(.+)\*\*/ig,
+		result: '<spoiler>$1</spoiler>',
+	},
+	{
+		regex: /:waifu:/g,
+		result: '<img class="sticker" src="/static/icons/waifu.png" alt="Goddess"/>',
+	},
+	{
+		regex: /:pepemad:/g,
+		result: '<img class="sticker" src="/static/icons/pepe_mad.png" alt="A mad frogger"/>',
+	},
+	{
+		regex: /:pardon:/g,
+		result: '<img class="sticker" src="/static/icons/pardon.gif" alt="Very sorry"/>',
+	},
+	{
+		regex: /\[(color|c)=#?([0-9a-f]{3}|[0-9a-f]{6})](.+?)(\[\/(color|c)])?/gi,
+		result: '<span style="color:#$2;">$3</span>',
+	},
+]
 
 const isCloseToNewYearsEve = () => {
-	var d = new Date();
+	let d = new Date();
 	if (d.getMonth() === 1) {
 		return d.getDate() < 16;
 	} else if (d.getMonth() === 11) return d.getDate() > 20;
@@ -75,11 +116,11 @@ document.addEventListener('DOMContentLoaded', (e) => {
 		document.getElementById('bb-c').addEventListener('click', e => {
 			var sel = window.getSelection().toString();
 			var ta = document.getElementById('text-area');
-			if (ta.innerText != '') {
+			if (ta.innerText.length) {
 				ta.innerText = ta.innerText + '\n>' + sel + '\n';
 			} else {
 				ta.innerText = '>' + sel + '\n';
-			};
+			}
 		});
 	}
 
@@ -101,25 +142,31 @@ const processEmbed = e => {
 	}
 }
 
-function wrapText(openTag) {
-    var textArea = document.getElementById('text-area');
-    var closeTag = '[/'+openTag+']';
-    var openTag = '['+openTag+']';
-    if (typeof(textArea[0].selectionStart) != "undefined") {
-        var begin = textArea.val().substr(0, textArea[0].selectionStart);
-        var selection = textArea.val().substr(textArea[0].selectionStart, textArea[0].selectionEnd - textArea[0].selectionStart);
-        var end = textArea.val().substr(textArea[0].selectionEnd);
-        var position = begin.length + openTag.length;
-        if (position < 0){ position = position * -1;}
-        if (selection === "") {
-			textArea.val(begin + openTag + selection + closeTag + end);
+const wrapText = (tag) => {
+    let textArea = document.getElementById('text-area');
+	let openTag = `[${tag}]`;
+	let closeTag = `[/${tag}]`;
+	let start = textArea.selectionStart;
+	let end = textArea.selectionEnd;
+	// textArea .selectionStart and .selectionEnd are 0 by default
+    if (start !== end) {
+        let begin = textArea.value.substr(0, start);
+        let selection = textArea.value.substr(start, end - start);
+        let remainder = textArea.value.substr(textArea[0].selectionEnd);
+
+        let position = begin.length + openTag.length;
+
+        if (position < 0) position = position * -1;
+
+        if (selection.length) {
+			textArea.value = begin + openTag + selection + closeTag + remainder;
 			textArea.focus();
-			textArea[0].setSelectionRange(position, position);
+			textArea.setSelectionRange(position, position);
         } else {
-			textArea.val(begin + openTag + selection + closeTag + end);
+			textArea.value = begin + openTag + selection + closeTag + remainder;
 			textArea.focus();
-			var position = begin.length + openTag.length + selection.length;
-			textArea[0].setSelectionRange(position, position);
+			position = begin.length + openTag.length + selection.length;
+			textArea.setSelectionRange(position, position);
         }
     } else {
 	}
@@ -127,12 +174,11 @@ function wrapText(openTag) {
 }
 
 function replaceText(txt) {	
-	txt_split = txt.split(/\r?\n/);
-	for (var j=0;j<txt_split.length;j++){
-		for (var i=0;i<$format_search.length;i++) {
-			txt_split[j] = txt_split[j].replace($format_search[i], $format_replace[i]);
-		}
-	}
-	txt = txt_split.join('\n');
-	return txt;
+	let textSegments = txt.split(/\r?\n/);
+	textSegments.map((text) => {
+		formatterPairs.map((pair) => {
+			text.replaceAll(pair.regex, pair.result);
+		});
+	})
+	return textSegments.join('\n');
 }

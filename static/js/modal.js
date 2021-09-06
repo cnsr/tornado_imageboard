@@ -1,33 +1,41 @@
-var files = new Array;
+let files = [];
 //  this relies on the fact that there's only a single draggable element around 
-var initX, initY, firstX, firstY;
+let initX, initY, firstX, firstY;
+
+const directionLeft = 'left', directionRight = 'right';
 
 const processModalClick = (e) => {
-	e.preventDefault();		
+	e.preventDefault();
 	console.log('clicked on a button:', e.target)
-	if (!e.target.id === 'modalC') {
-		let side = e.target.id === 'modalL'; // true is left
-		let current = document.getElementsByClassName('modal-image')[0].getAttribute('src');
-		let current_index = files.indexOf(current);
-		let next_index = 0;
-		if (side) next_index = current_index - 1;
-		if (!side) next_index = current_index + 1;
-		if (next_index < 0) next_index = files.length - 1;
-		if (next_index > files.length - 1) next_index  = 0;
-		fnext = files[next_index];
-		let next_image = document.querySelectorAll(`*[data-image="${fnext}"]`)[0];
-		if (!next_image.length == 1) {
-			next_image = document.querySelectorAll(`video[src="${fnext}"]`)[0];
+	let fnext;
+	if (e.target.id !== 'modalC') {
+		let direction = e.target.id === 'modalL' ? directionLeft : directionRight;
+		let allModalImages = document.getElementsByClassName('modal-image');
+		if (allModalImages.length) {
+			let current_index = files.indexOf(allModalImages[0].getAttribute('src'));
+			let next_index = 0;
+			switch (direction) {
+				case directionLeft:
+					next_index = current_index - 1;
+					break;
+				case directionRight:
+					next_index = current_index + 1;
+					break;
+				default: break;
+			}
+			if (next_index < 0) next_index = files.length - 1;
+			if (next_index > files.length - 1) next_index  = 0;
+			fnext = files[next_index];
+			let next_image = document.querySelectorAll(`*[data-image="${fnext}"]`)[0];
+			if (next_image.length !== 1) {
+				next_image = document.querySelectorAll(`video[src="${fnext}"]`)[0];
+			}
+			let post = next_image.closest('.oppost, .thread-outer, .post, .preview-post');
+			[...document.getElementsByClassName('focused')].map(el => el.classList.remove('focused'));
+			scrollToSmoothly(post.offset().top, 100)
+			post.classList.add('focused');
+			document.getElementById(next_image.id).click();
 		}
-		let post = next_image.closest('.oppost, .thread-outer, .post, .preview-post');
-		[...document.getElementsByClassName('focused')].map(el => el.classList.remove('focused'))
-		// TODO: scroll without the JQuery
-		$('html,body').animate({
-			scrollTop: post.offset().top
-		}, 1);
-		post.classList.add('focused');
-		// TODO: figure out how to trigger click using plain js
-		$(`#${next_image.id}`).trigger('click');
 	} else {
 		// var wH = $(window).height();
 		// var wW = $(window).width();
@@ -138,7 +146,7 @@ const centerModal = () => {
 		$form.css('top', y + 'px');
 		$form.css('left', x + 'px');
 	}
-	document.getElementsByClassName('modal')[0].addEventListener('mousedown', mouseDown, false);
+	// document.getElementsByClassName('modal')[0].addEventListener('mousedown', mouseDown, false);
 }
 
 const scaleImage = () => {
@@ -170,9 +178,8 @@ const scaleImage = () => {
 };
 
 // $(document).ready(function(){
-document.addEventListener('DOMContentLoaded', e => {
+document.addEventListener('DOMContentLoaded', (e) => {
 	[...document.getElementsByClassName('post-image')].map(element => {
-		console.log(element)
 		if (!element.classList.contains('modal-image')) {
 			if (!element.tagName === 'IMG') files.push(element.getAttribute('data-image'));
 		}
@@ -182,166 +189,108 @@ document.addEventListener('DOMContentLoaded', e => {
 		localStorage.volume = 0.5;
 	}
 
-	// $('.modal').draggable();
-
 	[...document.getElementsByClassName('modal-c')].map(element => {
 		element.addEventListener('click', processModalClick)
-	})
+	});
 
-	$(document).on("click", function(event) {
-		var target = $(event.target);
-		if(target.hasClass('post-image')) {
-			$('.modal-controls').css('display', 'block');
-			if (!target.parents('.modal').length){
-				$('.modal').empty();
-				target.clone().appendTo('.modal');
-				if (!target.is('video')){
-					 $('.modal').find('img').attr('src', target.attr('data-image'));
-				}
-				//centering is broken, apparently, for images only, lol
-				var modalMedia = $('.modal').find('.post-media');
-				modalMedia.addClass('modal-image');
-				modalMedia.css('opacity', '');
-				modalMedia.removeClass('post-image post-video post-media');
-				$('#modalC').trigger('click');				
-				if (!target.is('video')) {
-					// look into this shitcode it might need rewriting
-					var aspect = aspectRatio($('.modal-image'));
-					let coef = 0.5;
-					// done to avoid image getting fucked up while scrolling
-					if ($('.modal-image').hasClass('fucked')) coef = coef * 0.15;
-					var w = $('.modal-image').width() * aspect * coef;
-					var h = $('.modal-image').height() * aspect * coef;
-					centerModal();
-					target.addClass('fucked');					
-					$('.modal-image').on('wheel', function(e){
-						var win = $(window);
-						formX = intify('left');
-						formY = intify('top');
-						lastCursorX = e.pageX - win.scrollLeft();
-						lastCursorY = e.pageY - win.scrollTop();
-						cursorInBoxPosX = lastCursorX-formX;
-						cursorInBoxPosY = lastCursorY-formY;
-						var nwu = ($(this).width() + w ).toString();
-						var nhu = ($(this).height() + h).toString();
-						var nwd = ($(this).width() - w).toString();
-						var nhd = ($(this).height() - h).toString();
-						if(e.originalEvent.deltaY > 0) {
-							$(this).css("width", nwd);
-							$(this).css("height", nhd);
-							moveForm(lastCursorX-cursorInBoxPosX, lastCursorY-cursorInBoxPosY, true);
-						} else {
-							$(this).css("width", nwu);
-							$(this).css("height", nhu);
-							moveForm(lastCursorX-cursorInBoxPosX, lastCursorY-cursorInBoxPosY, false);
-						}
+	// TODO: refine selectors
+	[
+		...document.querySelectorAll('.post-image'),
+		...document.querySelectorAll('.thread-media'),
+		...document.querySelectorAll('.oppost-media'),
+		...document.querySelectorAll('.post-video'),
+	].map(el => {
+		el.addEventListener('click', (e) => {
+			let target = e.target;
+			console.log('target', target);
+			if (target.classList.contains('post-image')) {
+				$('.modal-controls').css('display', 'block');
+				if (target.closest('.modal') !== null) {
+					let modal = target.closest('.modal');
+					modal.innerHTML = null;
+					// TODO: finish rewriting
+					target.clone().appendTo('.modal');
+					if (!target.is('video')) {
+						$('.modal').find('img').attr('src', target.attr('data-image'));
+					}
+					// centering is broken, apparently, for images only, lol
+					let modalMedia = $('.modal').find('.post-media');
+					modalMedia.addClass('modal-image');
+					modalMedia.css('opacity', '');
+					modalMedia.removeClass('post-image post-video post-media');
+					$('#modalC').trigger('click');
+					if (!target.is('video')) {
+						// look into this shitcode it might need rewriting
+						var aspect = aspectRatio($('.modal-image'));
+						let coef = 0.5;
+						// done to avoid image getting fucked up while scrolling
+						if ($('.modal-image').hasClass('fucked')) coef = coef * 0.15;
+						var w = $('.modal-image').width() * aspect * coef;
+						var h = $('.modal-image').height() * aspect * coef;
+						centerModal();
+						target.addClass('fucked');
+						$('.modal-image').on('wheel', function (e) {
+							var win = $(window);
+							formX = intify('left');
+							formY = intify('top');
+							lastCursorX = e.pageX - win.scrollLeft();
+							lastCursorY = e.pageY - win.scrollTop();
+							cursorInBoxPosX = lastCursorX - formX;
+							cursorInBoxPosY = lastCursorY - formY;
+							var nwu = ($(this).width() + w).toString();
+							var nhu = ($(this).height() + h).toString();
+							var nwd = ($(this).width() - w).toString();
+							var nhd = ($(this).height() - h).toString();
+							if (e.originalEvent.deltaY > 0) {
+								$(this).css("width", nwd);
+								$(this).css("height", nhd);
+								moveForm(lastCursorX - cursorInBoxPosX, lastCursorY - cursorInBoxPosY, true);
+							} else {
+								$(this).css("width", nwu);
+								$(this).css("height", nhu);
+								moveForm(lastCursorX - cursorInBoxPosX, lastCursorY - cursorInBoxPosY, false);
+							}
+							return false;
+						});
+					} else if (target.is('audio') || target.is('video')) {
 						return false;
-					});
-				} else if (target.is('audio') || target.is('video')) {
-					return false;
+					}
+				} else {
+					console.log('there is no closest modal, need to spawn in');
+					let container = document.getElementsByClassName('modal')[0];
+					container.innerHTML = null;
+					container.append(target.cloneNode(true));
+					if (target.tagName == 'img') {
+						let image = container.getElementsByTagName('img')[0];
+						image.setAttribute(
+							'src', target.getAttribute('data-image')
+						);
+						//	 TODO: make child draggable
+					}
 				}
-				// } else {
-				// 	centerModal();
-				// 	var vid = $('.modal-image');
-				// 	vid.attr('autoplay', '');
-				// 	$(vid).on('loadeddata', function() {
-				// 		var vw = vid[0].videoWidth;
-				// 		var vh = vid[0].videoHeight;
-				// 		if (vw <= $(window).width() &&  vh <= $(window).height()) {
-				// 			vid.css('height', vh);
-				// 			vid.css('width', vw);
-				// 			centerModal();
-				// 		} else {
-				// 			vid.css('height', $(window).height());
-				// 			vid.css('width', $(window).width());
-				// 			centerModal();							 
-				// 		}
-				// 	});
-				// 	var vol = parseFloat(localStorage.volume);
-				// 	if (isNaN(vol)) {vol = 0.5};
-				// 	if (vol > 1.0) {vol = 1.0};
-				// 	if (vol < 0) {vol = 0.0};
-				// 	vid.prop('volume', parseFloat(vol));
-				// 	localStorage.volume = vol;
-				// 	vid.on('DOMMouseScroll mousewheel wheel', function(e){
-				// 		e.preventDefault();
-				// 		vol = parseFloat(localStorage.volume);
-				// 		if (vol > 1.0) {vol = 1.0};
-				// 		if (vol < 0) {vol = 0.0};
-				// 		vid.prop('volume', parseFloat(vol));
-				// 		if(e.originalEvent.detail > 0 || e.originalEvent.wheelDelta < 0) {
-				// 			var volume = (vol - 0.1);
-				// 			localStorage.volume = volume;
-				// 		} else {
-				// 			var volume = (vol + 0.1);
-				// 			localStorage.volume = volume;
-
-				// 		}
-				// 	});
-
-				// }
-			}
-		} else {
-			// horrible mess of if's
-			if ($(target).parents().hasClass('modal')){
-				if (!$(target).parents().hasClass('draggable')) {
-					if ($(target).is(":visible") && $(target).is(":hover")) {
-						$('.modal').empty();
-						$('.modal-image').css('width', '0px').attr('top', 0).attr('left', 0);
-						$('.modal-controls').hide();
+			} else {
+				console.log('there is no closest modal, need ti spawn in');
+				let closestModalParent = target.closest('.modal');
+				if (closestModalParent !== null) {
+					let closestDraggableParent = target.closest('.modal');
+					if (closestDraggableParent === null) {
+						if (target.matches(":visible") && target.matches(":hover")) {
+							[...document.getElementsByClassName('modal')].map(el => {
+								el.innerHTML = null;
+							});
+							[...document.getElementsByClassName('modal-image')].map(el => {
+								el.style.width = '0px';
+								el.style.top = '0';
+								el.style.left = '0';
+							})
+						}
 					}
 				}
 			}
-		}
+		});
 	});
-
-	function intify(shit) {
-		return parseInt($('.modal').css(shit))
-	}
-
-	// broken if image exceeds window
-	// replace form W and H with image ones?
 });
 
-function aspectRatio(element) {
-    return $(element).width() / $(element).height();
-}
+const intify = (property) => parseInt(document.getElementsByClassName('modal')[0].style[property]);
 
-// $.fn.draggable = function(){
-//     var $this = this,
-// 	ns = 'draggable_'+(Math.random()+'').replace('.',''),
-// 	mm = 'mousemove.'+ns,
-// 	mu = 'mouseup.'+ns,
-// 	$w = $(window),
-// 	isFixed = ($this.css('position') === 'fixed'),
-// 	adjX = 0, adjY = 0;		
-// 	$this.mousedown(function(ev){
-// 		if (!$(ev.target).is('textarea') && !$(ev.target).is('input') && !$(ev.target).is('button')) {
-// 			var pos = $this.offset();
-// 			if (isFixed) {
-// 				adjX = $w.scrollLeft(); adjY = $w.scrollTop();
-// 			}
-// 			var ox = (ev.pageX - pos.left), oy = (ev.pageY - pos.top);
-// 			$this.data(ns,{ x : ox, y: oy });
-// 			$w.on(mm, function(ev){
-// 				$this.addClass('draggable');
-// 				ev.preventDefault();
-// 				ev.stopPropagation();
-// 				if (isFixed) {
-// 					adjX = $w.scrollLeft(); adjY = $w.scrollTop();
-// 				}
-// 				var offset = $this.data(ns);
-// 				$this.css({left: ev.pageX - adjX - offset.x, top: ev.pageY - adjY - offset.y, cursor: 'move'});
-// 			});
-// 			$w.on(mu, function(){
-// 				$w.off(mm + ' ' + mu).removeData(ns);
-// 				setTimeout(function() {
-// 					$this.removeClass('draggable');
-// 					$this.css('cursor', 'pointer');
-// 				}, 250);
-// 			});
-// 		};
-
-// 		return this;
-// 	})
-// };
+const aspectRatio = (element) => element.width / element.height;
