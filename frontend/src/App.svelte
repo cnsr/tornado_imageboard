@@ -4,11 +4,12 @@
 	import Admin from "./components/Admin.svelte";
 	import Board from "./components/Board.svelte";
 	import Thread from "./components/Thread.svelte";
+	import Header from "./components/Header.svelte";
 </script>
 
 <Router>
 	<header>
-
+		<Header />
 	</header>
 	<main>
 		<Route path="/">
@@ -17,12 +18,12 @@
 		<Route path="admin">
 			<Admin />
 		</Route>
-		<Route path="/:board">
+		<Route path="/:board" let:params>
 			<Route path="/">
-				<Board />
+				<Board board={params.board}/>
 			</Route>
-			<Route path=":id">
-				<Thread />
+			<Route path="/:threadId">
+				<Thread board={params.board}/>
 			</Route>
 		</Route>
 	</main>
