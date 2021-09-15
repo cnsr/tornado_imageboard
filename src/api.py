@@ -73,7 +73,7 @@ class GetBoards(APIHandler):
 
 class GetThreads(APIHandler):
     async def get(self, board: str):
-        db_board = await self.database.bboards.find_one({'short': board}, exclude(board_exclude_fields))
+        db_board = await self.database.boards.find_one({'short': board}, exclude(board_exclude_fields))
         if db_board:
             threads = await self.database.posts.find(
                     {
