@@ -22,8 +22,8 @@
 			<Route path="/">
 				<Board board={params.board}/>
 			</Route>
-			<Route path="/:threadId">
-				<Thread board={params.board}/>
+			<Route path="/*threadId">
+				<Thread board={params.board} thread={params.threadId}/>
 			</Route>
 		</Route>
 	</main>

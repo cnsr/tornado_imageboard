@@ -1,13 +1,17 @@
 <script>
-    import fetchStore from '../stores/fetch';
-    import { boards } from "../stores/boards";
+    import { onMount } from "svelte";
+    import { boards, loading } from "../stores/boards";
     import { Link } from "svelte-navigator";
 
-    // const url = "http://0.0.0.0:8000/api/boards";
     const url = "https://poorch.ga/api/boards";
-    const [ data, loading, error, get ] = fetchStore(url);
-    console.log('get data', $data);
-    // $: (!loading && $data ) ? boards.set($data) : null;
+    onMount(async () => {
+        loading.set(true);
+        fetch(url).then(response => response.json()).then(data => {
+            console.log('received data', data);
+            loading.set(false);
+            $: boards.set(data);
+        })
+    })
 </script>
 
 <main class="main-container">
@@ -16,7 +20,7 @@
             <Link to="/profile" class="board-link">[PROFILE]</Link>
             <Link to="/admin" class="board-link">[ADMIN]</Link>
             <span> </span>
-            {#if !$loading && !$error}
+            {#if !$loading}
                 {#each $boards as board}
                     <a href={`/${board.short}`} class="board-link">[{board.short}]</a>
                 {/each}
