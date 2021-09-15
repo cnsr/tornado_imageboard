@@ -19,3 +19,6 @@ blacklist.pkl
 .env
 .idea
 pyrightconfig.json
+frontend/yarn-error.log
+frontend/node_modules/*
+frontend/public/build/*
