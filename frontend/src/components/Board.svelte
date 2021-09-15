@@ -6,7 +6,7 @@
 
     console.log('board is ', board);
 
-    const url = `https://poorch.ga/api/board/${board}`;
+    const url = `https://poorch.ga/api/boards/${board}`;
     onMount(async () => {
         loading.set(true);
         fetch(url).then(response => response.json()).then(data => {
