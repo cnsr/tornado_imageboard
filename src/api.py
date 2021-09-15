@@ -44,18 +44,6 @@ class APIHandler(UserHandler):
     def user(self) -> User:
         return self.get_or_create_user()
 
-    def check_origin(self, origin) -> bool:  # type: ignore
-        return False
-
-    def set_default_headers(self):
-        self.set_header("Access-Control-Allow-Origin", "*")
-        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
-        self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-
-    def options(self):
-        self.set_status(204)
-        self.finish()
-
     @property
     async def boards(self) -> list[dict]:
         if not self.__boards:

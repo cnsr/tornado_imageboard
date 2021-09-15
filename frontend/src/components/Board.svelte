@@ -1,6 +1,7 @@
 <script>
     import { boards, currentBoard, loading, threads } from "../stores/boards";
     import {onMount} from "svelte";
+    import Post from './Post.svelte';
 
     export let board;
 
@@ -25,7 +26,7 @@
     {:else}
         <div class="boards">
             {#each $threads as thread}
-                {thread}
+                <Post post={thread}/>
             {/each}
         </div>
     {/if}

@@ -397,37 +397,6 @@ class ThreadHandler(UserHandler):
             self.redirect('/banned')
 
 
-# TODO: remove in favour of API endpoints
-class JsonBoardHandler(UserHandler):
-    thread_count = ''
-
-    async def check_origin(self, origin):
-        return True
-
-    async def set_default_headers(self):
-        self.set_header("Access-Control-Allow-Origin", "*")
-        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
-        self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-
-    async def options(self):
-        self.set_status(204)
-        await self.finish()
-
-    async def get(self, board):
-        db = self.database
-        exclude_fields = ['_id', 'ip', 'pass']
-        threads = []
-        # this is unreadable
-        raw_threads = db.posts.find(
-            {'board': board, 'oppost': True}, exclude(exclude_fields)
-        ).sort([('pinned', -1), ('lastpost', -1)])
-        async for thread in raw_threads:
-            thread['date'] = thread['date'].strftime("%Y-%m-%d %H:%M:%S")
-            thread['lastpost'] = thread['lastpost'].strftime("%Y-%m-%d %H:%M:%S")
-            threads.append(thread)
-        self.write(json.dumps(threads, indent=4, ensure_ascii=False))
-
-
 class JsonThreadHandler(UserHandler):
     thread_count = ''
 
@@ -693,7 +662,6 @@ class Application(tornado.web.Application):
             (r'/flags/(.*)/?', tornado.web.StaticFileHandler, {'path': os.path.join('src', 'flags')}),
             (r'/banners/(.*)/?', tornado.web.StaticFileHandler, {'path': os.path.join('src', 'banners')}),
             (r'/(\w+)/?', BoardHandler),
-            (r'/(\w+)/json/?', JsonBoardHandler),
             (r'/(\w+)/catalog/?', CatalogHandler),
             (r'/(\w+)/thread/(\d+)/?', ThreadHandler),
             (r'/(\w+)/thread/(\d+)/new/?', AjaxNewHandler),
