@@ -3,9 +3,11 @@
     import { boards } from "../stores/boards";
     import { Link } from "svelte-navigator";
 
-    const url = "http://0.0.0.0:8000/api/boards";
+    // const url = "http://0.0.0.0:8000/api/boards";
+    const url = "https://poorch.ga/api/boards";
     const [ data, loading, error, get ] = fetchStore(url);
-    $: boards.set($data);
+    console.log('get data', $data);
+    // $: (!loading && $data ) ? boards.set($data) : null;
 </script>
 
 <main class="main-container">

@@ -21,3 +21,4 @@ blacklist.pkl
 pyrightconfig.json
 frontend/yarn-error.log
 frontend/node_modules/*
+frontend/public/build/*

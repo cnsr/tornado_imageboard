@@ -4,7 +4,7 @@
 
     export let board;
 
-    $: boards.set($data);
+    // $: boards.set($data);
 </script>
 
 <main>
