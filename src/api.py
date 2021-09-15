@@ -9,7 +9,7 @@ from src.logger import log
 from src.utils import (
     exclude,
 )
-from src.userhandle import User, AUTH_METHODS
+from src.userhandle import User, AUTH_METHODS, UserHandler
 
 board_exclude_fields = ['_id', 'created', ]
 post_exclude_fields = ['_id', 'ip', 'pass', ]
@@ -17,7 +17,7 @@ post_exclude_fields = ['_id', 'ip', 'pass', ]
 AUTH_HEADER = 'Authorization'
 
 
-class APIHandler(tornado.web.RequestHandler):
+class APIHandler(UserHandler):
     def initialize(self, *args, **kwargs):
         self.logger = logging.getLogger("API")
         self.con = motor.motor_tornado.MotorClient("localhost", 27017)
@@ -27,7 +27,6 @@ class APIHandler(tornado.web.RequestHandler):
         self.__boards = None
         self.logger.info("finished initialization")
         self.headers = self.request.headers
-        print(self.current_user.uid, self.current_user.user, self.current_user.is_admin)
 
     def get_or_create_user(self) -> User:
         api_key = self.headers.get(AUTH_HEADER)
@@ -46,7 +45,7 @@ class APIHandler(tornado.web.RequestHandler):
         return self.get_or_create_user()
 
     def check_origin(self, origin) -> bool:  # type: ignore
-        return True
+        return False
 
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
