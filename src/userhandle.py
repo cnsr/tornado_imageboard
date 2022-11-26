@@ -355,8 +355,10 @@ class UserHandler(tornado.web.RequestHandler):
 
     async def get_latest_postnumber(self) -> int:
         try:
-            latest_post = await self.database.posts.find({}).sort([('count', -1), ]).to_list(None)
-            return latest_post[0]['count']
+            #latest_post = await self.database.posts.find({}).sort([('count', -1), ]).to_list(None)
+            #return latest_post[0]['count']
+            latest_post = await self.database.posts.find(sort=[("count", -1),])
+            return latest_post.get('count', 0)
         except IndexError:
             # in case you are running the server for the first time
             # there will be no posts therefore this should return 0
